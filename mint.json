@@ -1,0 +1,119 @@
+{
+  "name": "PhotoMem",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#00D9FF",
+    "light": "#00D9FF",
+    "dark": "#00D9FF",
+    "anchors": {
+      "from": "#00D9FF",
+      "to": "#00B8D4"
+    },
+    "background": {
+      "dark": "#0A0F1E"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/photomem/photomem"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "https://github.com/photomem/photomem"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "Examples",
+      "url": "examples"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Discord",
+      "icon": "discord",
+      "url": "https://discord.gg/photomem"
+    },
+    {
+      "name": "Blog",
+      "icon": "newspaper",
+      "url": "https://photomem.ai/blog"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "installation",
+        "core-concepts"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/configuration",
+        "guides/memory-types",
+        "guides/searching",
+        "guides/metadata",
+        "guides/performance",
+        "guides/error-handling"
+      ]
+    },
+    {
+      "group": "Deployment",
+      "pages": [
+        "deployment/docker",
+        "deployment/production",
+        "deployment/scaling"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/introduction",
+        "api-reference/memory",
+        "api-reference/types",
+        "api-reference/errors",
+        "api-reference/rest-api"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        "examples/python",
+        "examples/typescript",
+        "examples/personal-assistant",
+        "examples/customer-support",
+        "examples/multi-agent",
+        "examples/healthcare"
+      ]
+    },
+    {
+      "group": "Advanced",
+      "pages": [
+        "advanced/architecture",
+        "advanced/benchmarks",
+        "advanced/contributing",
+        "advanced/migration-from-mem0"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/photomem/photomem",
+    "twitter": "https://twitter.com/photomem",
+    "discord": "https://discord.gg/photomem"
+  },
+  "backgroundImage": "/images/background.png"
+}
+

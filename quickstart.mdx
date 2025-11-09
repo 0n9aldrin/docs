@@ -1,80 +1,312 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: 'Get started with PhotoMem in under 5 minutes'
 ---
 
-## Get started in three steps
-
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
+## Prerequisites
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+  <Accordion title="PostgreSQL with pgvector" icon="database">
+    PhotoMem uses PostgreSQL with the pgvector extension for vector storage.
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
+    **Quick Setup with Docker:**
+    ```bash
+    docker run -d \
+      --name photomem-postgres \
+      -e POSTGRES_PASSWORD=postgres \
+      -e POSTGRES_DB=photomem \
+      -p 5432:5432 \
+      pgvector/pgvector:pg16
+    ```
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+
+  <Accordion title="OpenAI API Key" icon="key">
+    Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
+    ```bash
+    export OPENAI_API_KEY="sk-..."
+    ```
+  </Accordion>
+
+  <Accordion title="Python 3.11+ or Node.js 18+" icon="code">
+    - **Python**: 3.11 or later
+    - **Node.js**: 18 or later (for TypeScript)
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Deploy your changes
+## Installation
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+<Tabs>
+  <Tab title="Python">
+    ```bash
+    pip install photomem
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    Or install from source:
+    ```bash
+    git clone https://github.com/photomem/photomem.git
+    cd photomem/python
+    pip install -e ".[all]"
+    ```
+  </Tab>
+  
+  <Tab title="TypeScript">
+    ```bash
+    npm install photomem
+    ```
+    
+    Or with yarn:
+    ```bash
+    yarn add photomem
+    ```
+  </Tab>
+</Tabs>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Your First Memory
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+<Tabs>
+  <Tab title="Python">
+    Create a file called `example.py`:
 
-### Step 3: Go live
+    ```python
+    import asyncio
+    from photomem import Memory
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    async def main():
+        # 1. Initialize Memory
+        memory = Memory()
+        await memory.initialize()
+        
+        try:
+            # 2. Add a memory
+            result = await memory.add(
+                "I love hiking in the mountains",
+                user_id="phone:15103651277"
+            )
+            print(f"✅ Added: {result.memory}")
+            print(f"📝 Memory ID: {result.id}")
+            
+            # 3. Search memories
+            results = await memory.search(
+                "What outdoor activities do I enjoy?",
+                user_id="phone:15103651277"
+            )
+            
+            print(f"\n🔍 Found {len(results)} memories:")
+            for r in results:
+                print(f"  • {r.memory} (score: {r.score:.2f})")
+        
+        finally:
+            # 4. Always close connections
+            await memory.close()
 
-## Next steps
+    # Run the example
+    asyncio.run(main())
+    ```
 
-Now that you have your docs running, explore these key features:
+    Run it:
+    ```bash
+    python example.py
+    ```
+  </Tab>
+  
+  <Tab title="TypeScript">
+    Create a file called `example.ts`:
+
+    ```typescript
+    import { Memory } from 'photomem';
+
+    async function main() {
+        // 1. Initialize Memory
+        const memory = new Memory();
+        await memory.initialize();
+        
+        try {
+            // 2. Add a memory
+            const result = await memory.add(
+                'I love hiking in the mountains',
+                { userId: 'phone:15103651277' }
+            );
+            console.log(`✅ Added: ${result.memory}`);
+            console.log(`📝 Memory ID: ${result.id}`);
+            
+            // 3. Search memories
+            const results = await memory.search(
+                'What outdoor activities do I enjoy?',
+                { userId: 'phone:15103651277' }
+            );
+            
+            console.log(`\n🔍 Found ${results.length} memories:`);
+            results.forEach(r => {
+                console.log(`  • ${r.memory} (score: ${r.score.toFixed(2)})`);
+            });
+        } finally {
+            // 4. Always close connections
+            await memory.close();
+        }
+    }
+
+    main();
+    ```
+
+    Run it:
+    ```bash
+    npx tsx example.ts
+    ```
+  </Tab>
+</Tabs>
+
+<Check>
+  **Success!** You've created your first AI memory system! 🎉
+</Check>
+
+## Understanding the Output
+
+When you run the example, you should see output like:
+
+```
+✅ Added: Loves hiking in the mountains
+📝 Memory ID: 550e8400-e29b-41d4-a716-446655440000
+
+🔍 Found 1 memories:
+  • Loves hiking in the mountains (score: 0.95)
+```
+
+<Info>
+  The semantic search found your memory even though the query was phrased differently!
+</Info>
+
+## What Just Happened?
+
+<Steps>
+  <Step title="Initialization">
+    PhotoMem connected to PostgreSQL and OpenAI, setting up connection pools and caches.
+  </Step>
+  
+  <Step title="Fact Extraction">
+    Your message was sent to the LLM which extracted the key fact: "Loves hiking in the mountains"
+  </Step>
+  
+  <Step title="Embedding Generation">
+    The fact was converted to a 1536-dimensional vector using OpenAI's text-embedding-3-small
+  </Step>
+  
+  <Step title="Storage">
+    The vector and metadata were stored in PostgreSQL with pgvector indexing
+  </Step>
+  
+  <Step title="Semantic Search">
+    Your query was embedded and compared using cosine similarity to find relevant memories
+  </Step>
+</Steps>
+
+## Next Steps
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card
+    title="Core Concepts"
+    icon="book"
+    href="/core-concepts"
+  >
+    Learn about memory types, user IDs, and message formats
+  </Card>
+  
+  <Card
+    title="Configuration"
+    icon="gear"
+    href="/guides/configuration"
+  >
+    Customize PhotoMem for your use case
+  </Card>
+  
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/memory"
+  >
+    Explore all available methods
+  </Card>
+  
+  <Card
+    title="Examples"
+    icon="lightbulb"
+    href="/examples/python"
+  >
+    See real-world usage patterns
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Using Docker Compose
+
+For a complete setup with all services, use docker-compose:
+
+```bash
+cd photomem/python/server
+docker-compose up -d
+```
+
+This starts:
+- PostgreSQL with pgvector
+- Redis (for caching)
+- FastAPI server (REST API)
+
+Then connect to the API:
+
+```python
+import httpx
+
+async with httpx.AsyncClient() as client:
+    response = await client.post(
+        "http://localhost:8000/memories",
+        json={
+            "messages": "I love pizza",
+            "user_id": "phone:15103651277"
+        }
+    )
+    print(response.json())
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connection refused" icon="wifi">
+    Make sure PostgreSQL is running:
+    ```bash
+    docker ps | grep postgres
+    ```
+    
+    Test the connection:
+    ```bash
+    psql postgresql://postgres:postgres@localhost:5432/photomem
+    ```
+  </Accordion>
+
+  <Accordion title="OpenAI API errors" icon="exclamation-triangle">
+    Verify your API key:
+    ```bash
+    echo $OPENAI_API_KEY
+    ```
+    
+    Test it with curl:
+    ```bash
+    curl https://api.openai.com/v1/models \
+      -H "Authorization: Bearer $OPENAI_API_KEY"
+    ```
+  </Accordion>
+
+  <Accordion title="Import errors" icon="circle-xmark">
+    Reinstall with all dependencies:
+    ```bash
+    pip install -e ".[all]"
+    ```
+    
+    Or for TypeScript:
+    ```bash
+    npm install --force
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Card title="Need Help?" icon="question">
+  Join our [Discord community](https://discord.gg/photomem) or open an issue on [GitHub](https://github.com/photomem/photomem/issues)
+</Card>

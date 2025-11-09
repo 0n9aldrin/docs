@@ -1,0 +1,471 @@
+---
+title: Installation
+description: 'Complete installation guide for PhotoMem'
+---
+
+## System Requirements
+
+<CardGroup cols={3}>
+  <Card title="Python 3.11+" icon="python">
+    Python 3.11 or later required
+  </Card>
+  <Card title="Node.js 18+" icon="node-js">
+    Node.js 18 or later for TypeScript
+  </Card>
+  <Card title="PostgreSQL 15+" icon="database">
+    PostgreSQL 15+ with pgvector extension
+  </Card>
+</CardGroup>
+
+## Quick Install
+
+<Tabs>
+  <Tab title="Python">
+    ### Using pip
+
+    ```bash
+    pip install photomem
+    ```
+
+    ### From Source
+
+    ```bash
+    git clone https://github.com/photomem/photomem.git
+    cd photomem/python
+    pip install -e ".[all]"
+    ```
+
+    ### Development Installation
+
+    ```bash
+    cd photomem/python
+    pip install -e ".[dev]"
+    ```
+
+    This installs:
+    - ✅ Core dependencies
+    - ✅ FastAPI server components
+    - ✅ Testing tools (pytest, coverage)
+    - ✅ Linting tools (ruff, black, mypy)
+  </Tab>
+
+  <Tab title="TypeScript">
+    ### Using npm
+
+    ```bash
+    npm install photomem
+    ```
+
+    ### Using yarn
+
+    ```bash
+    yarn add photomem
+    ```
+
+    ### Using pnpm
+
+    ```bash
+    pnpm add photomem
+    ```
+
+    ### From Source
+
+    ```bash
+    git clone https://github.com/photomem/photomem.git
+    cd photomem/typescript
+    npm install
+    npm run build
+    ```
+  </Tab>
+</Tabs>
+
+## Database Setup
+
+<Tabs>
+  <Tab title="Docker (Recommended)">
+    ### Single Container
+
+    ```bash
+    docker run -d \
+      --name photomem-postgres \
+      -e POSTGRES_USER=postgres \
+      -e POSTGRES_PASSWORD=postgres \
+      -e POSTGRES_DB=photomem \
+      -p 5432:5432 \
+      -v photomem_data:/var/lib/postgresql/data \
+      pgvector/pgvector:pg16
+    ```
+
+    ### Docker Compose
+
+    Create `docker-compose.yml`:
+
+    ```yaml
+    version: '3.8'
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: photomem
+        ports:
+          - "5432:5432"
+        volumes:
+          - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U postgres"]
+          interval: 5s
+          timeout: 5s
+          retries: 5
+
+    volumes:
+      postgres_data:
+    ```
+
+    Start it:
+    ```bash
+    docker-compose up -d
+    ```
+  </Tab>
+
+  <Tab title="Manual Installation">
+    ### Install PostgreSQL
+
+    **macOS (Homebrew):**
+    ```bash
+    brew install postgresql@15
+    brew services start postgresql@15
+    ```
+
+    **Ubuntu/Debian:**
+    ```bash
+    sudo apt update
+    sudo apt install postgresql-15 postgresql-contrib-15
+    sudo systemctl start postgresql
+    ```
+
+    **Windows:**
+    Download from [postgresql.org](https://www.postgresql.org/download/windows/)
+
+    ### Install pgvector
+
+    ```bash
+    # Clone pgvector
+    git clone https://github.com/pgvector/pgvector.git
+    cd pgvector
+
+    # Build and install
+    make
+    sudo make install
+    ```
+
+    ### Create Database
+
+    ```bash
+    createdb photomem
+    psql photomem -c "CREATE EXTENSION vector;"
+    ```
+
+    ### Verify Installation
+
+    ```bash
+    psql photomem -c "SELECT * FROM pg_extension WHERE extname = 'vector';"
+    ```
+  </Tab>
+
+  <Tab title="Cloud Providers">
+    ### Supabase
+
+    Supabase includes pgvector by default:
+
+    1. Create a project at [supabase.com](https://supabase.com)
+    2. Get your connection string from Settings → Database
+    3. Enable pgvector:
+       ```sql
+       CREATE EXTENSION IF NOT EXISTS vector;
+       ```
+
+    ### Neon
+
+    [Neon](https://neon.tech) supports pgvector:
+
+    1. Create a project
+    2. Get connection string
+    3. Enable extension in SQL Editor:
+       ```sql
+       CREATE EXTENSION IF NOT EXISTS vector;
+       ```
+
+    ### AWS RDS
+
+    Use PostgreSQL 15+ on RDS:
+
+    1. Create RDS PostgreSQL 15 instance
+    2. Connect and install pgvector:
+       ```sql
+       CREATE EXTENSION vector;
+       ```
+
+    <Warning>
+      AWS RDS requires manual pgvector installation. Consider using Aurora PostgreSQL.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Environment Configuration
+
+Create a `.env` file in your project root:
+
+```bash
+# Required
+OPENAI_API_KEY=sk-your-key-here
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/photomem
+
+# Optional
+REDIS_URL=redis://localhost:6379/0
+LOG_LEVEL=INFO
+```
+
+<Info>
+  PhotoMem will automatically load environment variables from `.env` if present
+</Info>
+
+## Verify Installation
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    import asyncio
+    from photomem import Memory
+
+    async def test():
+        memory = Memory()
+        await memory.initialize()
+        print("✅ PhotoMem installed successfully!")
+        await memory.close()
+
+    asyncio.run(test())
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { Memory } from 'photomem';
+
+    async function test() {
+        const memory = new Memory();
+        await memory.initialize();
+        console.log('✅ PhotoMem installed successfully!');
+        await memory.close();
+    }
+
+    test();
+    ```
+  </Tab>
+</Tabs>
+
+## Optional Components
+
+### Redis (Caching)
+
+<Tabs>
+  <Tab title="Docker">
+    ```bash
+    docker run -d \
+      --name photomem-redis \
+      -p 6379:6379 \
+      redis:7-alpine
+    ```
+  </Tab>
+
+  <Tab title="Local Install">
+    **macOS:**
+    ```bash
+    brew install redis
+    brew services start redis
+    ```
+
+    **Ubuntu:**
+    ```bash
+    sudo apt install redis-server
+    sudo systemctl start redis
+    ```
+  </Tab>
+</Tabs>
+
+### Neo4j (Graph Memory)
+
+<Tabs>
+  <Tab title="Docker">
+    ```bash
+    docker run -d \
+      --name photomem-neo4j \
+      -p 7474:7474 -p 7687:7687 \
+      -e NEO4J_AUTH=neo4j/password \
+      neo4j:5
+    ```
+  </Tab>
+
+  <Tab title="Cloud">
+    Use [Neo4j Aura](https://neo4j.com/cloud/aura/) for managed Neo4j
+  </Tab>
+</Tabs>
+
+## Complete Stack Setup
+
+Use the included docker-compose for everything:
+
+```bash
+cd photomem/python/server
+docker-compose up -d
+```
+
+This starts:
+- ✅ PostgreSQL + pgvector
+- ✅ Redis
+- ✅ FastAPI server
+
+Check status:
+```bash
+docker-compose ps
+```
+
+View logs:
+```bash
+docker-compose logs -f
+```
+
+## IDE Setup
+
+### VS Code
+
+Install recommended extensions:
+
+```json
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "charliermarsh.ruff",
+    "ms-python.black-formatter",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ]
+}
+```
+
+### PyCharm
+
+1. Open project in PyCharm
+2. Configure interpreter: Python 3.11+
+3. Enable type checking in settings
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="PostgreSQL connection failed" icon="database">
+    **Check if PostgreSQL is running:**
+    ```bash
+    docker ps | grep postgres
+    # or
+    pg_isready
+    ```
+
+    **Test connection:**
+    ```bash
+    psql postgresql://postgres:postgres@localhost:5432/photomem
+    ```
+
+    **Common issues:**
+    - Wrong port (default: 5432)
+    - Wrong credentials
+    - PostgreSQL not started
+    - Firewall blocking connection
+  </Accordion>
+
+  <Accordion title="pgvector extension not found" icon="puzzle-piece">
+    Enable the extension:
+    ```sql
+    CREATE EXTENSION IF NOT EXISTS vector;
+    ```
+
+    Verify it's installed:
+    ```sql
+    SELECT * FROM pg_extension WHERE extname = 'vector';
+    ```
+
+    If missing, reinstall pgvector (see manual installation tab above)
+  </Accordion>
+
+  <Accordion title="OpenAI API errors" icon="key">
+    **Verify API key is set:**
+    ```bash
+    echo $OPENAI_API_KEY
+    ```
+
+    **Test API key:**
+    ```bash
+    curl https://api.openai.com/v1/models \
+      -H "Authorization: Bearer $OPENAI_API_KEY"
+    ```
+
+    **Check rate limits:**
+    Visit [OpenAI Platform Usage](https://platform.openai.com/usage)
+  </Accordion>
+
+  <Accordion title="Import errors in Python" icon="python">
+    **Reinstall with all dependencies:**
+    ```bash
+    pip uninstall photomem -y
+    pip install -e ".[all]"
+    ```
+
+    **Check Python version:**
+    ```bash
+    python --version  # Should be 3.11+
+    ```
+
+    **Verify installation:**
+    ```bash
+    pip show photomem
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript build errors" icon="code">
+    **Clear cache and reinstall:**
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+
+    **Check Node version:**
+    ```bash
+    node --version  # Should be 18+
+    ```
+
+    **Rebuild:**
+    ```bash
+    npm run build
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Build your first memory app
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/guides/configuration">
+    Customize PhotoMem settings
+  </Card>
+  <Card title="Core Concepts" icon="book" href="/core-concepts">
+    Learn the fundamentals
+  </Card>
+  <Card title="Examples" icon="code" href="/examples/python">
+    See practical examples
+  </Card>
+</CardGroup>
+

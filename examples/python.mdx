@@ -1,0 +1,561 @@
+---
+title: Python Examples
+description: 'Comprehensive Python examples for PhotoMem'
+---
+
+## Basic Usage
+
+### Simple Memory
+
+The most basic example - add and search a memory:
+
+```python
+import asyncio
+from photomem import Memory
+
+async def main():
+    memory = Memory()
+    await memory.initialize()
+    
+    try:
+        # Add a memory
+        result = await memory.add(
+            "I love hiking in the mountains",
+            user_id="phone:15103651277"
+        )
+        print(f"Added: {result.memory}")
+        
+        # Search
+        results = await memory.search(
+            "What activities do I enjoy?",
+            user_id="phone:15103651277"
+        )
+        
+        for r in results:
+            print(f"Found: {r.memory} (score: {r.score:.2f})")
+    
+    finally:
+        await memory.close()
+
+asyncio.run(main())
+```
+
+### Conversation Memory
+
+Store entire conversations:
+
+```python
+from photomem import Memory
+from photomem.core.types import MemoryType
+
+async def conversation_example():
+    memory = Memory()
+    await memory.initialize()
+    
+    # Store conversation
+    conversation = [
+        {"role": "user", "content": "I'm planning a trip to Japan"},
+        {"role": "assistant", "content": "That's exciting! When are you going?"},
+        {"role": "user", "content": "Next spring to see cherry blossoms"},
+        {"role": "assistant", "content": "Perfect timing! Where will you visit?"},
+        {"role": "user", "content": "Tokyo and Kyoto"}
+    ]
+    
+    result = await memory.add(
+        conversation,
+        user_id="phone:15103651277",
+        memory_type=MemoryType.EPISODIC
+    )
+    
+    # Later, search the conversation
+    results = await memory.search(
+        "Where is the user traveling?",
+        user_id="phone:15103651277"
+    )
+    
+    for r in results:
+        print(r.memory)
+    
+    await memory.close()
+```
+
+## Advanced Examples
+
+### Custom Configuration
+
+Customize PhotoMem for your needs:
+
+```python
+from photomem import Memory
+from photomem.core.types import MemoryConfig
+
+async def custom_config_example():
+    # Create custom configuration
+    config = MemoryConfig(
+        # LLM settings
+        llm_model="gpt-4",
+        llm_temperature=0.3,
+        
+        # Embedding settings
+        embedding_dimensions=1536,
+        embedding_cache_size=2000,  # Larger cache
+        
+        # Performance
+        connection_pool_size=20,  # More connections
+        
+        # Search
+        default_search_limit=20,
+        similarity_threshold=0.8,  # Higher threshold
+    )
+    
+    memory = Memory(config)
+    await memory.initialize()
+    
+    # Use with custom configuration
+    result = await memory.add(
+        "I prefer morning meetings",
+        user_id="phone:15103651277"
+    )
+    
+    await memory.close()
+```
+
+### Metadata and Tagging
+
+Organize memories with metadata:
+
+```python
+async def metadata_example():
+    memory = Memory()
+    await memory.initialize()
+    
+    # Add with metadata
+    await memory.add(
+        "I'm allergic to peanuts and shellfish",
+        user_id="phone:15103651277",
+        metadata={
+            "tags": ["health", "allergies", "dietary"],
+            "custom": {
+                "severity": "high",
+                "category": "medical",
+                "verified_by": "doctor",
+                "date": "2025-01-08"
+            }
+        }
+    )
+    
+    # Search with filters
+    from photomem.core.types import SearchFilters
+    
+    results = await memory.search(
+        "medical conditions",
+        user_id="phone:15103651277",
+        filters=SearchFilters(
+            tags=["health", "medical"]
+        )
+    )
+    
+    for r in results:
+        print(f"Memory: {r.memory}")
+        print(f"Tags: {r.metadata.tags}")
+        print(f"Custom: {r.metadata.custom}")
+    
+    await memory.close()
+```
+
+### Batch Operations
+
+Add multiple memories efficiently:
+
+```python
+async def batch_example():
+    memory = Memory()
+    await memory.initialize()
+    
+    user_id = "phone:15103651277"
+    
+    # Add multiple facts
+    facts = [
+        "I love pizza",
+        "My favorite color is blue",
+        "I work at Google",
+        "I have a dog named Max",
+        "I enjoy playing guitar"
+    ]
+    
+    # Add them all
+    for fact in facts:
+        result = await memory.add(fact, user_id=user_id)
+        print(f"Added: {result.memory}")
+    
+    # Search across all
+    results = await memory.search(
+        "Tell me about the user",
+        user_id=user_id,
+        limit=10
+    )
+    
+    print(f"\nFound {len(results)} memories:")
+    for r in results:
+        print(f"  • {r.memory}")
+    
+    await memory.close()
+```
+
+### Update and Delete
+
+Manage memory lifecycle:
+
+```python
+async def crud_example():
+    memory = Memory()
+    await memory.initialize()
+    
+    user_id = "phone:15103651277"
+    
+    # Create
+    result = await memory.add(
+        "I like cheese pizza",
+        user_id=user_id
+    )
+    memory_id = result.id
+    print(f"Created: {result.memory}")
+    
+    # Read
+    retrieved = await memory.get(memory_id)
+    print(f"Retrieved: {retrieved.memory}")
+    
+    # Update
+    updated = await memory.update(
+        memory_id,
+        "I love pepperoni pizza",
+        metadata={"tags": ["updated"]}
+    )
+    print(f"Updated: {updated.memory}")
+    
+    # Check history
+    history = await memory.history(memory_id)
+    print(f"\nHistory ({len(history)} entries):")
+    for entry in history:
+        print(f"  {entry['event']}: {entry['new_memory']}")
+    
+    # Delete
+    await memory.delete(memory_id)
+    print(f"\nDeleted memory {memory_id}")
+    
+    await memory.close()
+```
+
+## Real-World Examples
+
+### Personal AI Assistant
+
+```python
+from photomem import Memory
+from photomem.core.types import SearchFilters
+import asyncio
+
+class PersonalAssistant:
+    def __init__(self, user_id: str):
+        self.user_id = user_id
+        self.memory = Memory()
+    
+    async def initialize(self):
+        await self.memory.initialize()
+    
+    async def close(self):
+        await self.memory.close()
+    
+    async def remember(self, text: str, category: str = "general"):
+        """Store a memory with category"""
+        result = await self.memory.add(
+            text,
+            user_id=self.user_id,
+            metadata={"tags": [category]}
+        )
+        return result
+    
+    async def recall(self, query: str, category: str = None):
+        """Recall memories, optionally filtered by category"""
+        filters = None
+        if category:
+            filters = SearchFilters(tags=[category])
+        
+        results = await self.memory.search(
+            query,
+            user_id=self.user_id,
+            filters=filters
+        )
+        return results
+    
+    async def get_all_memories(self, category: str = None):
+        """Get all memories, optionally filtered"""
+        filters = None
+        if category:
+            filters = SearchFilters(tags=[category])
+        
+        return await self.memory.get_all(
+            user_id=self.user_id,
+            filters=filters
+        )
+
+# Usage
+async def main():
+    assistant = PersonalAssistant("phone:15103651277")
+    await assistant.initialize()
+    
+    # Remember preferences
+    await assistant.remember("I prefer morning meetings", "work")
+    await assistant.remember("I'm allergic to peanuts", "health")
+    await assistant.remember("I love hiking", "hobbies")
+    
+    # Recall work-related memories
+    work_memories = await assistant.recall("work schedule", "work")
+    print("Work memories:", [m.memory for m in work_memories])
+    
+    # Get all health-related memories
+    health_memories = await assistant.get_all_memories("health")
+    print("Health info:", [m.memory for m in health_memories])
+    
+    await assistant.close()
+
+asyncio.run(main())
+```
+
+### Customer Support System
+
+```python
+from photomem import Memory
+from datetime import datetime
+
+class CustomerSupportMemory:
+    def __init__(self):
+        self.memory = Memory()
+    
+    async def initialize(self):
+        await self.memory.initialize()
+    
+    async def log_interaction(self, customer_id: str, interaction: list[dict]):
+        """Log customer support interaction"""
+        result = await self.memory.add(
+            interaction,
+            user_id=f"customer:{customer_id}",
+            metadata={
+                "tags": ["support", "interaction"],
+                "custom": {
+                    "timestamp": datetime.now().isoformat(),
+                    "channel": "chat"
+                }
+            }
+        )
+        return result
+    
+    async def get_customer_history(self, customer_id: str):
+        """Get all interactions for a customer"""
+        return await self.memory.get_all(
+            user_id=f"customer:{customer_id}",
+            limit=100
+        )
+    
+    async def find_similar_issues(self, query: str, customer_id: str = None):
+        """Find similar support issues"""
+        user_id = f"customer:{customer_id}" if customer_id else None
+        return await self.memory.search(
+            query,
+            user_id=user_id,
+            limit=5
+        )
+
+# Usage
+async def support_example():
+    support = CustomerSupportMemory()
+    await support.initialize()
+    
+    # Log interaction
+    interaction = [
+        {"role": "user", "content": "My order #12345 never arrived"},
+        {"role": "assistant", "content": "I'll check that for you"},
+        {"role": "assistant", "content": "Your order is delayed, will arrive tomorrow"}
+    ]
+    
+    await support.log_interaction("cust_789", interaction)
+    
+    # Later, agent checks history
+    history = await support.get_customer_history("cust_789")
+    print(f"Customer has {len(history)} previous interactions")
+    
+    # Find similar issues
+    similar = await support.find_similar_issues("order not delivered")
+    print(f"Found {len(similar)} similar cases")
+    
+    await support.close()
+
+asyncio.run(support_example())
+```
+
+### Multi-Agent System
+
+```python
+from photomem import Memory
+from photomem.core.types import MemoryType
+
+class AgentMemorySystem:
+    def __init__(self):
+        self.memory = Memory()
+    
+    async def initialize(self):
+        await self.memory.initialize()
+    
+    async def agent_share_finding(self, agent_id: str, finding: str):
+        """Agent shares a finding"""
+        return await self.memory.add(
+            finding,
+            agent_id=f"agent:{agent_id}",
+            metadata={"tags": ["finding", "shared"]}
+        )
+    
+    async def agent_log_execution(self, agent_id: str, steps: list[str]):
+        """Log agent execution steps"""
+        messages = [
+            {"role": "assistant", "content": step}
+            for step in steps
+        ]
+        
+        return await self.memory.add(
+            messages,
+            agent_id=f"agent:{agent_id}",
+            memory_type=MemoryType.PROCEDURAL
+        )
+    
+    async def query_agent_knowledge(self, agent_id: str, query: str):
+        """Query what an agent knows"""
+        return await self.memory.search(
+            query,
+            agent_id=f"agent:{agent_id}",
+            limit=10
+        )
+    
+    async def get_all_agent_findings(self, agent_id: str):
+        """Get all findings from an agent"""
+        return await self.memory.get_all(
+            agent_id=f"agent:{agent_id}"
+        )
+
+# Usage
+async def multi_agent_example():
+    system = AgentMemorySystem()
+    await system.initialize()
+    
+    # Agent 1 finds something
+    await system.agent_share_finding(
+        "debugger",
+        "Found bug in authentication module at line 45"
+    )
+    
+    # Agent 1 logs execution
+    await system.agent_log_execution(
+        "debugger",
+        [
+            "Step 1: Analyzing codebase",
+            "Step 2: Found authentication bug",
+            "Step 3: Applied fix and tested"
+        ]
+    )
+    
+    # Agent 2 queries Agent 1's knowledge
+    findings = await system.query_agent_knowledge(
+        "debugger",
+        "authentication issues"
+    )
+    
+    print(f"Agent 2 found {len(findings)} relevant findings from Agent 1")
+    for f in findings:
+        print(f"  • {f.memory}")
+    
+    await system.close()
+
+asyncio.run(multi_agent_example())
+```
+
+## Performance Monitoring
+
+### Cache Statistics
+
+```python
+async def monitor_cache():
+    memory = Memory()
+    await memory.initialize()
+    
+    # Add some memories
+    for i in range(100):
+        await memory.add(f"Memory {i}", user_id="phone:test")
+    
+    # Check cache stats
+    stats = memory.get_cache_stats()
+    print(f"Cache size: {stats['size']}/{stats['max_size']}")
+    print(f"Cache hits: {stats['hits']}")
+    print(f"Cache misses: {stats['misses']}")
+    print(f"Hit rate: {stats['hit_rate']:.2%}")
+    
+    # If hit rate is low, increase cache size
+    if stats['hit_rate'] < 0.5:
+        print("Consider increasing embedding_cache_size")
+    
+    await memory.close()
+```
+
+## Error Handling
+
+```python
+from photomem import Memory
+from photomem.exceptions import (
+    ValidationError,
+    MemoryNotFoundError,
+    StorageError,
+    PhotoMemError
+)
+
+async def error_handling_example():
+    memory = Memory()
+    await memory.initialize()
+    
+    try:
+        # This will fail - no user_id
+        await memory.add("test")
+    except ValidationError as e:
+        print(f"Validation error: {e.message}")
+        print(f"Suggestion: {e.suggestion}")
+    
+    try:
+        # This will fail - memory doesn't exist
+        await memory.get("nonexistent_id")
+    except MemoryNotFoundError as e:
+        print(f"Not found: {e.message}")
+    
+    try:
+        # General error handling
+        await memory.search("test", user_id="invalid_format")
+    except PhotoMemError as e:
+        print(f"Error code: {e.error_code}")
+        print(f"Details: {e.details}")
+    
+    await memory.close()
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="TypeScript Examples" icon="code" href="/examples/typescript">
+    See TypeScript implementations
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/memory">
+    Full API documentation
+  </Card>
+  <Card title="Advanced Guide" icon="rocket" href="/advanced/architecture">
+    Deep dive into architecture
+  </Card>
+  <Card title="Production Deployment" icon="server" href="/deployment/production">
+    Deploy to production
+  </Card>
+</CardGroup>
+

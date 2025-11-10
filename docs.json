@@ -100,7 +100,7 @@
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "/quickstart"
+      "href": "https://github.com/photomem/photomem"
     }
   },
   "contextual": {

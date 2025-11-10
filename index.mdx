@@ -1,97 +1,115 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "PhotoMem Documentation"
+description: "Production-grade AI memory management system"
 ---
 
-## Setting up
+## Welcome to PhotoMem
 
-Get your documentation site up and running in minutes.
+PhotoMem is a **next-generation AI memory management system** that provides persistent, semantic memory for AI agents and applications.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
   >
-    Edit your docs locally and preview them in real time.
+    Get up and running in under 5 minutes
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
+    title="API Reference"
+    icon="code"
     href="/api-reference/introduction"
   >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+    Complete SDK and REST API documentation
   </Card>
   <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
+    title="Examples"
+    icon="lightbulb"
+    href="/examples/python"
   >
-    Add sample code to demonstrate how to use your product.
+    Learn from practical examples
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="Core Concepts"
+    icon="book"
+    href="/core-concepts"
   >
-    Display images and other media.
+    Understand how PhotoMem works
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+## Why PhotoMem?
+
+<CardGroup cols={2}>
+  <Card title="⚡ 4x Faster" icon="bolt">
+    Built with performance-first architecture
+  </Card>
+  <Card title="🔒 Type Safe" icon="shield">
+    Full TypeScript and Python type support
+  </Card>
+  <Card title="🎯 Production Ready" icon="check">
+    Battle-tested error handling
+  </Card>
+  <Card title="🚀 Easy to Use" icon="star">
+    Clean, intuitive API design
+  </Card>
+</CardGroup>
+
+## Quick Example
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem import Memory
+
+    # Initialize
+    memory = Memory()
+    await memory.initialize()
+
+    # Add memories
+    result = await memory.add(
+        "I love hiking in the mountains",
+        user_id="phone:15103651277"
+    )
+
+    # Search semantically
+    results = await memory.search(
+        "What outdoor activities does the user enjoy?",
+        user_id="phone:15103651277"
+    )
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { Memory } from 'photomem';
+
+    // Initialize
+    const memory = new Memory();
+    await memory.initialize();
+
+    // Add memories
+    const result = await memory.add(
+      "I love hiking in the mountains",
+      { userId: "phone:15103651277" }
+    );
+
+    // Search semantically
+    const results = await memory.search(
+      "What outdoor activities does the user enjoy?",
+      { userId: "phone:15103651277" }
+    );
+    ```
+  </Tab>
+</Tabs>
+
+## Get Started
 
 <Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
+  title="Installation Guide"
+  icon="download"
+  href="/installation"
+  horizontal
 >
-  Browse our showcase of exceptional documentation sites.
+  Install PhotoMem for Python or TypeScript
 </Card>

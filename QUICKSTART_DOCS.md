@@ -1,23 +1,6 @@
 # Quick Start - PhotoMem Documentation
 
-## 🚀 Get Started in 3 Commands
-
-```bash
-# 1. Install Mintlify CLI
-npm install -g mintlify
-
-# 2. Navigate to docs
-cd /Users/aldrin0n9/Developer/daymi/photomem/docs
-
-# 3. Start dev server
-mintlify dev
-```
-
-Then open: **http://localhost:3000**
-
----
-
-## 📚 What You'll See
+## 📚 What's Included
 
 Your documentation includes:
 
@@ -25,7 +8,7 @@ Your documentation includes:
 ✅ **Quick Start** - 5-minute tutorial  
 ✅ **Installation** - Complete setup guide  
 ✅ **Core Concepts** - Memory types, IDs, search  
-✅ **API Reference** - Methods and types  
+✅ **API Reference** - Complete methods, types, and errors documentation
 ✅ **Python Examples** - 10+ real-world examples  
 
 All with your **custom dark theme** (navy + cyan + glass effects)!
@@ -46,28 +29,27 @@ Colors applied:
 
 ```
 docs/
-├── introduction.mdx     # Landing page
-├── quickstart.mdx       # Quick start
-├── installation.mdx     # Install guide
-├── core-concepts.mdx    # Concepts
+├── introduction.mdx        # Landing page
+├── quickstart.mdx          # Quick start
+├── installation.mdx        # Install guide
+├── core-concepts.mdx       # Concepts
 ├── api-reference/
-│   └── introduction.mdx # API overview
+│   ├── introduction.mdx    # API overview
+│   ├── memory.mdx          # Memory class methods
+│   ├── types.mdx           # Type definitions
+│   ├── errors.mdx          # Error handling
+│   └── rest-api.mdx        # REST API endpoints
 └── examples/
-    └── python.mdx       # Python examples
+    └── python.mdx          # Python examples
 ```
 
 ---
 
 ## 🔧 Common Tasks
 
-### Preview Changes
-```bash
-mintlify dev
-```
-
 ### Add New Page
 1. Create `my-page.mdx` in docs/
-2. Add to `mint.json` navigation:
+2. Add to `docs.json` navigation:
 ```json
 {
   "group": "Group Name",
@@ -76,9 +58,8 @@ mintlify dev
 ```
 
 ### Deploy
-1. Sign up at mintlify.com
-2. Connect GitHub repo
-3. Auto-deploys on push to main
+1. Connect GitHub repo to your documentation platform
+2. Auto-deploys on push to main
 
 ---
 
@@ -110,10 +91,9 @@ mintlify dev
 
 ## ✅ You're All Set!
 
-Run `mintlify dev` and your beautiful documentation will be live at http://localhost:3000
+Your beautiful documentation is ready to deploy!
 
 Need help? Check:
 - `DOCS_README.md` - Full documentation guide
 - `DOCUMENTATION_SUMMARY.md` - Complete summary
-- [Mintlify Docs](https://mintlify.com/docs)
 

@@ -1,94 +1,387 @@
 ---
 title: 'Development'
-description: 'Preview changes locally to update your docs'
+description: 'Local development setup for PhotoMem'
 ---
 
 <Info>
   **Prerequisites**:
-  - Node.js version 19 or higher
-  - A docs repository with a `docs.json` file
+  - Python 3.11+ or Node.js 18+
+  - PostgreSQL 15+ with pgvector
+  - OpenAI API key
 </Info>
 
-Follow these steps to install and run Mintlify on your operating system.
+## Getting Started
+
+Follow these steps to set up PhotoMem for local development.
 
 <Steps>
-<Step title="Install the Mintlify CLI">
+<Step title="Clone the Repository">
 
 ```bash
-npm i -g mint
+git clone https://github.com/photomem/photomem.git
+cd photomem
 ```
 </Step>
 
-<Step title="Preview locally">
+<Step title="Set Up Environment">
 
-Navigate to your docs directory where your `docs.json` file is located, and run the following command:
+Create a `.env` file in the project root:
 
 ```bash
-mint dev
+# Required
+OPENAI_API_KEY=sk-...
+DATABASE_URL=postgresql://user:pass@localhost:5432/photomem
+
+# Optional
+EMBEDDING_CACHE_SIZE=1000
+CONNECTION_POOL_SIZE=10
+LOG_LEVEL=INFO
+```
+</Step>
+
+<Step title="Start PostgreSQL">
+
+Using Docker Compose (recommended):
+
+```bash
+cd python/server
+docker-compose up -d
 ```
 
-A local preview of your documentation will be available at `http://localhost:3000`.
+Or use your existing PostgreSQL with pgvector:
 
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+</Step>
+
+<Step title="Install Dependencies">
+
+<Tabs>
+  <Tab title="Python">
+    ```bash
+    cd python
+    pip install -e ".[dev]"
+    ```
+
+    This installs PhotoMem in editable mode with development dependencies.
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```bash
+    cd typescript
+    npm install
+    ```
+
+    This installs all dependencies including dev tools.
+  </Tab>
+</Tabs>
 </Step>
 </Steps>
 
-## Custom ports
+---
 
-By default, Mintlify uses port 3000. You can customize the port Mintlify runs on by using the `--port` flag. For example, to run Mintlify on port 3333, use this command:
+## Running Tests
+
+<Tabs>
+  <Tab title="Python">
+    ```bash
+    cd python
+
+    # Run all tests
+    pytest
+
+    # Run with coverage
+    pytest --cov=photomem --cov-report=html
+
+    # Run specific test file
+    pytest tests/test_memory.py
+
+    # Run with verbose output
+    pytest -v
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```bash
+    cd typescript
+
+    # Run all tests
+    npm test
+
+    # Run with coverage
+    npm run test:coverage
+
+    # Run specific test
+    npm test -- memory.test.ts
+
+    # Watch mode
+    npm run test:watch
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Code Formatting
+
+We use formatters and linters to maintain code quality.
+
+<Tabs>
+  <Tab title="Python">
+    ```bash
+    # Format code
+    black photomem/
+
+    # Sort imports
+    isort photomem/
+
+    # Lint
+    ruff check photomem/
+
+    # Type check
+    mypy photomem/
+    ```
+
+    VSCode Extensions:
+    - [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
+    - [Ruff](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff)
+    - [Pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```bash
+    # Format code
+    npm run format
+
+    # Lint
+    npm run lint
+
+    # Type check
+    npm run type-check
+    ```
+
+    VSCode Extensions:
+    - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+    - [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+  </Tab>
+</Tabs>
+
+---
+
+## Building
+
+<Tabs>
+  <Tab title="Python">
+    ```bash
+    cd python
+
+    # Build distribution
+    python -m build
+
+    # Creates dist/ with .whl and .tar.gz
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```bash
+    cd typescript
+
+    # Build for production
+    npm run build
+
+    # Creates dist/ with compiled files
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Running the Server
+
+Start the REST API server for local testing:
 
 ```bash
-mint dev --port 3333
+cd python/server
+
+# Using Docker
+docker-compose up
+
+# Or directly
+uvicorn main:app --reload --port 8000
 ```
 
-If you attempt to run Mintlify on a port that's already in use, it will use the next available port:
+The API will be available at `http://localhost:8000`.
 
-```md
-Port 3000 is already in use. Trying 3001 instead.
-```
+---
 
-## Mintlify versions
+## Database Migrations
 
-Please note that each CLI release is associated with a specific version of Mintlify. If your local preview does not align with the production version, please update the CLI:
+When updating the schema:
 
 ```bash
-npm mint update
+# Connect to database
+psql $DATABASE_URL
+
+# Run migrations manually or use Alembic
+alembic upgrade head
 ```
 
-## Validating links
-
-The CLI can assist with validating links in your documentation. To identify any broken links, use the following command:
-
-```bash
-mint broken-links
-```
-
-## Deployment
-
-If the deployment is successful, you should see the following:
-
-<Frame>
-  <img src="/images/checks-passed.png" alt="Screenshot of a deployment confirmation message that says All checks have passed." style={{ borderRadius: '0.5rem' }} />
-</Frame>
-
-## Code formatting
-
-We suggest using extensions on your IDE to recognize and format MDX. If you're a VSCode user, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
+---
 
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title='Error: Could not load the "sharp" module using the darwin-arm64 runtime'>
+  <Accordion title="Database connection error">
+    Ensure PostgreSQL is running and DATABASE_URL is correct:
+    
+    ```bash
+    psql $DATABASE_URL -c "SELECT 1"
+    ```
 
-    This may be due to an outdated version of node. Try the following:
-    1. Remove the currently-installed version of the CLI: `npm remove -g mint`
-    2. Upgrade to Node v19 or higher.
-    3. Reinstall the CLI: `npm i -g mint`
+    Common issues:
+    - PostgreSQL not running
+    - Wrong credentials
+    - Missing database
+    - Firewall blocking connection
   </Accordion>
 
-  <Accordion title="Issue: Encountering an unknown error">
-  
-    Solution: Go to the root of your device and delete the `~/.mintlify` folder. Then run `mint dev` again.
+  <Accordion title="Import errors">
+    Make sure you installed the package in development mode:
+    
+    ```bash
+    # Python
+    pip install -e ".[dev]"
+
+    # TypeScript
+    npm install
+    ```
+
+    Also check your Python/Node version matches requirements.
+  </Accordion>
+
+  <Accordion title="Test failures">
+    Run tests with verbose output to see details:
+    
+    ```bash
+    # Python
+    pytest -v --tb=short
+
+    # TypeScript
+    npm test -- --verbose
+    ```
+
+    Common issues:
+    - Missing environment variables
+    - Database not initialized
+    - Port conflicts
+  </Accordion>
+
+  <Accordion title="pgvector extension missing">
+    Install the pgvector extension:
+    
+    ```bash
+    # Ubuntu/Debian
+    sudo apt-get install postgresql-15-pgvector
+
+    # macOS with Homebrew
+    brew install pgvector
+
+    # Then enable in your database
+    psql $DATABASE_URL -c "CREATE EXTENSION IF NOT EXISTS vector"
+    ```
+  </Accordion>
+
+  <Accordion title="OpenAI API errors">
+    Verify your API key:
+    
+    ```bash
+    # Test the key
+    curl https://api.openai.com/v1/models \
+      -H "Authorization: Bearer $OPENAI_API_KEY"
+    ```
+
+    Make sure the key:
+    - Is valid and not expired
+    - Has sufficient credits
+    - Has correct permissions
   </Accordion>
 </AccordionGroup>
 
-Curious about what changed in the latest CLI version? Check out the [CLI changelog](https://www.npmjs.com/package/mintlify?activeTab=versions).
+---
+
+## Development Workflow
+
+1. **Create a branch** for your feature:
+   ```bash
+   git checkout -b feature/my-feature
+   ```
+
+2. **Make changes** and test locally:
+   ```bash
+   pytest  # or npm test
+   ```
+
+3. **Format and lint**:
+   ```bash
+   black . && ruff check .  # Python
+   npm run format && npm run lint  # TypeScript
+   ```
+
+4. **Commit changes**:
+   ```bash
+   git add .
+   git commit -m "feat: add my feature"
+   ```
+
+5. **Push and create PR**:
+   ```bash
+   git push origin feature/my-feature
+   ```
+
+---
+
+## Useful Commands
+
+### Python
+```bash
+# Interactive shell with photomem loaded
+python -i -c "from photomem import *"
+
+# Check installed version
+python -c "import photomem; print(photomem.__version__)"
+
+# Profile performance
+python -m cProfile -s cumtime examples/python_example.py
+```
+
+### TypeScript
+```bash
+# Interactive REPL
+npm run repl
+
+# Check version
+npm run version
+
+# Bundle analysis
+npm run analyze
+```
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Contributing Guide" icon="code-pull-request" href="/advanced/contributing">
+    Learn how to contribute to PhotoMem
+  </Card>
+  <Card title="Architecture" icon="diagram-project" href="/advanced/architecture">
+    Understand the system design
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Explore the complete API
+  </Card>
+  <Card title="Examples" icon="lightbulb" href="/examples/python">
+    See practical code examples
+  </Card>
+</CardGroup>

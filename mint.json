@@ -60,22 +60,9 @@
       ]
     },
     {
-      "group": "Guides",
+      "group": "Development",
       "pages": [
-        "guides/configuration",
-        "guides/memory-types",
-        "guides/searching",
-        "guides/metadata",
-        "guides/performance",
-        "guides/error-handling"
-      ]
-    },
-    {
-      "group": "Deployment",
-      "pages": [
-        "deployment/docker",
-        "deployment/production",
-        "deployment/scaling"
+        "development"
       ]
     },
     {
@@ -91,21 +78,15 @@
     {
       "group": "Examples",
       "pages": [
-        "examples/python",
-        "examples/typescript",
-        "examples/personal-assistant",
-        "examples/customer-support",
-        "examples/multi-agent",
-        "examples/healthcare"
+        "examples/python"
       ]
     },
     {
-      "group": "Advanced",
+      "group": "AI Tools",
       "pages": [
-        "advanced/architecture",
-        "advanced/benchmarks",
-        "advanced/contributing",
-        "advanced/migration-from-mem0"
+        "ai-tools/cursor",
+        "ai-tools/claude-code",
+        "ai-tools/windsurf"
       ]
     }
   ],
@@ -116,4 +97,3 @@
   },
   "backgroundImage": "/images/background.png"
 }
-

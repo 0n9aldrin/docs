@@ -1,0 +1,772 @@
+---
+title: 'Types & Schemas'
+description: 'Complete type definitions for Python and TypeScript'
+icon: 'shapes'
+---
+
+## Overview
+
+PhotoMem provides comprehensive type definitions for both Python (using Pydantic) and TypeScript (using Zod). All types are validated at runtime for maximum safety.
+
+## Configuration Types
+
+### MemoryConfig
+
+Main configuration object for the Memory class.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem import MemoryConfig
+
+    config = MemoryConfig(
+        # LLM Configuration
+        llm_provider="openai",
+        llm_model="gpt-4-turbo-preview",
+        llm_temperature=0.2,
+        llm_api_key="sk-...",
+        
+        # Embedding Configuration
+        embedding_provider="openai",
+        embedding_model="text-embedding-3-small",
+        embedding_dimensions=1536,
+        embedding_api_key="sk-...",
+        
+        # Vector Store
+        vector_store_provider="pgvector",
+        vector_store_url="postgresql://localhost:5432/photomem",
+        vector_store_collection="memories",
+        
+        # Performance
+        connection_pool_size=10,
+        max_batch_size=100,
+        embedding_cache_size=1000,
+        
+        # Search
+        default_search_limit=10,
+        similarity_threshold=0.7,
+        
+        # Retry & Timeout
+        max_retries=3,
+        timeout_seconds=30
+    )
+    ```
+
+    **Fields:**
+    - `llm_provider` (str): LLM provider ("openai")
+    - `llm_model` (str): Model name
+    - `llm_temperature` (float): 0.0-2.0, controls randomness
+    - `llm_api_key` (Optional[str]): API key (or use env var)
+    - `embedding_provider` (str): Embedding provider
+    - `embedding_model` (str): Embedding model name
+    - `embedding_dimensions` (int): Vector dimensions
+    - `embedding_api_key` (Optional[str]): API key
+    - `vector_store_provider` (str): Storage provider
+    - `vector_store_url` (Optional[str]): Database URL
+    - `vector_store_collection` (str): Collection/table name
+    - `connection_pool_size` (int): Max connections
+    - `max_batch_size` (int): Batch operation size
+    - `embedding_cache_size` (int): Cache entries
+    - `default_search_limit` (int): Default results
+    - `similarity_threshold` (float): Min similarity score
+    - `max_retries` (int): Retry attempts
+    - `timeout_seconds` (int): Operation timeout
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { MemoryConfig } from 'photomem';
+
+    const config: MemoryConfig = {
+      // LLM Configuration
+      llmProvider: "openai",
+      llmModel: "gpt-4-turbo-preview",
+      llmTemperature: 0.2,
+      llmApiKey: "sk-...",
+      
+      // Embedding Configuration
+      embeddingProvider: "openai",
+      embeddingModel: "text-embedding-3-small",
+      embeddingDimensions: 1536,
+      embeddingApiKey: "sk-...",
+      
+      // Vector Store
+      vectorStoreProvider: "pgvector",
+      vectorStoreUrl: "postgresql://localhost:5432/photomem",
+      vectorStoreCollection: "memories",
+      
+      // Performance
+      connectionPoolSize: 10,
+      maxBatchSize: 100,
+      embeddingCacheSize: 1000,
+      
+      // Search
+      defaultSearchLimit: 10,
+      similarityThreshold: 0.7,
+      
+      // Retry & Timeout
+      maxRetries: 3,
+      timeoutSeconds: 30
+    };
+    ```
+
+    **Fields:**
+    - `llmProvider` (string): LLM provider
+    - `llmModel` (string): Model name
+    - `llmTemperature` (number): 0.0-2.0
+    - `llmApiKey` (string | undefined): API key
+    - `embeddingProvider` (string): Embedding provider
+    - `embeddingModel` (string): Model name
+    - `embeddingDimensions` (number): Vector size
+    - `embeddingApiKey` (string | undefined): API key
+    - `vectorStoreProvider` (string): Storage type
+    - `vectorStoreUrl` (string | undefined): DB URL
+    - `vectorStoreCollection` (string): Table name
+    - `connectionPoolSize` (number): Max connections
+    - `maxBatchSize` (number): Batch size
+    - `embeddingCacheSize` (number): Cache size
+    - `defaultSearchLimit` (number): Results limit
+    - `similarityThreshold` (number): Min score
+    - `maxRetries` (number): Retry count
+    - `timeoutSeconds` (number): Timeout
+  </Tab>
+</Tabs>
+
+---
+
+## Message Types
+
+### Message
+
+Represents a single message in a conversation.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import Message, MessageRole
+
+    message = Message(
+        role=MessageRole.USER,
+        content="I love hiking",
+        metadata={"source": "chat"}
+    )
+    ```
+
+    **Fields:**
+    - `role` (MessageRole): Message role
+    - `content` (str): Message text
+    - `metadata` (Optional[Dict[str, Any]]): Extra data
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { Message, MessageRole } from 'photomem';
+
+    const message: Message = {
+      role: MessageRole.USER,
+      content: "I love hiking",
+      metadata: { source: "chat" }
+    };
+    ```
+
+    **Fields:**
+    - `role` (MessageRole): Message role
+    - `content` (string): Message text
+    - `metadata` (Record<string, any> | undefined): Extra data
+  </Tab>
+</Tabs>
+
+### MessageRole
+
+Enum for message roles in conversations.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import MessageRole
+
+    MessageRole.USER        # User messages
+    MessageRole.ASSISTANT   # AI assistant messages
+    MessageRole.SYSTEM      # System messages
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { MessageRole } from 'photomem';
+
+    MessageRole.USER        // User messages
+    MessageRole.ASSISTANT   // AI assistant messages
+    MessageRole.SYSTEM      // System messages
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Memory Types
+
+### MemoryType
+
+Enum for different types of memories.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import MemoryType
+
+    MemoryType.SEMANTIC    # General facts and knowledge
+    MemoryType.EPISODIC    # Conversation-specific memories
+    MemoryType.PROCEDURAL  # Step-by-step execution history
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { MemoryType } from 'photomem';
+
+    MemoryType.SEMANTIC    // General facts
+    MemoryType.EPISODIC    // Conversation memories
+    MemoryType.PROCEDURAL  // Execution history
+    ```
+  </Tab>
+</Tabs>
+
+### MemoryMetadata
+
+Metadata associated with each memory.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import MemoryMetadata, MessageRole
+
+    metadata = MemoryMetadata(
+        user_id="phone:15103651277",
+        agent_id="assistant_1",
+        run_id="run_123",
+        actor_id="phone:15103651277",
+        role=MessageRole.USER,
+        tags=["hobbies", "outdoors"],
+        custom={"source": "chat", "session": "abc123"},
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    ```
+
+    **Fields:**
+    - `user_id` (Optional[str]): User identifier (format: 'type:value')
+    - `agent_id` (Optional[str]): Agent identifier
+    - `run_id` (Optional[str]): Run identifier
+    - `actor_id` (Optional[str]): Who performed action
+    - `role` (Optional[MessageRole]): Actor's role
+    - `tags` (List[str]): Searchable tags
+    - `custom` (Dict[str, Any]): Custom metadata
+    - `created_at` (datetime): Creation timestamp
+    - `updated_at` (datetime): Last update timestamp
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { MemoryMetadata, MessageRole } from 'photomem';
+
+    const metadata: MemoryMetadata = {
+      userId: "phone:15103651277",
+      agentId: "assistant_1",
+      runId: "run_123",
+      actorId: "phone:15103651277",
+      role: MessageRole.USER,
+      tags: ["hobbies", "outdoors"],
+      custom: { source: "chat", session: "abc123" },
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    ```
+
+    **Fields:**
+    - `userId` (string | undefined): User ID
+    - `agentId` (string | undefined): Agent ID
+    - `runId` (string | undefined): Run ID
+    - `actorId` (string | undefined): Actor ID
+    - `role` (MessageRole | undefined): Actor role
+    - `tags` (string[]): Tags array
+    - `custom` (Record<string, any>): Custom data
+    - `createdAt` (Date): Creation date
+    - `updatedAt` (Date): Update date
+  </Tab>
+</Tabs>
+
+<Note>
+  User IDs should follow the format `type:value`, for example: `phone:15103651277`, `email:user@example.com`, `uuid:550e8400-e29b-41d4-a716-446655440000`
+</Note>
+
+### MemoryResult
+
+Result returned from memory operations (add, update, get).
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import MemoryResult
+
+    result: MemoryResult = await memory.add(...)
+    
+    # Access fields
+    print(result.id)        # UUID
+    print(result.memory)    # Extracted memory text
+    print(result.event)     # ADD, UPDATE, DELETE, NONE
+    print(result.hash)      # Content hash for deduplication
+    print(result.metadata)  # MemoryMetadata object
+    print(result.relations) # Graph relationships
+    ```
+
+    **Fields:**
+    - `id` (str): Unique memory UUID
+    - `memory` (str): Memory content
+    - `event` (str): Operation type
+    - `hash` (Optional[str]): Content hash
+    - `metadata` (MemoryMetadata): Associated metadata
+    - `relations` (List[Dict[str, str]]): Graph edges
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { MemoryResult } from 'photomem';
+
+    const result: MemoryResult = await memory.add(...);
+    
+    // Access fields
+    console.log(result.id);        // UUID
+    console.log(result.memory);    // Memory text
+    console.log(result.event);     // ADD, UPDATE, DELETE, NONE
+    console.log(result.hash);      // Content hash
+    console.log(result.metadata);  // Metadata object
+    console.log(result.relations); // Relationships
+    ```
+
+    **Fields:**
+    - `id` (string): Memory UUID
+    - `memory` (string): Content
+    - `event` (string): Operation type
+    - `hash` (string | undefined): Hash
+    - `metadata` (MemoryMetadata): Metadata
+    - `relations` (Array<Record<string, string>>): Edges
+  </Tab>
+</Tabs>
+
+**Event Types:**
+- `ADD`: New memory created
+- `UPDATE`: Existing memory modified
+- `DELETE`: Memory removed
+- `NONE`: No operation performed (e.g., duplicate)
+
+---
+
+## Search Types
+
+### SearchResult
+
+Result from search operations.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import SearchResult
+
+    results: List[SearchResult] = await memory.search(...)
+    
+    for result in results:
+        print(f"Memory: {result.memory}")
+        print(f"Score: {result.score}")  # 0.0-1.0 similarity
+        print(f"User: {result.metadata.user_id}")
+    ```
+
+    **Fields:**
+    - `id` (str): Memory UUID
+    - `memory` (str): Memory content
+    - `score` (float): Similarity score (0.0-1.0)
+    - `hash` (str): Content hash
+    - `metadata` (MemoryMetadata): Metadata
+    - `graph_context` (Optional[Dict[str, Any]]): Graph data
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { SearchResult } from 'photomem';
+
+    const results: SearchResult[] = await memory.search(...);
+    
+    results.forEach(result => {
+      console.log(`Memory: ${result.memory}`);
+      console.log(`Score: ${result.score}`);  // 0.0-1.0
+      console.log(`User: ${result.metadata.userId}`);
+    });
+    ```
+
+    **Fields:**
+    - `id` (string): Memory UUID
+    - `memory` (string): Content
+    - `score` (number): Similarity (0-1)
+    - `hash` (string): Hash
+    - `metadata` (MemoryMetadata): Metadata
+    - `graphContext` (Record<string, any> | undefined): Graph
+  </Tab>
+</Tabs>
+
+### SearchFilters
+
+Advanced filters for search queries.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import SearchFilters, MessageRole
+    from datetime import datetime
+
+    filters = SearchFilters(
+        user_id="phone:15103651277",
+        agent_id="assistant_1",
+        run_id="run_123",
+        actor_id="phone:15103651277",
+        role=MessageRole.USER,
+        tags=["hobbies"],
+        created_after=datetime(2025, 1, 1),
+        created_before=datetime(2025, 12, 31),
+        metadata_filters={"source": "chat"}
+    )
+    
+    results = await memory.search("hiking", filters=filters)
+    ```
+
+    **Fields:**
+    - `user_id` (Optional[str]): Filter by user
+    - `agent_id` (Optional[str]): Filter by agent
+    - `run_id` (Optional[str]): Filter by run
+    - `actor_id` (Optional[str]): Filter by actor
+    - `role` (Optional[MessageRole]): Filter by role
+    - `tags` (Optional[List[str]]): Filter by tags
+    - `created_after` (Optional[datetime]): Min creation date
+    - `created_before` (Optional[datetime]): Max creation date
+    - `updated_after` (Optional[datetime]): Min update date
+    - `updated_before` (Optional[datetime]): Max update date
+    - `metadata_filters` (Optional[Dict[str, Any]]): Custom filters
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { SearchOptions, MessageRole } from 'photomem';
+
+    const options: SearchOptions = {
+      userId: "phone:15103651277",
+      agentId: "assistant_1",
+      runId: "run_123",
+      filters: {
+        actorId: "phone:15103651277",
+        role: MessageRole.USER,
+        tags: ["hobbies"],
+        createdAfter: new Date("2025-01-01"),
+        createdBefore: new Date("2025-12-31"),
+        metadataFilters: { source: "chat" }
+      }
+    };
+    
+    const results = await memory.search("hiking", options);
+    ```
+
+    **Fields in `filters`:**
+    - `actorId` (string | undefined): Actor filter
+    - `role` (MessageRole | undefined): Role filter
+    - `tags` (string[] | undefined): Tag filter
+    - `createdAfter` (Date | undefined): Min date
+    - `createdBefore` (Date | undefined): Max date
+    - `updatedAfter` (Date | undefined): Min update
+    - `updatedBefore` (Date | undefined): Max update
+    - `metadataFilters` (Record<string, any> | undefined): Custom
+  </Tab>
+</Tabs>
+
+---
+
+## History Types
+
+### MemoryHistory
+
+Change history entry for a memory.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import MemoryHistory
+
+    history: List[MemoryHistory] = await memory.history(memory_id)
+    
+    for entry in history:
+        print(f"Event: {entry.event}")
+        print(f"Old: {entry.old_memory}")
+        print(f"New: {entry.new_memory}")
+        print(f"When: {entry.created_at}")
+    ```
+
+    **Fields:**
+    - `id` (str): History entry UUID
+    - `memory_id` (str): Associated memory UUID
+    - `old_memory` (Optional[str]): Previous content
+    - `new_memory` (str): New content
+    - `event` (str): ADD, UPDATE, DELETE
+    - `actor_id` (Optional[str]): Who made change
+    - `role` (Optional[MessageRole]): Actor role
+    - `created_at` (datetime): When changed
+    - `is_deleted` (bool): Is deleted
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { MemoryHistory } from 'photomem';
+
+    const history: MemoryHistory[] = await memory.history(memoryId);
+    
+    history.forEach(entry => {
+      console.log(`Event: ${entry.event}`);
+      console.log(`Old: ${entry.oldMemory}`);
+      console.log(`New: ${entry.newMemory}`);
+      console.log(`When: ${entry.createdAt}`);
+    });
+    ```
+
+    **Fields:**
+    - `id` (string): Entry UUID
+    - `memoryId` (string): Memory UUID
+    - `oldMemory` (string | undefined): Old content
+    - `newMemory` (string): New content
+    - `event` (string): Operation type
+    - `actorId` (string | undefined): Actor
+    - `role` (MessageRole | undefined): Role
+    - `createdAt` (Date): Timestamp
+    - `isDeleted` (boolean): Deleted flag
+  </Tab>
+</Tabs>
+
+---
+
+## Option Types
+
+### AddMemoryOptions
+
+Options for the `add()` method.
+
+<Tabs>
+  <Tab title="TypeScript">
+    ```typescript
+    import { AddMemoryOptions, MemoryType } from 'photomem';
+
+    const options: AddMemoryOptions = {
+      userId: "phone:15103651277",
+      agentId: "assistant_1",
+      runId: "run_123",
+      metadata: { source: "chat" },
+      memoryType: MemoryType.SEMANTIC
+    };
+    
+    await memory.add("I love pizza", options);
+    ```
+
+    **Fields:**
+    - `userId` (string | undefined): User ID
+    - `agentId` (string | undefined): Agent ID
+    - `runId` (string | undefined): Run ID
+    - `metadata` (Record<string, any> | undefined): Metadata
+    - `memoryType` (MemoryType | undefined): Memory type
+  </Tab>
+</Tabs>
+
+### SearchOptions
+
+Options for the `search()` method.
+
+<Tabs>
+  <Tab title="TypeScript">
+    ```typescript
+    import { SearchOptions } from 'photomem';
+
+    const options: SearchOptions = {
+      userId: "phone:15103651277",
+      agentId: "assistant_1",
+      runId: "run_123",
+      limit: 10,
+      filters: {
+        tags: ["hobbies"],
+        createdAfter: new Date("2025-01-01")
+      }
+    };
+    
+    await memory.search("hiking", options);
+    ```
+
+    **Fields:**
+    - `userId` (string | undefined): User filter
+    - `agentId` (string | undefined): Agent filter
+    - `runId` (string | undefined): Run filter
+    - `limit` (number | undefined): Max results
+    - `filters` (object | undefined): Advanced filters
+  </Tab>
+</Tabs>
+
+### ListOptions
+
+Options for the `getAll()` method.
+
+<Tabs>
+  <Tab title="TypeScript">
+    ```typescript
+    import { ListOptions } from 'photomem';
+
+    const options: ListOptions = {
+      userId: "phone:15103651277",
+      agentId: "assistant_1",
+      limit: 50,
+      offset: 0
+    };
+    
+    await memory.getAll(options);
+    ```
+
+    **Fields:**
+    - `userId` (string | undefined): User filter
+    - `agentId` (string | undefined): Agent filter
+    - `limit` (number | undefined): Result limit
+    - `offset` (number | undefined): Skip count
+  </Tab>
+</Tabs>
+
+---
+
+## Utility Types
+
+### CacheStats
+
+Cache performance statistics.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    stats = memory.get_cache_stats()
+    # Returns Dict[str, Union[int, float]]
+    {
+        "size": 234,
+        "hits": 1523,
+        "misses": 456,
+        "hit_rate": 0.77
+    }
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { CacheStats } from 'photomem';
+
+    const stats: CacheStats = memory.getCacheStats();
+    
+    interface CacheStats {
+      size: number;
+      hits: number;
+      misses: number;
+      hitRate: number;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Type Validation
+
+### Python (Pydantic)
+
+All types use Pydantic for runtime validation:
+
+```python
+from photomem.core.types import MemoryMetadata
+from pydantic import ValidationError
+
+try:
+    # Invalid: missing colon in user_id format
+    metadata = MemoryMetadata(user_id="15103651277")
+except ValidationError as e:
+    print(e.errors())
+    # [{'loc': ('user_id',), 'msg': "ID must be in format 'type:value'"}]
+```
+
+### TypeScript (Zod)
+
+All types use Zod schemas for validation:
+
+```typescript
+import { MemoryConfigSchema } from 'photomem';
+import { z } from 'zod';
+
+try {
+  // Invalid: temperature out of range
+  const config = MemoryConfigSchema.parse({
+    llmTemperature: 3.0
+  });
+} catch (error) {
+  if (error instanceof z.ZodError) {
+    console.log(error.errors);
+    // [{ path: ['llmTemperature'], message: 'Temperature must be 0-2' }]
+  }
+}
+```
+
+---
+
+## JSON Serialization
+
+All types can be serialized to/from JSON:
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import MemoryResult
+    import json
+
+    # To JSON
+    result_json = result.model_dump_json()
+    
+    # From JSON
+    result = MemoryResult.model_validate_json(result_json)
+    
+    # To dict
+    result_dict = result.model_dump()
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { MemoryResult } from 'photomem';
+
+    // Types work seamlessly with JSON
+    const json = JSON.stringify(result);
+    const result = JSON.parse(json) as MemoryResult;
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Memory API" icon="brain" href="/api-reference/memory">
+    Explore all Memory class methods
+  </Card>
+  <Card title="Error Reference" icon="triangle-exclamation" href="/api-reference/errors">
+    Learn about error types
+  </Card>
+  <Card title="Examples" icon="code" href="/examples/python">
+    See types in action
+  </Card>
+  <Card title="Core Concepts" icon="book" href="/core-concepts">
+    Understand memory types
+  </Card>
+</CardGroup>
+

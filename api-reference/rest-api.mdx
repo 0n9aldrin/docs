@@ -1,0 +1,601 @@
+---
+title: 'REST API'
+description: 'HTTP API endpoints for PhotoMem'
+icon: 'server'
+---
+
+## Overview
+
+PhotoMem provides a REST API for HTTP-based integrations. The API follows RESTful principles and returns JSON responses.
+
+<Note>
+  The REST API is currently in development. The SDK (Python/TypeScript) is the recommended way to use PhotoMem.
+</Note>
+
+## Base URL
+
+```
+https://api.photomem.ai
+```
+
+For self-hosted installations:
+
+```
+http://localhost:8000
+```
+
+---
+
+## Authentication
+
+All API requests require authentication via Bearer tokens.
+
+```bash
+curl https://api.photomem.ai/memories \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### Getting Your API Token
+
+1. Sign up at [photomem.ai](https://photomem.ai)
+2. Go to Settings → API Keys
+3. Create a new API key
+4. Store it securely (it's shown only once)
+
+<Warning>
+  Never commit API keys to version control or share them publicly.
+</Warning>
+
+---
+
+## Endpoints
+
+### POST /memories
+
+Add new memories from messages.
+
+**Request:**
+
+```bash
+curl -X POST https://api.photomem.ai/memories \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": "I love hiking in the mountains",
+    "user_id": "phone:15103651277",
+    "agent_id": "assistant_1",
+    "metadata": {
+      "source": "chat"
+    }
+  }'
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messages` | string \| object \| array | Yes | Messages to extract memories from |
+| `user_id` | string | No* | User identifier (format: type:value) |
+| `agent_id` | string | No* | Agent identifier |
+| `run_id` | string | No | Run identifier |
+| `metadata` | object | No | Additional metadata |
+| `memory_type` | string | No | Type: semantic, episodic, procedural |
+
+*At least one of `user_id` or `agent_id` is required.
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "memory": "User loves hiking in the mountains",
+  "event": "ADD",
+  "hash": "5d41402abc4b2a76b9719d911017c592",
+  "metadata": {
+    "user_id": "phone:15103651277",
+    "agent_id": "assistant_1",
+    "tags": [],
+    "custom": { "source": "chat" },
+    "created_at": "2025-01-08T10:30:00Z",
+    "updated_at": "2025-01-08T10:30:00Z"
+  },
+  "relations": []
+}
+```
+
+---
+
+### POST /search
+
+Search memories semantically.
+
+**Request:**
+
+```bash
+curl -X POST https://api.photomem.ai/search \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What outdoor activities does the user enjoy?",
+    "user_id": "phone:15103651277",
+    "limit": 10
+  }'
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `query` | string | Yes | Search query |
+| `user_id` | string | No | Filter by user |
+| `agent_id` | string | No | Filter by agent |
+| `limit` | integer | No | Max results (default: 10) |
+| `filters` | object | No | Advanced filters |
+
+**Response (200 OK):**
+
+```json
+{
+  "results": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "memory": "User loves hiking in the mountains",
+      "score": 0.95,
+      "hash": "5d41402abc4b2a76b9719d911017c592",
+      "metadata": {
+        "user_id": "phone:15103651277",
+        "created_at": "2025-01-08T10:30:00Z"
+      }
+    }
+  ],
+  "count": 1,
+  "query": "What outdoor activities does the user enjoy?"
+}
+```
+
+---
+
+### GET /memories/:id
+
+Get a specific memory by ID.
+
+**Request:**
+
+```bash
+curl https://api.photomem.ai/memories/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "memory": "User loves hiking in the mountains",
+  "event": "ADD",
+  "hash": "5d41402abc4b2a76b9719d911017c592",
+  "metadata": {
+    "user_id": "phone:15103651277",
+    "created_at": "2025-01-08T10:30:00Z",
+    "updated_at": "2025-01-08T10:30:00Z"
+  }
+}
+```
+
+**Response (404 Not Found):**
+
+```json
+{
+  "error_code": "MEMORY_NOT_FOUND",
+  "message": "Memory with ID '550e8400-e29b-41d4-a716-446655440000' not found",
+  "details": {
+    "memory_id": "550e8400-e29b-41d4-a716-446655440000"
+  }
+}
+```
+
+---
+
+### GET /memories
+
+List all memories with filtering and pagination.
+
+**Request:**
+
+```bash
+curl "https://api.photomem.ai/memories?user_id=phone:15103651277&limit=50&offset=0" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `user_id` | string | Filter by user |
+| `agent_id` | string | Filter by agent |
+| `limit` | integer | Results per page (default: 100, max: 1000) |
+| `offset` | integer | Skip N results (default: 0) |
+
+**Response (200 OK):**
+
+```json
+{
+  "memories": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "memory": "User loves hiking in the mountains",
+      "metadata": {
+        "user_id": "phone:15103651277",
+        "created_at": "2025-01-08T10:30:00Z"
+      }
+    }
+  ],
+  "count": 1,
+  "total": 42,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+---
+
+### PATCH /memories/:id
+
+Update an existing memory.
+
+**Request:**
+
+```bash
+curl -X PATCH https://api.photomem.ai/memories/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": "User loves hiking and rock climbing"
+  }'
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `data` | string | Yes | New memory content |
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "memory": "User loves hiking and rock climbing",
+  "event": "UPDATE",
+  "hash": "new-hash-value",
+  "metadata": {
+    "user_id": "phone:15103651277",
+    "updated_at": "2025-01-08T11:00:00Z"
+  }
+}
+```
+
+---
+
+### DELETE /memories/:id
+
+Delete a specific memory.
+
+**Request:**
+
+```bash
+curl -X DELETE https://api.photomem.ai/memories/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Response (204 No Content):**
+
+No response body.
+
+---
+
+### DELETE /memories
+
+Delete all memories for a user or agent.
+
+**Request:**
+
+```bash
+curl -X DELETE "https://api.photomem.ai/memories?user_id=phone:15103651277" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `user_id` | string | No* | Delete all for user |
+| `agent_id` | string | No* | Delete all for agent |
+
+*At least one parameter is required.
+
+**Response (200 OK):**
+
+```json
+{
+  "deleted": 42,
+  "message": "Successfully deleted 42 memories"
+}
+```
+
+---
+
+### GET /memories/:id/history
+
+Get change history for a memory.
+
+**Request:**
+
+```bash
+curl https://api.photomem.ai/memories/550e8400-e29b-41d4-a716-446655440000/history \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "history": [
+    {
+      "id": "hist_123",
+      "memory_id": "550e8400-e29b-41d4-a716-446655440000",
+      "old_memory": "User loves hiking",
+      "new_memory": "User loves hiking and rock climbing",
+      "event": "UPDATE",
+      "created_at": "2025-01-08T11:00:00Z"
+    },
+    {
+      "id": "hist_456",
+      "memory_id": "550e8400-e29b-41d4-a716-446655440000",
+      "old_memory": null,
+      "new_memory": "User loves hiking",
+      "event": "ADD",
+      "created_at": "2025-01-08T10:30:00Z"
+    }
+  ],
+  "count": 2
+}
+```
+
+---
+
+### GET /health
+
+Health check endpoint.
+
+**Request:**
+
+```bash
+curl https://api.photomem.ai/health
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "status": "healthy",
+  "version": "0.1.0",
+  "uptime_seconds": 86400,
+  "checks": {
+    "database": true,
+    "llm": true,
+    "embedding": true
+  }
+}
+```
+
+---
+
+## Error Responses
+
+All errors follow a consistent format:
+
+```json
+{
+  "error_code": "VALIDATION_ERROR",
+  "message": "user_id or agent_id must be provided",
+  "details": {
+    "field": "user_id"
+  },
+  "suggestion": "Provide at least one identifier"
+}
+```
+
+### HTTP Status Codes
+
+| Status | Meaning | When Used |
+|--------|---------|-----------|
+| 200 | OK | Successful GET, PATCH, or bulk DELETE |
+| 201 | Created | Successful POST (memory added) |
+| 204 | No Content | Successful DELETE (single memory) |
+| 400 | Bad Request | Validation errors, invalid input |
+| 401 | Unauthorized | Missing or invalid API token |
+| 404 | Not Found | Memory ID doesn't exist |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Unexpected server error |
+| 503 | Service Unavailable | System maintenance or overload |
+
+---
+
+## Rate Limits
+
+Rate limits vary by plan:
+
+| Plan | Requests/min | Requests/day |
+|------|--------------|--------------|
+| Free | 60 | 1,000 |
+| Pro | 600 | 100,000 |
+| Enterprise | Custom | Custom |
+
+**Rate Limit Headers:**
+
+```http
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1704715200
+```
+
+When rate limited, you'll receive:
+
+```json
+{
+  "error_code": "RATE_LIMIT_ERROR",
+  "message": "Rate limit exceeded",
+  "details": {
+    "retry_after_seconds": 60,
+    "limit": "60 requests per minute"
+  },
+  "suggestion": "Retry after 60 seconds"
+}
+```
+
+---
+
+## Pagination
+
+List endpoints support offset-based pagination:
+
+```bash
+# Page 1 (0-49)
+curl "https://api.photomem.ai/memories?limit=50&offset=0"
+
+# Page 2 (50-99)
+curl "https://api.photomem.ai/memories?limit=50&offset=50"
+
+# Page 3 (100-149)
+curl "https://api.photomem.ai/memories?limit=50&offset=100"
+```
+
+**Pagination Response:**
+
+```json
+{
+  "memories": [...],
+  "count": 50,
+  "total": 427,
+  "limit": 50,
+  "offset": 0,
+  "has_more": true
+}
+```
+
+---
+
+## Filtering
+
+Advanced filtering on search and list endpoints:
+
+```bash
+curl -X POST https://api.photomem.ai/search \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "hobbies",
+    "user_id": "phone:15103651277",
+    "filters": {
+      "tags": ["outdoors"],
+      "created_after": "2025-01-01T00:00:00Z",
+      "created_before": "2025-12-31T23:59:59Z",
+      "metadata_filters": {
+        "source": "chat"
+      }
+    }
+  }'
+```
+
+---
+
+## Webhooks
+
+Subscribe to memory events:
+
+### Event Types
+
+- `memory.added`: New memory created
+- `memory.updated`: Memory modified
+- `memory.deleted`: Memory removed
+
+### Webhook Payload
+
+```json
+{
+  "event": "memory.added",
+  "timestamp": "2025-01-08T10:30:00Z",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "memory": "User loves hiking",
+    "user_id": "phone:15103651277"
+  }
+}
+```
+
+### Webhook Configuration
+
+Configure webhooks in your dashboard:
+
+1. Go to Settings → Webhooks
+2. Add your endpoint URL
+3. Select events to subscribe to
+4. Save and test
+
+<Info>
+  Webhooks are signed with HMAC-SHA256 for security verification.
+</Info>
+
+---
+
+## SDK vs REST API
+
+| Feature | Python/TypeScript SDK | REST API |
+|---------|----------------------|----------|
+| Ease of Use | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Type Safety | ✅ Full | ❌ Manual |
+| Error Handling | ✅ Structured | ⚠️ HTTP codes |
+| Connection Pooling | ✅ Built-in | ❌ Manual |
+| Caching | ✅ Automatic | ❌ Manual |
+| Best For | Applications | Integrations |
+
+<Note>
+  We recommend using the SDK for most use cases. The REST API is ideal for integrations, webhooks, and non-Python/TypeScript environments.
+</Note>
+
+---
+
+## OpenAPI Specification
+
+Download the complete OpenAPI spec:
+
+<Card title="OpenAPI JSON" icon="file-code" href="/api-reference/openapi.json">
+  Full API specification in OpenAPI 3.0 format
+</Card>
+
+Use with tools like:
+- [Postman](https://www.postman.com/)
+- [Insomnia](https://insomnia.rest/)
+- [Swagger UI](https://swagger.io/tools/swagger-ui/)
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Memory API" icon="brain" href="/api-reference/memory">
+    Learn about SDK methods
+  </Card>
+  <Card title="Error Reference" icon="triangle-exclamation" href="/api-reference/errors">
+    Understand error responses
+  </Card>
+  <Card title="Examples" icon="code" href="/examples/python">
+    See integration examples
+  </Card>
+  <Card title="Authentication" icon="key" href="/installation">
+    Set up API keys
+  </Card>
+</CardGroup>
+

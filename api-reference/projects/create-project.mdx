@@ -1,0 +1,27 @@
+---
+title: "Create Project"
+api: "POST /v1/projects"
+description: "Create a new project within an organization"
+---
+
+## Request Body
+
+<ParamField body="organization_id" type="string" required>
+  Organization identifier
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Project name
+</ParamField>
+
+<ParamField body="slug" type="string" required>
+  URL-friendly identifier
+</ParamField>
+
+<ParamField body="description" type="string">
+  Project description
+</ParamField>
+
+<ParamField body="settings" type="object">
+  Custom project settings
+</ParamField>

@@ -51,7 +51,7 @@
   ],
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "Getting Started",
       "pages": [
         "introduction",
         "quickstart",
@@ -60,7 +60,63 @@
       ]
     },
     {
-      "group": "Advanced Features",
+      "group": "API Reference",
+      "pages": [
+        "api-reference/introduction"
+      ]
+    },
+    {
+      "group": "SDK",
+      "pages": [
+        "api-reference/memory"
+      ]
+    },
+    {
+      "group": "Core Memory Operations",
+      "pages": [
+        "api-reference/operations/add-memories",
+        "api-reference/operations/get-memories",
+        "api-reference/operations/search-memories",
+        "api-reference/operations/update-memory",
+        "api-reference/operations/delete-memory",
+        "api-reference/operations/memory-history"
+      ]
+    },
+    {
+      "group": "Organizations APIs",
+      "pages": [
+        "api-reference/organizations/create-organization",
+        "api-reference/organizations/get-organizations",
+        "api-reference/organizations/get-organization",
+        "api-reference/organizations/update-organization",
+        "api-reference/organizations/delete-organization"
+      ]
+    },
+    {
+      "group": "Projects APIs",
+      "pages": [
+        "api-reference/projects/create-project",
+        "api-reference/projects/get-projects",
+        "api-reference/projects/get-project",
+        "api-reference/projects/update-project",
+        "api-reference/projects/delete-project"
+      ]
+    },
+    {
+      "group": "Entities APIs",
+      "pages": [
+        "api-reference/entities/get-users"
+      ]
+    },
+    {
+      "group": "Reference",
+      "pages": [
+        "api-reference/types",
+        "api-reference/errors"
+      ]
+    },
+    {
+      "group": "Advanced",
       "pages": [
         "advanced/filtering",
         "advanced/llm-prompts",
@@ -68,33 +124,9 @@
       ]
     },
     {
-      "group": "Development",
-      "pages": [
-        "development"
-      ]
-    },
-    {
-      "group": "API Reference",
-      "pages": [
-        "api-reference/introduction",
-        "api-reference/memory",
-        "api-reference/types",
-        "api-reference/errors",
-        "api-reference/rest-api"
-      ]
-    },
-    {
       "group": "Examples",
       "pages": [
         "examples/python"
-      ]
-    },
-    {
-      "group": "AI Tools",
-      "pages": [
-        "ai-tools/cursor",
-        "ai-tools/claude-code",
-        "ai-tools/windsurf"
       ]
     }
   ],

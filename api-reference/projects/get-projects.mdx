@@ -1,0 +1,15 @@
+---
+title: "Get Projects"
+api: "GET /v1/projects"
+description: "List projects"
+---
+
+## Query Parameters
+
+<ParamField query="organization_id" type="string">
+  Filter by organization
+</ParamField>
+
+<ParamField query="limit" type="integer" default={100}>
+  Maximum number of projects
+</ParamField>

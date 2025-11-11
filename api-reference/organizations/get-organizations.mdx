@@ -1,0 +1,58 @@
+---
+title: "Get Organizations"
+api: "GET /v1/organizations"
+description: "List all organizations"
+---
+
+## Query Parameters
+
+<ParamField query="is_active" type="boolean">
+  Filter by active status
+</ParamField>
+
+<ParamField query="limit" type="integer" default={100}>
+  Maximum number of organizations to return (1-1000)
+</ParamField>
+
+<ParamField query="offset" type="integer" default={0}>
+  Number of organizations to skip for pagination
+</ParamField>
+
+## Response
+
+<ResponseField name="organizations" type="array">
+  Array of organization objects
+</ResponseField>
+
+<ResponseField name="total" type="integer">
+  Total number of organizations
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.photomem.ai/v1/organizations?limit=50" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "organizations": [
+    {
+      "id": "org_abc123",
+      "name": "Acme Corporation",
+      "slug": "acme-corp",
+      "is_active": true,
+      "created_at": "2023-11-07T05:31:56Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+</ResponseExample>
+

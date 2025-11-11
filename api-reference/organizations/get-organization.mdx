@@ -1,0 +1,36 @@
+---
+title: "Get Organization"
+api: "GET /v1/organizations/{organization_id}"
+description: "Get a specific organization by ID"
+---
+
+## Path Parameters
+
+<ParamField path="organization_id" type="string" required>
+  The unique identifier of the organization
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.photomem.ai/v1/organizations/org_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "org_abc123",
+  "name": "Acme Corporation",
+  "slug": "acme-corp",
+  "settings": {},
+  "is_active": true,
+  "created_at": "2023-11-07T05:31:56Z",
+  "updated_at": "2023-11-07T05:31:56Z"
+}
+```
+
+</ResponseExample>

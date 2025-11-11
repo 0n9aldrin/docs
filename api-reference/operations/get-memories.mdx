@@ -1,0 +1,119 @@
+---
+title: "Get Memories"
+api: "GET /v1/memories"
+description: "Retrieve memories for a specific entity"
+---
+
+## Query Parameters
+
+<ParamField query="user_id" type="string">
+  Filter by user identifier
+</ParamField>
+
+<ParamField query="agent_id" type="string">
+  Filter by agent identifier
+</ParamField>
+
+<ParamField query="app_id" type="string">
+  Filter by application identifier
+</ParamField>
+
+<ParamField query="run_id" type="string">
+  Filter by run/session identifier
+</ParamField>
+
+<ParamField query="organization_id" type="string">
+  Filter by organization
+</ParamField>
+
+<ParamField query="project_id" type="string">
+  Filter by project
+</ParamField>
+
+<ParamField query="limit" type="integer" default={100}>
+  Maximum number of memories to return (1-1000)
+</ParamField>
+
+<ParamField query="offset" type="integer" default={0}>
+  Number of memories to skip for pagination
+</ParamField>
+
+## Response
+
+<ResponseField name="results" type="array">
+  Array of memory objects
+  
+  <Expandable title="Memory Object">
+    <ResponseField name="id" type="string">
+      Unique memory identifier
+    </ResponseField>
+    <ResponseField name="memory" type="string">
+      The memory content
+    </ResponseField>
+    <ResponseField name="hash" type="string">
+      Content hash
+    </ResponseField>
+    <ResponseField name="metadata" type="object">
+      Memory metadata including timestamps, tags, and identifiers
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="integer">
+  Total number of memories matching the filters
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.photomem.ai/v1/memories?user_id=phone:15103651277&limit=50" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+from photomem import Memory
+
+memory = Memory(api_key="YOUR_API_KEY")
+
+results = await memory.get_all(
+    user_id="phone:15103651277",
+    limit=50
+)
+```
+
+```typescript TypeScript
+import { Memory } from 'photomem';
+
+const memory = new Memory({ apiKey: 'YOUR_API_KEY' });
+
+const results = await memory.getAll({
+  userId: 'phone:15103651277',
+  limit: 50
+});
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "results": [
+    {
+      "id": "mem_abc123",
+      "memory": "User loves hiking in the Swiss Alps",
+      "hash": "5d41402abc4b2a76b9719d911017c592",
+      "metadata": {
+        "user_id": "phone:15103651277",
+        "tags": ["hobbies", "outdoor"],
+        "created_at": "2023-11-07T05:31:56Z",
+        "updated_at": "2023-11-07T05:31:56Z"
+      }
+    }
+  ],
+  "total": 1
+}
+```
+
+</ResponseExample>
+

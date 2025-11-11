@@ -60,6 +60,14 @@
       ]
     },
     {
+      "group": "Advanced Features",
+      "pages": [
+        "advanced/filtering",
+        "advanced/llm-prompts",
+        "advanced/graph-memory"
+      ]
+    },
+    {
       "group": "Development",
       "pages": [
         "development"

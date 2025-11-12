@@ -60,6 +60,12 @@
       ]
     },
     {
+      "group": "Migration",
+      "pages": [
+        "migration/from-mem0"
+      ]
+    },
+    {
       "group": "API Reference",
       "pages": [
         "api-reference/introduction"

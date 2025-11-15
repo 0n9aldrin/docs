@@ -4,14 +4,6 @@ api: "PATCH /api/v1/memories/{memory_id}"
 description: "Update an existing memory"
 ---
 
-## Overview
-
-Updates a memory's content and/or tags. Cannot change userId or userName.
-
-## Authentication
-
-Requires API key in `Authorization` header.
-
 ## Path Parameters
 
 <ParamField path="memory_id" type="string" required>
@@ -30,7 +22,9 @@ Requires API key in `Authorization` header.
 
 ## Response
 
-Returns updated memory object.
+<ResponseField name="memory" type="object">
+  Updated memory object
+</ResponseField>
 
 <RequestExample>
 
@@ -63,11 +57,31 @@ memory = response.json()["memory"]
 print(f"Updated: {memory['id']}")
 ```
 
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.io/api/v1/memories/${memoryId}`,
+  {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      content: 'User prefers dark mode and large font size',
+      tags: ['preference', 'ui', 'accessibility']
+    })
+  }
+);
+
+const { memory } = await response.json();
+console.log(`Updated: ${memory.id}`);
+```
+
 </RequestExample>
 
 <ResponseExample>
 
-```json 200 Success
+```json 200
 {
   "memory": {
     "id": "mem_abc123xyz",
@@ -81,5 +95,13 @@ print(f"Updated: {memory['id']}")
 }
 ```
 
-</ResponseExample>
+```json 404
+{
+  "error": {
+    "code": "not_found",
+    "message": "Memory not found"
+  }
+}
+```
 
+</ResponseExample>

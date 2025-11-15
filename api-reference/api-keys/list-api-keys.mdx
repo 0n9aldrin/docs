@@ -4,14 +4,6 @@ api: "GET /api/organizations/{org_id}/projects/{project_id}/api-keys"
 description: "List all API keys for a project"
 ---
 
-## Overview
-
-Returns a list of all API keys for the specified project. Keys are returned with masked values (only the prefix is visible). Revoked keys are not included in the response.
-
-## Authentication
-
-Requires a valid Clerk session token. User must be a member of the organization.
-
 ## Path Parameters
 
 <ParamField path="org_id" type="string" required>
@@ -82,7 +74,7 @@ for key in api_keys:
     print(f"{key['name']}: {key['keyPrefix']}... ({key['status']})")
 ```
 
-```javascript JavaScript
+```typescript TypeScript
 const response = await fetch(
   `https://api.photomem.io/api/organizations/${orgId}/projects/${projectId}/api-keys`,
   {
@@ -100,7 +92,7 @@ console.log(`Found ${apiKeys.length} API keys`);
 
 <ResponseExample>
 
-```json 200 Success
+```json 200
 {
   "apiKeys": [
     {
@@ -127,7 +119,7 @@ console.log(`Found ${apiKeys.length} API keys`);
 }
 ```
 
-```json 403 Forbidden
+```json 403
 {
   "error": {
     "code": "forbidden",
@@ -136,7 +128,7 @@ console.log(`Found ${apiKeys.length} API keys`);
 }
 ```
 
-```json 404 Not Found
+```json 404
 {
   "error": {
     "code": "not_found",
@@ -146,11 +138,3 @@ console.log(`Found ${apiKeys.length} API keys`);
 ```
 
 </ResponseExample>
-
-## Notes
-
-- Only active and expired keys are returned; revoked keys are filtered out
-- The full API key value is never returned after creation
-- Keys are ordered by creation date (newest first)
-- Users only need to be members of the organization to view keys
-

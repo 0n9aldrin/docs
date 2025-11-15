@@ -1,0 +1,178 @@
+---
+title: 'Backend API Overview'
+description: 'Comprehensive overview of PhotoMem backend APIs'
+---
+
+# Backend API Overview
+
+PhotoMem provides a comprehensive REST API built with FastAPI for managing AI-powered memory systems.
+
+## Base URLs
+
+- **Production**: `https://api.photomem.io`
+- **Staging**: `https://staging-api.photomem.io`
+- **Local Development**: `http://localhost:8000`
+
+## Authentication
+
+PhotoMem uses two authentication methods depending on the endpoint:
+
+### 1. JWT Authentication (Clerk)
+For organization and project management endpoints:
+
+```bash
+Authorization: Bearer {jwt_token}
+```
+
+### 2. API Key Authentication
+For memory operations:
+
+```bash
+X-API-Key: pm_live_abc123...
+```
+
+## API Structure
+
+The API is organized into the following sections:
+
+### Core Resources
+- **Organizations** - Multi-tenant workspace management
+- **Projects** - Memory collection containers
+- **API Keys** - Access control and permissions
+- **Memories** - AI-powered memory storage and retrieval
+
+### Management
+- **Usage & Analytics** - Track API usage and costs
+- **Webhooks** - Event notifications
+- **Billing** - Subscription and payment management
+
+### User
+- **Authentication** - Clerk integration for auth
+- **User Profile** - Account management
+
+## Response Format
+
+All API responses follow a consistent JSON format:
+
+### Success Response
+```json
+{
+  "data": { },
+  "meta": {
+    "timestamp": "2024-01-20T15:30:00Z",
+    "requestId": "req_abc123"
+  }
+}
+```
+
+### Error Response
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "Detailed error message",
+    "details": []
+  }
+}
+```
+
+## Rate Limiting
+
+Rate limits vary by plan:
+
+| Plan       | Requests/Second | Requests/Month |
+|------------|----------------|----------------|
+| Free       | 10             | 10,000         |
+| Starter    | 50             | 100,000        |
+| Pro        | 200            | 1,000,000      |
+| Enterprise | Custom         | Unlimited      |
+
+Rate limit headers:
+```
+X-RateLimit-Limit: 200
+X-RateLimit-Remaining: 195
+X-RateLimit-Reset: 1642684200
+```
+
+## Pagination
+
+List endpoints support pagination:
+
+```bash
+GET /v1/memories?limit=50&offset=100
+```
+
+Parameters:
+- `limit`: Number of items (1-100, default 20)
+- `offset`: Skip items (default 0)
+
+Response includes pagination metadata:
+```json
+{
+  "memories": [],
+  "pagination": {
+    "total": 500,
+    "limit": 50,
+    "offset": 100,
+    "hasMore": true
+  }
+}
+```
+
+## Filtering & Sorting
+
+Most list endpoints support filtering:
+
+```bash
+GET /v1/memories?userId=user_123&tags=preference,work&sortBy=createdAt&sortOrder=desc
+```
+
+## Versioning
+
+The API uses URL versioning:
+- Current version: `/v1/`
+- Future versions: `/v2/`, `/v3/`, etc.
+
+## Status Codes
+
+Common HTTP status codes:
+
+| Code | Meaning |
+|------|---------|
+| 200  | Success |
+| 201  | Created |
+| 204  | No Content |
+| 400  | Bad Request |
+| 401  | Unauthorized |
+| 403  | Forbidden |
+| 404  | Not Found |
+| 409  | Conflict |
+| 413  | Payload Too Large |
+| 422  | Unprocessable Entity |
+| 429  | Too Many Requests |
+| 500  | Internal Server Error |
+
+## Timestamps
+
+All timestamps are in ISO 8601 format with UTC timezone:
+```
+2024-01-20T15:30:00Z
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="lock" href="/api-reference/authentication">
+    Learn about Clerk integration and API keys
+  </Card>
+  <Card title="Organizations" icon="building" href="/api-reference/organizations">
+    Manage multi-tenant workspaces
+  </Card>
+  <Card title="Memories" icon="brain" href="/api-reference/memories">
+    Store and retrieve AI-powered memories
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api-reference/webhooks">
+    Set up event notifications
+  </Card>
+</CardGroup>
+

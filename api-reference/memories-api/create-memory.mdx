@@ -4,14 +4,6 @@ api: "POST /api/v1/memories"
 description: "Create a new memory"
 ---
 
-## Overview
-
-Creates a new memory using API key authentication. Memories are automatically deduplicated based on content hash.
-
-## Authentication
-
-Requires API key in `Authorization` header: `Bearer YOUR_API_KEY`
-
 ## Request Body
 
 <ParamField body="content" type="string" required>
@@ -27,20 +19,40 @@ Requires API key in `Authorization` header: `Bearer YOUR_API_KEY`
 </ParamField>
 
 <ParamField body="tags" type="array">
-  Optional array of tags
+  Optional array of tags for categorization
 </ParamField>
 
 ## Response
 
 <ResponseField name="memory" type="object">
   <Expandable title="Memory Object">
-    <ResponseField name="id" type="string">Memory identifier</ResponseField>
-    <ResponseField name="userId" type="string">User ID</ResponseField>
-    <ResponseField name="userName" type="string">User name</ResponseField>
-    <ResponseField name="content" type="string">Memory content</ResponseField>
-    <ResponseField name="tags" type="array">Tags array</ResponseField>
-    <ResponseField name="createdAt" type="string">Creation timestamp</ResponseField>
-    <ResponseField name="updatedAt" type="string">Last update timestamp</ResponseField>
+    <ResponseField name="id" type="string">
+      Unique memory identifier
+    </ResponseField>
+
+    <ResponseField name="userId" type="string">
+      User identifier
+    </ResponseField>
+
+    <ResponseField name="userName" type="string">
+      User display name
+    </ResponseField>
+
+    <ResponseField name="content" type="string">
+      Memory content
+    </ResponseField>
+
+    <ResponseField name="tags" type="array">
+      Array of tags
+    </ResponseField>
+
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 timestamp of creation
+    </ResponseField>
+
+    <ResponseField name="updatedAt" type="string">
+      ISO 8601 timestamp of last update
+    </ResponseField>
   </Expandable>
 </ResponseField>
 
@@ -79,7 +91,7 @@ memory = response.json()["memory"]
 print(f"Created memory: {memory['id']}")
 ```
 
-```javascript JavaScript
+```typescript TypeScript
 const response = await fetch('https://api.photomem.io/api/v1/memories', {
   method: 'POST',
   headers: {
@@ -102,7 +114,7 @@ console.log(`Created: ${memory.id}`);
 
 <ResponseExample>
 
-```json 201 Created
+```json 201
 {
   "memory": {
     "id": "mem_abc123xyz",
@@ -116,7 +128,7 @@ console.log(`Created: ${memory.id}`);
 }
 ```
 
-```json 413 Content Too Large
+```json 413
 {
   "error": {
     "code": "content_too_large",
@@ -125,7 +137,7 @@ console.log(`Created: ${memory.id}`);
 }
 ```
 
-```json 401 Unauthorized
+```json 401
 {
   "error": {
     "code": "invalid_api_key",
@@ -135,11 +147,3 @@ console.log(`Created: ${memory.id}`);
 ```
 
 </ResponseExample>
-
-## Content Guidelines
-
-- Maximum size: 10KB per memory
-- Automatic deduplication based on content hash
-- Supports plain text and structured content
-- Tags are case-insensitive and automatically normalized
-

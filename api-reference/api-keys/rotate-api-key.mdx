@@ -4,14 +4,6 @@ api: "POST /api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/r
 description: "Rotate an API key with optional grace period"
 ---
 
-## Overview
-
-Creates a new API key and optionally keeps the old key active for a grace period. This allows for zero-downtime key rotation by giving you time to update all services using the old key.
-
-## Authentication
-
-Requires a valid Clerk session token. User must have `admin` or `owner` role in the organization.
-
 ## Path Parameters
 
 <ParamField path="org_id" type="string" required>
@@ -37,7 +29,7 @@ Requires a valid Clerk session token. User must have `admin` or `owner` role in 
 <ResponseField name="newApiKey" type="object">
   The newly created API key object
   
-  <Expandable title="New API Key Object">
+  <Expandable title="New API Key">
     <ResponseField name="id" type="string">
       Unique identifier for the new key
     </ResponseField>
@@ -75,7 +67,7 @@ Requires a valid Clerk session token. User must have `admin` or `owner` role in 
 <ResponseField name="oldApiKey" type="object">
   Information about the old key
   
-  <Expandable title="Old API Key Info">
+  <Expandable title="Old API Key">
     <ResponseField name="id" type="string">
       Identifier of the old key
     </ResponseField>
@@ -96,7 +88,7 @@ Requires a valid Clerk session token. User must have `admin` or `owner` role in 
 
 <RequestExample>
 
-```bash cURL - With Grace Period
+```bash cURL
 curl -X POST "https://api.photomem.io/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate" \
   -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
   -H "Content-Type: application/json" \
@@ -105,19 +97,9 @@ curl -X POST "https://api.photomem.io/api/organizations/{org_id}/projects/{proje
   }'
 ```
 
-```bash cURL - Immediate Revocation
-curl -X POST "https://api.photomem.io/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate" \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "gracePeriodDays": 0
-  }'
-```
-
 ```python Python
 import requests
 
-# Rotate with 7-day grace period
 response = requests.post(
     f"https://api.photomem.io/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate",
     headers={
@@ -130,10 +112,9 @@ response = requests.post(
 result = response.json()
 print(f"New key: {result['newApiKey']['key']}")
 print(f"Warning: {result['warning']}")
-print(f"Old key expires: {result['oldApiKey']['expiresAt']}")
 ```
 
-```javascript JavaScript
+```typescript TypeScript
 const response = await fetch(
   `https://api.photomem.io/api/organizations/${orgId}/projects/${projectId}/api-keys/${keyId}/rotate`,
   {
@@ -150,14 +131,13 @@ const response = await fetch(
 
 const result = await response.json();
 console.log(`New key: ${result.newApiKey.key}`);
-console.log(`Warning: ${result.warning}`);
 ```
 
 </RequestExample>
 
 <ResponseExample>
 
-```json 200 Success - With Grace Period
+```json 200
 {
   "newApiKey": {
     "id": "key_new789xyz",
@@ -178,28 +158,7 @@ console.log(`Warning: ${result.warning}`);
 }
 ```
 
-```json 200 Success - Immediate Revocation
-{
-  "newApiKey": {
-    "id": "key_new789xyz",
-    "name": "Production API Key (Rotated)",
-    "key": "pm_live_new789xyz456abc123def890ghi567jkl234mno901pqr678",
-    "keyPrefix": "pm_live_new7",
-    "status": "active",
-    "permissions": ["read", "write"],
-    "createdAt": "2025-01-15T14:30:00Z",
-    "expiresAt": null
-  },
-  "oldApiKey": {
-    "id": "key_abc123xyz",
-    "status": "revoked",
-    "expiresAt": null
-  },
-  "warning": "Old key has been immediately revoked. Update your applications now."
-}
-```
-
-```json 404 Not Found
+```json 404
 {
   "error": {
     "code": "not_found",
@@ -209,61 +168,3 @@ console.log(`Warning: ${result.warning}`);
 ```
 
 </ResponseExample>
-
-## Rotation Workflow
-
-<Steps>
-  <Step title="Request Rotation">
-    Call the rotate endpoint with desired grace period
-  </Step>
-  
-  <Step title="Save New Key">
-    Immediately save the new API key - it won't be shown again
-  </Step>
-  
-  <Step title="Update Services">
-    Update all applications and services to use the new key
-  </Step>
-  
-  <Step title="Verify">
-    Confirm all services are using the new key successfully
-  </Step>
-  
-  <Step title="Wait for Expiration">
-    If using grace period, old key expires automatically after the set period
-  </Step>
-</Steps>
-
-## Best Practices
-
-<AccordionGroup>
-  <Accordion title="Choose Appropriate Grace Period">
-    - **0 days**: For emergency revocations or test keys
-    - **7 days**: Standard rotation for production services
-    - **30 days**: For complex deployments with many services
-  </Accordion>
-
-  <Accordion title="Plan Your Rotation">
-    - Identify all services using the current key
-    - Schedule rotation during low-traffic periods
-    - Have rollback plan ready
-    - Monitor error rates after rotation
-  </Accordion>
-
-  <Accordion title="Regular Rotation Schedule">
-    - Rotate keys every 90 days as standard practice
-    - Immediately rotate if:
-      - Key may have been compromised
-      - Team member with key access leaves
-      - After security incident
-  </Accordion>
-</AccordionGroup>
-
-## Grace Period Benefits
-
-Using a grace period provides:
-- **Zero Downtime**: Old key remains valid during migration
-- **Safe Testing**: Verify new key works before old one expires
-- **Rollback Option**: Can continue using old key if issues arise
-- **Time for Updates**: Update services at your own pace
-

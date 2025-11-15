@@ -4,17 +4,9 @@ api: "POST /api/organizations/{org_id}/projects/{project_id}/api-keys"
 description: "Create a new API key for a project"
 ---
 
-## Overview
-
-Creates a new API key for the specified project. The full key is only shown once in the response and cannot be retrieved again.
-
 <Warning>
   **Important:** Save the full API key immediately. It will not be shown again after this response.
 </Warning>
-
-## Authentication
-
-Requires a valid Clerk session token. User must have `admin` or `owner` role in the organization.
 
 ## Path Parameters
 
@@ -33,7 +25,9 @@ Requires a valid Clerk session token. User must have `admin` or `owner` role in 
 </ParamField>
 
 <ParamField body="permissions" type="array" default='["read", "write"]'>
-  Array of permissions to grant (e.g., ["read", "write"])
+  Array of permissions to grant
+  
+  **Available options:** `read`, `write`
 </ParamField>
 
 <ParamField body="expiresAt" type="string">
@@ -112,7 +106,7 @@ print(f"API Key created: {api_key['key']}")
 print("⚠️  Save this key - it won't be shown again!")
 ```
 
-```javascript JavaScript
+```typescript TypeScript
 const response = await fetch(
   `https://api.photomem.io/api/organizations/${orgId}/projects/${projectId}/api-keys`,
   {
@@ -138,7 +132,7 @@ console.log('⚠️  Save this key - it won\'t be shown again!');
 
 <ResponseExample>
 
-```json 201 Created
+```json 201
 {
   "apiKey": {
     "id": "key_abc123xyz",
@@ -153,7 +147,7 @@ console.log('⚠️  Save this key - it won\'t be shown again!');
 }
 ```
 
-```json 400 Bad Request
+```json 400
 {
   "error": {
     "code": "invalid_request",
@@ -162,7 +156,7 @@ console.log('⚠️  Save this key - it won\'t be shown again!');
 }
 ```
 
-```json 403 Forbidden
+```json 403
 {
   "error": {
     "code": "forbidden",
@@ -172,34 +166,3 @@ console.log('⚠️  Save this key - it won\'t be shown again!');
 ```
 
 </ResponseExample>
-
-## Key Format
-
-API keys follow this format:
-- **Live keys:** `pm_live_[43 random characters]`
-- **Test keys:** `pm_test_[43 random characters]`
-
-The prefix indicates the environment and is used for quick identification.
-
-## Security Best Practices
-
-<AccordionGroup>
-  <Accordion title="Store Securely">
-    - Never commit API keys to version control
-    - Use environment variables or secret management services
-    - Rotate keys regularly (every 90 days recommended)
-  </Accordion>
-
-  <Accordion title="Use Appropriate Permissions">
-    - Grant minimum necessary permissions
-    - Use read-only keys for analytics dashboards
-    - Reserve write permissions for backend services only
-  </Accordion>
-
-  <Accordion title="Set Expiration Dates">
-    - Set expiration dates for temporary access
-    - Review and rotate keys before expiration
-    - Use short-lived keys for testing
-  </Accordion>
-</AccordionGroup>
-

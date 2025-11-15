@@ -1,0 +1,107 @@
+---
+title: "List Memories"
+api: "GET /api/v1/memories"
+description: "List memories with filtering and pagination"
+---
+
+## Overview
+
+Returns a paginated list of memories with optional filtering by user ID and tags.
+
+## Authentication
+
+Requires API key in `Authorization` header.
+
+## Query Parameters
+
+<ParamField query="userId" type="string">
+  Filter by user ID
+</ParamField>
+
+<ParamField query="tags" type="string">
+  Comma-separated tags to filter by (OR logic)
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Max results per page (max 100)
+</ParamField>
+
+<ParamField query="offset" type="number" default={0}>
+  Pagination offset
+</ParamField>
+
+<ParamField query="sortBy" type="string" default="createdAt">
+  Sort field: "createdAt" or "updatedAt"
+</ParamField>
+
+<ParamField query="sortOrder" type="string" default="desc">
+  Sort order: "asc" or "desc"
+</ParamField>
+
+## Response
+
+<ResponseField name="memories" type="array">Array of memory objects</ResponseField>
+<ResponseField name="pagination" type="object">
+  <Expandable title="Pagination">
+    <ResponseField name="total" type="number">Total results</ResponseField>
+    <ResponseField name="limit" type="number">Results per page</ResponseField>
+    <ResponseField name="offset" type="number">Current offset</ResponseField>
+    <ResponseField name="hasMore" type="boolean">More results available</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.photomem.io/api/v1/memories?userId=user_123&limit=10" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.photomem.io/api/v1/memories",
+    params={
+        "userId": "user_123",
+        "tags": "preference,ui",
+        "limit": 10,
+        "sortBy": "createdAt",
+        "sortOrder": "desc"
+    },
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+data = response.json()
+print(f"Found {len(data['memories'])} memories")
+print(f"Total: {data['pagination']['total']}")
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "memories": [
+    {
+      "id": "mem_abc123xyz",
+      "userId": "user_123",
+      "userName": "John Doe",
+      "content": "User prefers dark mode in all applications",
+      "tags": ["preference", "ui"],
+      "createdAt": "2025-01-15T16:45:00Z",
+      "updatedAt": "2025-01-15T16:45:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasMore": false
+  }
+}
+```
+
+</ResponseExample>
+

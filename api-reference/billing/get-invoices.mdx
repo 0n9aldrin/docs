@@ -1,0 +1,205 @@
+---
+title: "Get Billing History"
+api: "GET /api/organizations/{org_id}/billing/invoices"
+description: "Get organization's billing history and invoices"
+---
+
+## Overview
+
+Returns a list of all invoices for the organization, ordered by date (newest first). Each invoice includes payment status and download URL.
+
+## Authentication
+
+Requires a valid Clerk session token. User must be a member of the organization.
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>
+  The unique identifier of the organization
+</ParamField>
+
+## Response
+
+<ResponseField name="invoices" type="array">
+  Array of invoice objects
+  
+  <Expandable title="Invoice Object">
+    <ResponseField name="id" type="string">
+      Unique invoice identifier
+    </ResponseField>
+
+    <ResponseField name="number" type="string">
+      Human-readable invoice number (e.g., "INV-2025-001")
+    </ResponseField>
+
+    <ResponseField name="amount" type="number">
+      Invoice amount in dollars
+    </ResponseField>
+
+    <ResponseField name="currency" type="string">
+      Currency code (e.g., "USD")
+    </ResponseField>
+
+    <ResponseField name="status" type="string">
+      Invoice status: "paid", "pending", "failed", "refunded"
+    </ResponseField>
+
+    <ResponseField name="dueDate" type="string">
+      ISO 8601 timestamp of due date
+    </ResponseField>
+
+    <ResponseField name="paidAt" type="string">
+      ISO 8601 timestamp of payment (null if unpaid)
+    </ResponseField>
+
+    <ResponseField name="downloadUrl" type="string">
+      URL to download PDF invoice
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.photomem.io/api/organizations/{org_id}/billing/invoices" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    f"https://api.photomem.io/api/organizations/{org_id}/billing/invoices",
+    headers={"Authorization": f"Bearer {clerk_token}"}
+)
+
+invoices = response.json()["invoices"]
+for invoice in invoices:
+    print(f"{invoice['number']}: ${invoice['amount']} - {invoice['status']}")
+    if invoice['status'] == 'paid':
+        print(f"  Download: {invoice['downloadUrl']}")
+```
+
+```javascript JavaScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/billing/invoices`,
+  {
+    headers: {
+      'Authorization': `Bearer ${clerkToken}`
+    }
+  }
+);
+
+const { invoices } = await response.json();
+invoices.forEach(invoice => {
+  console.log(`${invoice.number}: $${invoice.amount} - ${invoice.status}`);
+});
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "invoices": [
+    {
+      "id": "inv_abc123xyz",
+      "number": "INV-2025-003",
+      "amount": 99.00,
+      "currency": "USD",
+      "status": "paid",
+      "dueDate": "2025-01-15T00:00:00Z",
+      "paidAt": "2025-01-15T08:30:00Z",
+      "downloadUrl": "https://api.photomem.io/invoices/inv_abc123xyz.pdf"
+    },
+    {
+      "id": "inv_def456uvw",
+      "number": "INV-2025-002",
+      "amount": 99.00,
+      "currency": "USD",
+      "status": "paid",
+      "dueDate": "2024-12-15T00:00:00Z",
+      "paidAt": "2024-12-15T09:15:00Z",
+      "downloadUrl": "https://api.photomem.io/invoices/inv_def456uvw.pdf"
+    },
+    {
+      "id": "inv_ghi789rst",
+      "number": "INV-2025-001",
+      "amount": 29.00,
+      "currency": "USD",
+      "status": "paid",
+      "dueDate": "2024-11-15T00:00:00Z",
+      "paidAt": "2024-11-15T10:00:00Z",
+      "downloadUrl": "https://api.photomem.io/invoices/inv_ghi789rst.pdf"
+    }
+  ]
+}
+```
+
+```json 403 Forbidden
+{
+  "error": {
+    "code": "access_denied",
+    "message": "Access denied to this organization"
+  }
+}
+```
+
+</ResponseExample>
+
+## Invoice Status Values
+
+| Status | Description |
+|--------|-------------|
+| `paid` | Invoice successfully paid |
+| `pending` | Payment processing or awaiting payment |
+| `failed` | Payment failed - action required |
+| `refunded` | Payment was refunded |
+
+## Downloading Invoices
+
+Each paid invoice includes a `downloadUrl` that provides:
+- PDF format invoice
+- Valid for 24 hours from request
+- Includes all transaction details
+- Suitable for accounting/tax purposes
+
+```python Python Example - Download Invoice
+import requests
+
+# Get invoices
+response = requests.get(
+    f"https://api.photomem.io/api/organizations/{org_id}/billing/invoices",
+    headers={"Authorization": f"Bearer {clerk_token}"}
+)
+
+# Download first invoice
+invoice = response.json()["invoices"][0]
+if invoice['status'] == 'paid':
+    pdf_response = requests.get(invoice['downloadUrl'])
+    with open(f"{invoice['number']}.pdf", 'wb') as f:
+        f.write(pdf_response.content)
+    print(f"Downloaded: {invoice['number']}.pdf")
+```
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Expense Tracking" icon="receipt">
+    Download invoices for expense reports and reimbursement
+  </Card>
+  
+  <Card title="Accounting" icon="calculator">
+    Export billing history for accounting software integration
+  </Card>
+  
+  <Card title="Tax Records" icon="file-invoice-dollar">
+    Maintain records for tax filing and audits
+  </Card>
+  
+  <Card title="Budget Planning" icon="chart-line">
+    Analyze spending patterns for budget planning
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,66 @@
+---
+title: "Delete Memory"
+api: "DELETE /api/v1/memories/{memory_id}"
+description: "Delete a memory"
+---
+
+## Overview
+
+Performs a soft delete of a memory. The memory is marked as deleted but not permanently removed.
+
+## Authentication
+
+Requires API key in `Authorization` header.
+
+## Path Parameters
+
+<ParamField path="memory_id" type="string" required>
+  Memory identifier
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">Confirmation message</ResponseField>
+<ResponseField name="deletedAt" type="string">Deletion timestamp</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE "https://api.photomem.io/api/v1/memories/mem_abc123xyz" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.delete(
+    f"https://api.photomem.io/api/v1/memories/{memory_id}",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+result = response.json()
+print(result["message"])
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "message": "Memory deleted successfully",
+  "deletedAt": "2025-01-15T17:15:00Z"
+}
+```
+
+```json 404 Not Found
+{
+  "error": {
+    "code": "not_found",
+    "message": "Memory not found"
+  }
+}
+```
+
+</ResponseExample>
+

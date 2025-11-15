@@ -1,0 +1,87 @@
+---
+title: "Update User Profile"
+api: "PATCH /api/users/me"
+description: "Update current user's profile"
+---
+
+## Overview
+
+Updates the authenticated user's profile information. Supports updating email and full name.
+
+## Authentication
+
+Requires valid Clerk session token.
+
+## Request Body
+
+<ParamField body="email" type="string">
+  New email address
+</ParamField>
+
+<ParamField body="fullName" type="string">
+  New full name
+</ParamField>
+
+## Response
+
+Returns the updated user profile (same format as GET /api/users/me).
+
+<RequestExample>
+
+```bash cURL
+curl -X PATCH "https://api.photomem.io/api/users/me" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"fullName": "John Smith", "email": "john.smith@example.com"}'
+```
+
+```python Python
+import requests
+
+response = requests.patch(
+    "https://api.photomem.io/api/users/me",
+    headers={
+        "Authorization": f"Bearer {clerk_token}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "fullName": "John Smith",
+        "email": "john.smith@example.com"
+    }
+)
+
+profile = response.json()
+print(f"Updated: {profile['fullName']}")
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "id": "user_abc123xyz",
+  "clerkId": "clerk_abc123",
+  "email": "john.smith@example.com",
+  "fullName": "John Smith",
+  "organizationId": "org_xyz789",
+  "role": "admin",
+  "isActive": true,
+  "needsOnboarding": false,
+  "createdAt": "2025-01-01T10:00:00Z",
+  "updatedAt": "2025-01-15T15:00:00Z",
+  "lastLoginAt": "2025-01-15T14:30:00Z"
+}
+```
+
+```json 409 Conflict
+{
+  "error": {
+    "code": "email_exists",
+    "message": "A user with this email already exists"
+  }
+}
+```
+
+</ResponseExample>
+

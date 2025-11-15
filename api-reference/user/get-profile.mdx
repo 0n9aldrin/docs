@@ -1,0 +1,70 @@
+---
+title: "Get User Profile"
+api: "GET /api/users/me"
+description: "Get current user's profile information"
+---
+
+## Overview
+
+Returns the authenticated user's profile information including organization membership, role, and account status.
+
+## Authentication
+
+Requires valid Clerk session token.
+
+## Response
+
+<ResponseField name="id" type="string">User identifier</ResponseField>
+<ResponseField name="clerkId" type="string">Clerk user ID</ResponseField>
+<ResponseField name="email" type="string">User email address</ResponseField>
+<ResponseField name="fullName" type="string">User's full name</ResponseField>
+<ResponseField name="organizationId" type="string">Organization ID (if member of one)</ResponseField>
+<ResponseField name="role" type="string">Role in organization (owner, admin, member)</ResponseField>
+<ResponseField name="isActive" type="boolean">Whether account is active</ResponseField>
+<ResponseField name="needsOnboarding" type="boolean">Whether user needs onboarding</ResponseField>
+<ResponseField name="createdAt" type="string">Account creation timestamp</ResponseField>
+<ResponseField name="updatedAt" type="string">Last update timestamp</ResponseField>
+<ResponseField name="lastLoginAt" type="string">Last login timestamp</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.photomem.io/api/users/me" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.photomem.io/api/users/me",
+    headers={"Authorization": f"Bearer {clerk_token}"}
+)
+
+profile = response.json()
+print(f"{profile['fullName']} ({profile['email']})")
+print(f"Role: {profile['role']}")
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "id": "user_abc123xyz",
+  "clerkId": "clerk_abc123",
+  "email": "john@example.com",
+  "fullName": "John Doe",
+  "organizationId": "org_xyz789",
+  "role": "admin",
+  "isActive": true,
+  "needsOnboarding": false,
+  "createdAt": "2025-01-01T10:00:00Z",
+  "updatedAt": "2025-01-15T14:30:00Z",
+  "lastLoginAt": "2025-01-15T14:30:00Z"
+}
+```
+
+</ResponseExample>
+

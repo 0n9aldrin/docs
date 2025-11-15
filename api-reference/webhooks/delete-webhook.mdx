@@ -1,0 +1,45 @@
+---
+title: "Delete Webhook"
+api: "DELETE /api/organizations/{org_id}/projects/{project_id}/webhooks/{webhook_id}"
+description: "Delete a webhook"
+---
+
+## Overview
+
+Soft deletes a webhook. The webhook will stop receiving events immediately.
+
+## Authentication
+
+Requires valid Clerk session token. User must be a member of the organization.
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>Organization identifier</ParamField>
+<ParamField path="project_id" type="string" required>Project identifier</ParamField>
+<ParamField path="webhook_id" type="string" required>Webhook identifier</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">Confirmation message</ResponseField>
+<ResponseField name="deletedAt" type="string">Deletion timestamp</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE "https://api.photomem.io/api/organizations/{org_id}/projects/{project_id}/webhooks/{webhook_id}" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "message": "Webhook deleted successfully",
+  "deletedAt": "2025-01-15T16:30:00Z"
+}
+```
+
+</ResponseExample>
+

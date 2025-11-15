@@ -1,0 +1,146 @@
+---
+title: "Cancel Subscription"
+api: "POST /api/organizations/{org_id}/billing/subscription/cancel"
+description: "Cancel organization subscription"
+---
+
+## Overview
+
+Cancels the organization's subscription. Can be immediate or at the end of the current billing period.
+
+## Authentication
+
+Requires valid Clerk session token with `owner` role.
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>
+  Organization identifier
+</ParamField>
+
+## Request Body
+
+<ParamField body="cancelAtPeriodEnd" type="boolean" default={true}>
+  If true, cancels at period end. If false, cancels immediately.
+</ParamField>
+
+<ParamField body="reason" type="string">
+  Optional cancellation reason for feedback
+</ParamField>
+
+## Response
+
+<ResponseField name="subscription" type="object">
+  Updated subscription status
+  
+  <Expandable title="Subscription">
+    <ResponseField name="id" type="string">Subscription ID</ResponseField>
+    <ResponseField name="status" type="string">Status ("active" or "canceled")</ResponseField>
+    <ResponseField name="currentPeriodStart" type="string">Period start date</ResponseField>
+    <ResponseField name="currentPeriodEnd" type="string">Period end date</ResponseField>
+    <ResponseField name="cancelAtPeriodEnd" type="boolean">Whether canceling at period end</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL - Cancel at Period End
+curl -X POST "https://api.photomem.io/api/organizations/{org_id}/billing/subscription/cancel" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cancelAtPeriodEnd": true,
+    "reason": "Moving to self-hosted solution"
+  }'
+```
+
+```bash cURL - Cancel Immediately
+curl -X POST "https://api.photomem.io/api/organizations/{org_id}/billing/subscription/cancel" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cancelAtPeriodEnd": false,
+    "reason": "No longer needed"
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    f"https://api.photomem.io/api/organizations/{org_id}/billing/subscription/cancel",
+    headers={
+        "Authorization": f"Bearer {clerk_token}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "cancelAtPeriodEnd": True,
+        "reason": "Switching providers"
+    }
+)
+
+result = response.json()
+print(result["message"])
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success - End of Period
+{
+  "subscription": {
+    "id": "sub_abc123xyz",
+    "status": "active",
+    "currentPeriodStart": "2025-01-01T00:00:00Z",
+    "currentPeriodEnd": "2025-02-01T00:00:00Z",
+    "cancelAtPeriodEnd": true
+  },
+  "message": "Subscription will be cancelled on 2025-02-01"
+}
+```
+
+```json 200 Success - Immediate
+{
+  "subscription": {
+    "id": "sub_abc123xyz",
+    "status": "canceled",
+    "currentPeriodStart": "2025-01-01T00:00:00Z",
+    "currentPeriodEnd": "2025-02-01T00:00:00Z",
+    "cancelAtPeriodEnd": false
+  },
+  "message": "Subscription cancelled immediately"
+}
+```
+
+</ResponseExample>
+
+## Cancellation Behavior
+
+<AccordionGroup>
+  <Accordion title="Cancel at Period End">
+    - Subscription remains active until period end
+    - No refunds issued
+    - Full access to paid features until end date
+    - Automatically downgrades to free plan after period ends
+  </Accordion>
+
+  <Accordion title="Cancel Immediately">
+    - Subscription canceled right away
+    - No refunds for unused time
+    - Immediate downgrade to free plan
+    - May lose access to paid features and data
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Canceling immediately may result in loss of access to:
+  - Projects exceeding free plan limits
+  - Historical data beyond free plan retention
+  - Premium support features
+</Warning>
+

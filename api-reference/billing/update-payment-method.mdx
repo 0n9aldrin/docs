@@ -1,0 +1,92 @@
+---
+title: "Update Payment Method"
+api: "POST /api/organizations/{org_id}/billing/payment-method"
+description: "Update organization's payment method"
+---
+
+## Overview
+
+Updates the payment method for the organization's subscription. Requires owner role.
+
+## Authentication
+
+Requires valid Clerk session token with `owner` role.
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>
+  Organization identifier
+</ParamField>
+
+## Request Body
+
+<ParamField body="paymentMethodId" type="string" required>
+  Payment method ID from payment processor (e.g., Stripe)
+</ParamField>
+
+## Response
+
+<ResponseField name="paymentMethod" type="object">
+  Updated payment method details
+  
+  <Expandable title="Payment Method">
+    <ResponseField name="id" type="string">Payment method ID</ResponseField>
+    <ResponseField name="type" type="string">Payment type ("card", "bank", etc.)</ResponseField>
+    <ResponseField name="card" type="object">
+      Card details (if type is "card")
+      <Expandable title="Card Details">
+        <ResponseField name="brand" type="string">Card brand (visa, mastercard, etc.)</ResponseField>
+        <ResponseField name="last4" type="string">Last 4 digits</ResponseField>
+        <ResponseField name="expMonth" type="number">Expiration month</ResponseField>
+        <ResponseField name="expYear" type="number">Expiration year</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://api.photomem.io/api/organizations/{org_id}/billing/payment-method" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"paymentMethodId": "pm_1ABC123xyz"}'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    f"https://api.photomem.io/api/organizations/{org_id}/billing/payment-method",
+    headers={
+        "Authorization": f"Bearer {clerk_token}",
+        "Content-Type": "application/json"
+    },
+    json={"paymentMethodId": "pm_1ABC123xyz"}
+)
+
+pm = response.json()["paymentMethod"]
+print(f"Updated to {pm['card']['brand']} ending in {pm['card']['last4']}")
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "paymentMethod": {
+    "id": "pm_1ABC123xyz",
+    "type": "card",
+    "card": {
+      "brand": "visa",
+      "last4": "4242",
+      "expMonth": 12,
+      "expYear": 2025
+    }
+  }
+}
+```
+
+</ResponseExample>
+

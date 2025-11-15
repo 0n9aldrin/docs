@@ -1,0 +1,138 @@
+---
+title: "Revoke API Key"
+api: "DELETE /api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}"
+description: "Revoke an API key"
+---
+
+## Overview
+
+Permanently revokes an API key. Revoked keys cannot be reactivated and will immediately stop working for all API calls.
+
+<Warning>
+  This action is irreversible. Revoked keys cannot be reactivated. Create a new key if needed.
+</Warning>
+
+## Authentication
+
+Requires a valid Clerk session token. User must have `admin` or `owner` role in the organization.
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>
+  The unique identifier of the organization
+</ParamField>
+
+<ParamField path="project_id" type="string" required>
+  The unique identifier of the project
+</ParamField>
+
+<ParamField path="key_id" type="string" required>
+  The unique identifier of the API key to revoke
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Confirmation message
+</ResponseField>
+
+<ResponseField name="revokedAt" type="string">
+  ISO 8601 timestamp of when the key was revoked
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE "https://api.photomem.io/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```python Python
+import requests
+
+response = requests.delete(
+    f"https://api.photomem.io/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}",
+    headers={"Authorization": f"Bearer {clerk_token}"}
+)
+
+result = response.json()
+print(f"Key revoked at: {result['revokedAt']}")
+```
+
+```javascript JavaScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/projects/${projectId}/api-keys/${keyId}`,
+  {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${clerkToken}`
+    }
+  }
+);
+
+const result = await response.json();
+console.log(`Key revoked at: ${result.revokedAt}`);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "message": "API key revoked successfully",
+  "revokedAt": "2025-01-15T14:30:00Z"
+}
+```
+
+```json 403 Forbidden
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Admin or owner role required"
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "error": {
+    "code": "not_found",
+    "message": "API key not found"
+  }
+}
+```
+
+</ResponseExample>
+
+## What Happens When You Revoke
+
+1. **Immediate Effect**: The key stops working immediately for all API calls
+2. **Error Response**: Any requests using the revoked key will receive a 401 Unauthorized error
+3. **Permanent**: Revoked keys cannot be reactivated
+4. **Audit Trail**: The revocation is logged with timestamp and user information
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Security Breach" icon="shield-exclamation">
+    Immediately revoke compromised keys
+  </Card>
+  <Card title="Employee Offboarding" icon="user-minus">
+    Revoke keys when team members leave
+  </Card>
+  <Card title="Key Rotation" icon="rotate">
+    Revoke old keys after rotation
+  </Card>
+  <Card title="Testing Cleanup" icon="broom">
+    Revoke temporary test keys
+  </Card>
+</CardGroup>
+
+## Alternative: Key Rotation
+
+Instead of simply revoking a key, consider using the [rotate endpoint](/api-reference/api-keys/rotate-api-key) which:
+- Creates a new key automatically
+- Provides a grace period for migration
+- Ensures zero downtime during rotation
+

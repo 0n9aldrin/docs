@@ -1,0 +1,250 @@
+---
+title: "Change Plan"
+api: "POST /api/organizations/{org_id}/billing/plan/change"
+description: "Change billing plan with automatic proration"
+---
+
+## Overview
+
+Changes the organization's billing plan. Handles upgrades and downgrades with automatic proration. Validates that current usage fits within new plan limits before changing.
+
+## Authentication
+
+Requires a valid Clerk session token. User must have `owner` role in the organization.
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>
+  The unique identifier of the organization
+</ParamField>
+
+## Request Body
+
+<ParamField body="planId" type="string" required>
+  The plan identifier to change to (e.g., "plan_pro", "plan_free")
+</ParamField>
+
+<ParamField body="interval" type="string" default="month">
+  Billing interval: "month" or "year"
+</ParamField>
+
+## Response
+
+<ResponseField name="subscription" type="object">
+  Updated subscription details
+  
+  <Expandable title="Subscription Object">
+    <ResponseField name="id" type="string">
+      Subscription identifier
+    </ResponseField>
+
+    <ResponseField name="planId" type="string">
+      New plan identifier
+    </ResponseField>
+
+    <ResponseField name="status" type="string">
+      Subscription status
+    </ResponseField>
+
+    <ResponseField name="nextBillingDate" type="string">
+      ISO 8601 timestamp of next billing date
+    </ResponseField>
+
+    <ResponseField name="prorationAmount" type="number">
+      Amount charged or credited due to plan change
+    </ResponseField>
+
+    <ResponseField name="currency" type="string">
+      Currency code
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="invoice" type="object">
+  Invoice for proration charge (null if no charge)
+  
+  <Expandable title="Invoice Object">
+    <ResponseField name="id" type="string">
+      Invoice identifier
+    </ResponseField>
+
+    <ResponseField name="amount" type="number">
+      Invoice amount
+    </ResponseField>
+
+    <ResponseField name="dueDate" type="string">
+      ISO 8601 timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://api.photomem.io/api/organizations/{org_id}/billing/plan/change" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "planId": "plan_pro",
+    "interval": "month"
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    f"https://api.photomem.io/api/organizations/{org_id}/billing/plan/change",
+    headers={
+        "Authorization": f"Bearer {clerk_token}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "planId": "plan_pro",
+        "interval": "month"
+    }
+)
+
+result = response.json()
+print(f"Plan changed to: {result['subscription']['planId']}")
+print(f"Proration: ${result['subscription']['prorationAmount']}")
+```
+
+```javascript JavaScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/billing/plan/change`,
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${clerkToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      planId: 'plan_pro',
+      interval: 'month'
+    })
+  }
+);
+
+const result = await response.json();
+console.log(`Plan changed: ${result.subscription.planId}`);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success - Upgrade
+{
+  "subscription": {
+    "id": "sub_abc123xyz",
+    "planId": "plan_pro",
+    "status": "active",
+    "nextBillingDate": "2025-02-01T00:00:00Z",
+    "prorationAmount": 64.52,
+    "currency": "USD"
+  },
+  "invoice": {
+    "id": "inv_xyz789abc",
+    "amount": 64.52,
+    "dueDate": "2025-01-15T14:30:00Z"
+  }
+}
+```
+
+```json 200 Success - Downgrade
+{
+  "subscription": {
+    "id": "sub_abc123xyz",
+    "planId": "plan_starter",
+    "status": "active",
+    "nextBillingDate": "2025-02-01T00:00:00Z",
+    "prorationAmount": -35.00,
+    "currency": "USD"
+  },
+  "invoice": null
+}
+```
+
+```json 400 Bad Request - Exceeds Limits
+{
+  "error": {
+    "code": "exceeds_limit",
+    "message": "Cannot downgrade: You have 8 projects but new plan only allows 5"
+  }
+}
+```
+
+```json 403 Forbidden
+{
+  "error": {
+    "code": "insufficient_permissions",
+    "message": "Only organization owners can change billing plans"
+  }
+}
+```
+
+</ResponseExample>
+
+## Proration
+
+<AccordionGroup>
+  <Accordion title="How Proration Works">
+    When you change plans mid-billing cycle:
+    
+    - **Upgrades**: You're charged the prorated difference for the remaining time
+    - **Downgrades**: You receive a prorated credit applied to next billing cycle
+    - **Same-day changes**: No proration if changing on the same day
+  </Accordion>
+
+  <Accordion title="Calculation Example">
+    Upgrading from Starter ($29) to Pro ($99) with 15 days left in cycle:
+    
+    ```
+    Days remaining: 15
+    Days in cycle: 30
+    Proration factor: 15 / 30 = 0.5
+    
+    Price difference: $99 - $29 = $70
+    Prorated charge: $70 * 0.5 = $35.00
+    ```
+  </Accordion>
+
+  <Accordion title="Payment Timing">
+    - **Upgrades**: Charged immediately via saved payment method
+    - **Downgrades**: Credit applied to next billing cycle
+    - **Failed payments**: Plan change is rolled back
+  </Accordion>
+</AccordionGroup>
+
+## Downgrade Validations
+
+Before downgrading, the system validates:
+
+<Steps>
+  <Step title="Project Count">
+    Current projects must not exceed new plan's project limit
+  </Step>
+  
+  <Step title="Team Members">
+    Current team size must fit within new plan's member limit
+  </Step>
+  
+  <Step title="Storage Usage">
+    Current storage must be under new plan's storage limit
+  </Step>
+  
+  <Step title="Active Webhooks">
+    Active webhooks must not exceed new plan's webhook limit
+  </Step>
+</Steps>
+
+If validation fails, you'll receive a 400 error with details about what needs to be reduced before downgrading.
+
+## Best Practices
+
+- **Monitor Usage**: Check current usage before downgrading
+- **Delete Unused Resources**: Remove unused projects, webhooks, etc. before downgrading
+- **Timing**: Change plans at the end of billing cycles to minimize proration
+- **Test First**: Verify the new plan meets your needs before committing
+

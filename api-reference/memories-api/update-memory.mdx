@@ -1,0 +1,85 @@
+---
+title: "Update Memory"
+api: "PATCH /api/v1/memories/{memory_id}"
+description: "Update an existing memory"
+---
+
+## Overview
+
+Updates a memory's content and/or tags. Cannot change userId or userName.
+
+## Authentication
+
+Requires API key in `Authorization` header.
+
+## Path Parameters
+
+<ParamField path="memory_id" type="string" required>
+  Memory identifier
+</ParamField>
+
+## Request Body
+
+<ParamField body="content" type="string">
+  New content (max 10KB)
+</ParamField>
+
+<ParamField body="tags" type="array">
+  New tags array
+</ParamField>
+
+## Response
+
+Returns updated memory object.
+
+<RequestExample>
+
+```bash cURL
+curl -X PATCH "https://api.photomem.io/api/v1/memories/mem_abc123xyz" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "User prefers dark mode and large font size",
+    "tags": ["preference", "ui", "accessibility"]
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.patch(
+    f"https://api.photomem.io/api/v1/memories/{memory_id}",
+    headers={
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "content": "User prefers dark mode and large font size",
+        "tags": ["preference", "ui", "accessibility"]
+    }
+)
+
+memory = response.json()["memory"]
+print(f"Updated: {memory['id']}")
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "memory": {
+    "id": "mem_abc123xyz",
+    "userId": "user_123",
+    "userName": "John Doe",
+    "content": "User prefers dark mode and large font size",
+    "tags": ["preference", "ui", "accessibility"],
+    "createdAt": "2025-01-15T16:45:00Z",
+    "updatedAt": "2025-01-15T17:00:00Z"
+  }
+}
+```
+
+</ResponseExample>
+

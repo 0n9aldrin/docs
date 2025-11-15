@@ -1,0 +1,109 @@
+---
+title: "Search Memories"
+api: "POST /api/v1/memories/search"
+description: "Semantic search for memories"
+---
+
+## Overview
+
+Performs semantic search across memories using natural language queries. Results are ranked by relevance score.
+
+## Authentication
+
+Requires API key in `Authorization` header.
+
+## Request Body
+
+<ParamField body="query" type="string" required>
+  Natural language search query
+</ParamField>
+
+<ParamField body="userId" type="string">
+  Optional filter by user ID
+</ParamField>
+
+<ParamField body="limit" type="number" default={10}>
+  Max results to return
+</ParamField>
+
+<ParamField body="minRelevance" type="number" default={0.7}>
+  Minimum relevance score (0.0 to 1.0)
+</ParamField>
+
+## Response
+
+<ResponseField name="results" type="array">
+  Array of search results
+  
+  <Expandable title="Search Result">
+    <ResponseField name="memory" type="object">Memory object</ResponseField>
+    <ResponseField name="relevanceScore" type="number">Relevance score (0.0 to 1.0)</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="query" type="string">Original query</ResponseField>
+<ResponseField name="totalResults" type="number">Number of results</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://api.photomem.io/api/v1/memories/search" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "user interface preferences",
+    "userId": "user_123",
+    "limit": 5,
+    "minRelevance": 0.7
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://api.photomem.io/api/v1/memories/search",
+    headers={
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "query": "user interface preferences",
+        "userId": "user_123",
+        "limit": 5,
+        "minRelevance": 0.7
+    }
+)
+
+results = response.json()["results"]
+for result in results:
+    print(f"Score {result['relevanceScore']}: {result['memory']['content'][:50]}...")
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "results": [
+    {
+      "memory": {
+        "id": "mem_abc123xyz",
+        "userId": "user_123",
+        "userName": "John Doe",
+        "content": "User prefers dark mode in all applications",
+        "tags": ["preference", "ui"],
+        "createdAt": "2025-01-15T16:45:00Z",
+        "updatedAt": "2025-01-15T16:45:00Z"
+      },
+      "relevanceScore": 0.95
+    }
+  ],
+  "query": "user interface preferences",
+  "totalResults": 1
+}
+```
+
+</ResponseExample>
+

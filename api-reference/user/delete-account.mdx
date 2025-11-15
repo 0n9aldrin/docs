@@ -1,0 +1,73 @@
+---
+title: "Delete Account"
+api: "DELETE /api/users/me"
+description: "Delete user account (soft delete with grace period)"
+---
+
+## Overview
+
+Performs a soft delete of the user account with a 30-day grace period. The account can be restored by contacting support within this period.
+
+## Authentication
+
+Requires valid Clerk session token.
+
+## Query Parameters
+
+<ParamField query="confirmation" type="string" required>
+  Must be the string "DELETE" to confirm deletion
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">Confirmation message</ResponseField>
+<ResponseField name="deletedAt" type="string">Deletion timestamp</ResponseField>
+<ResponseField name="gracePeriodDays" type="number">Grace period in days</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE "https://api.photomem.io/api/users/me?confirmation=DELETE" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```python Python
+import requests
+
+response = requests.delete(
+    "https://api.photomem.io/api/users/me",
+    params={"confirmation": "DELETE"},
+    headers={"Authorization": f"Bearer {clerk_token}"}
+)
+
+result = response.json()
+print(result["message"])
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "message": "Account deleted successfully. You have 30 days to restore your account by contacting support.",
+  "deletedAt": "2025-01-15T15:30:00Z",
+  "gracePeriodDays": 30
+}
+```
+
+```json 400 Bad Request
+{
+  "error": {
+    "code": "invalid_confirmation",
+    "message": "Confirmation must be 'DELETE' to delete account"
+  }
+}
+```
+
+</ResponseExample>
+
+<Warning>
+  This action marks your account for deletion. After 30 days, all data will be permanently deleted.
+</Warning>
+

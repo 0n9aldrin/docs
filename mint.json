@@ -27,16 +27,6 @@
     "name": "Get Started",
     "url": "https://github.com/photomem/photomem"
   },
-  "tabs": [
-    {
-      "name": "API Reference",
-      "url": "api-reference"
-    },
-    {
-      "name": "Examples",
-      "url": "examples"
-    }
-  ],
   "anchors": [
     {
       "name": "Discord",
@@ -49,146 +39,163 @@
       "url": "https://photomem.ai/blog"
     }
   ],
-  "navigation": [
-    {
-      "group": "Getting Started",
-      "pages": [
-        "introduction",
-        "quickstart",
-        "installation",
-        "core-concepts"
-      ]
-    },
-    {
-      "group": "Migration",
-      "pages": [
-        "migration/from-mem0"
-      ]
-    },
-    {
-      "group": "API Reference",
-      "pages": [
-        "api-reference/introduction"
-      ]
-    },
-    {
-      "group": "SDK",
-      "pages": [
-        "api-reference/memory"
-      ]
-    },
-    {
-      "group": "Core Memory Operations",
-      "pages": [
-        "api-reference/operations/add-memories",
-        "api-reference/operations/get-memories",
-        "api-reference/operations/search-memories",
-        "api-reference/operations/update-memory",
-        "api-reference/operations/delete-memory",
-        "api-reference/operations/memory-history"
-      ]
-    },
-    {
-      "group": "Organizations APIs",
-      "pages": [
-        "api-reference/organizations/create-organization",
-        "api-reference/organizations/get-organizations",
-        "api-reference/organizations/get-organization",
-        "api-reference/organizations/update-organization",
-        "api-reference/organizations/delete-organization"
-      ]
-    },
-    {
-      "group": "Projects APIs",
-      "pages": [
-        "api-reference/projects/create-project",
-        "api-reference/projects/get-projects",
-        "api-reference/projects/get-project",
-        "api-reference/projects/update-project",
-        "api-reference/projects/delete-project"
-      ]
-    },
-    {
-      "group": "Entities APIs",
-      "pages": [
-        "api-reference/entities/get-users"
-      ]
-    },
-    {
-      "group": "Memory Management APIs",
-      "pages": [
-        "api-reference/memories-api/create-memory",
-        "api-reference/memories-api/list-memories",
-        "api-reference/memories-api/search-memories",
-        "api-reference/memories-api/update-memory",
-        "api-reference/memories-api/delete-memory"
-      ]
-    },
-    {
-      "group": "API Keys Management",
-      "pages": [
-        "api-reference/api-keys/list-api-keys",
-        "api-reference/api-keys/create-api-key",
-        "api-reference/api-keys/revoke-api-key",
-        "api-reference/api-keys/rotate-api-key"
-      ]
-    },
-    {
-      "group": "Billing & Subscription",
-      "pages": [
-        "api-reference/billing/get-current-plan",
-        "api-reference/billing/change-plan",
-        "api-reference/billing/get-invoices",
-        "api-reference/billing/update-payment-method",
-        "api-reference/billing/cancel-subscription"
-      ]
-    },
-    {
-      "group": "Usage & Analytics",
-      "pages": [
-        "api-reference/usage/get-usage-statistics",
-        "api-reference/usage/get-analytics-dashboard",
-        "api-reference/usage/export-usage"
-      ]
-    },
-    {
-      "group": "User Profile Management",
-      "pages": [
-        "api-reference/user/get-profile",
-        "api-reference/user/update-profile",
-        "api-reference/user/delete-account"
-      ]
-    },
-    {
-      "group": "Webhooks Management",
-      "pages": [
-        "api-reference/webhooks/list-webhooks",
-        "api-reference/webhooks/create-webhook",
-        "api-reference/webhooks/delete-webhook"
-      ]
-    },
-    {
-      "group": "Reference",
-      "pages": [
-        "api-reference/types",
-        "api-reference/errors"
-      ]
-    },
-    {
-      "group": "Advanced",
-      "pages": [
-        "advanced/filtering",
-        "advanced/llm-prompts",
-        "advanced/graph-memory"
-      ]
-    },
-    {
-      "group": "Examples",
-      "pages": [
-        "examples/python"
-      ]
-    }
-  ],
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation",
+              "core-concepts"
+            ]
+          },
+          {
+            "group": "Migration",
+            "pages": [
+              "migration/from-mem0"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/filtering",
+              "advanced/llm-prompts",
+              "advanced/graph-memory"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction"
+            ]
+          },
+          {
+            "group": "SDK",
+            "pages": [
+              "api-reference/memory"
+            ]
+          },
+          {
+            "group": "Core Memory Operations",
+            "pages": [
+              "api-reference/operations/add-memories",
+              "api-reference/operations/get-memories",
+              "api-reference/operations/search-memories",
+              "api-reference/operations/update-memory",
+              "api-reference/operations/delete-memory",
+              "api-reference/operations/memory-history"
+            ]
+          },
+          {
+            "group": "Organizations APIs",
+            "pages": [
+              "api-reference/organizations/create-organization",
+              "api-reference/organizations/get-organizations",
+              "api-reference/organizations/get-organization",
+              "api-reference/organizations/update-organization",
+              "api-reference/organizations/delete-organization"
+            ]
+          },
+          {
+            "group": "Projects APIs",
+            "pages": [
+              "api-reference/projects/create-project",
+              "api-reference/projects/get-projects",
+              "api-reference/projects/get-project",
+              "api-reference/projects/update-project",
+              "api-reference/projects/delete-project"
+            ]
+          },
+          {
+            "group": "Entities APIs",
+            "pages": [
+              "api-reference/entities/get-users"
+            ]
+          },
+          {
+            "group": "Memory Management APIs",
+            "pages": [
+              "api-reference/memories-api/create-memory",
+              "api-reference/memories-api/list-memories",
+              "api-reference/memories-api/search-memories",
+              "api-reference/memories-api/update-memory",
+              "api-reference/memories-api/delete-memory"
+            ]
+          },
+          {
+            "group": "API Keys Management",
+            "pages": [
+              "api-reference/api-keys/list-api-keys",
+              "api-reference/api-keys/create-api-key",
+              "api-reference/api-keys/revoke-api-key",
+              "api-reference/api-keys/rotate-api-key"
+            ]
+          },
+          {
+            "group": "Billing & Subscription",
+            "pages": [
+              "api-reference/billing/get-current-plan",
+              "api-reference/billing/change-plan",
+              "api-reference/billing/get-invoices",
+              "api-reference/billing/update-payment-method",
+              "api-reference/billing/cancel-subscription"
+            ]
+          },
+          {
+            "group": "Usage & Analytics",
+            "pages": [
+              "api-reference/usage/get-usage-statistics",
+              "api-reference/usage/get-analytics-dashboard",
+              "api-reference/usage/export-usage"
+            ]
+          },
+          {
+            "group": "User Profile Management",
+            "pages": [
+              "api-reference/user/get-profile",
+              "api-reference/user/update-profile",
+              "api-reference/user/delete-account"
+            ]
+          },
+          {
+            "group": "Webhooks Management",
+            "pages": [
+              "api-reference/webhooks/list-webhooks",
+              "api-reference/webhooks/create-webhook",
+              "api-reference/webhooks/delete-webhook"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "api-reference/types",
+              "api-reference/errors"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Examples",
+        "groups": [
+          {
+            "group": "Code Examples",
+            "pages": [
+              "examples/python"
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "footerSocials": {
     "github": "https://github.com/photomem/photomem",
     "twitter": "https://twitter.com/photomem",

@@ -4,14 +4,6 @@ api: "GET /api/users/me"
 description: "Get current user's profile information"
 ---
 
-## Overview
-
-Returns the authenticated user's profile information including organization membership, role, and account status.
-
-## Authentication
-
-Requires valid Clerk session token.
-
 ## Response
 
 <ResponseField name="id" type="string">User identifier</ResponseField>
@@ -19,7 +11,11 @@ Requires valid Clerk session token.
 <ResponseField name="email" type="string">User email address</ResponseField>
 <ResponseField name="fullName" type="string">User's full name</ResponseField>
 <ResponseField name="organizationId" type="string">Organization ID (if member of one)</ResponseField>
-<ResponseField name="role" type="string">Role in organization (owner, admin, member)</ResponseField>
+<ResponseField name="role" type="string">
+  Role in organization
+  
+  **Available options:** `owner`, `admin`, `member`
+</ResponseField>
 <ResponseField name="isActive" type="boolean">Whether account is active</ResponseField>
 <ResponseField name="needsOnboarding" type="boolean">Whether user needs onboarding</ResponseField>
 <ResponseField name="createdAt" type="string">Account creation timestamp</ResponseField>
@@ -46,11 +42,23 @@ print(f"{profile['fullName']} ({profile['email']})")
 print(f"Role: {profile['role']}")
 ```
 
+```typescript TypeScript
+const response = await fetch('https://api.photomem.io/api/users/me', {
+  headers: {
+    'Authorization': `Bearer ${clerkToken}`
+  }
+});
+
+const profile = await response.json();
+console.log(`${profile.fullName} (${profile.email})`);
+console.log(`Role: ${profile.role}`);
+```
+
 </RequestExample>
 
 <ResponseExample>
 
-```json 200 Success
+```json 200
 {
   "id": "user_abc123xyz",
   "clerkId": "clerk_abc123",
@@ -66,5 +74,13 @@ print(f"Role: {profile['role']}")
 }
 ```
 
-</ResponseExample>
+```json 401
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or expired token"
+  }
+}
+```
 
+</ResponseExample>

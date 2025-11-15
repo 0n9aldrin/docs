@@ -4,14 +4,6 @@ api: "POST /api/organizations/{org_id}/billing/payment-method"
 description: "Update organization's payment method"
 ---
 
-## Overview
-
-Updates the payment method for the organization's subscription. Requires owner role.
-
-## Authentication
-
-Requires valid Clerk session token with `owner` role.
-
 ## Path Parameters
 
 <ParamField path="org_id" type="string" required>
@@ -30,15 +22,33 @@ Requires valid Clerk session token with `owner` role.
   Updated payment method details
   
   <Expandable title="Payment Method">
-    <ResponseField name="id" type="string">Payment method ID</ResponseField>
-    <ResponseField name="type" type="string">Payment type ("card", "bank", etc.)</ResponseField>
+    <ResponseField name="id" type="string">
+      Payment method ID
+    </ResponseField>
+
+    <ResponseField name="type" type="string">
+      Payment type: `card`, `bank`, etc.
+    </ResponseField>
+
     <ResponseField name="card" type="object">
       Card details (if type is "card")
-      <Expandable title="Card Details">
-        <ResponseField name="brand" type="string">Card brand (visa, mastercard, etc.)</ResponseField>
-        <ResponseField name="last4" type="string">Last 4 digits</ResponseField>
-        <ResponseField name="expMonth" type="number">Expiration month</ResponseField>
-        <ResponseField name="expYear" type="number">Expiration year</ResponseField>
+      
+      <Expandable title="Card">
+        <ResponseField name="brand" type="string">
+          Card brand (visa, mastercard, etc.)
+        </ResponseField>
+
+        <ResponseField name="last4" type="string">
+          Last 4 digits
+        </ResponseField>
+
+        <ResponseField name="expMonth" type="number">
+          Expiration month
+        </ResponseField>
+
+        <ResponseField name="expYear" type="number">
+          Expiration year
+        </ResponseField>
       </Expandable>
     </ResponseField>
   </Expandable>
@@ -69,11 +79,30 @@ pm = response.json()["paymentMethod"]
 print(f"Updated to {pm['card']['brand']} ending in {pm['card']['last4']}")
 ```
 
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/billing/payment-method`,
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${clerkToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      paymentMethodId: 'pm_1ABC123xyz'
+    })
+  }
+);
+
+const { paymentMethod } = await response.json();
+console.log(`Updated: ${paymentMethod.card.brand} ending in ${paymentMethod.card.last4}`);
+```
+
 </RequestExample>
 
 <ResponseExample>
 
-```json 200 Success
+```json 200
 {
   "paymentMethod": {
     "id": "pm_1ABC123xyz",
@@ -88,5 +117,13 @@ print(f"Updated to {pm['card']['brand']} ending in {pm['card']['last4']}")
 }
 ```
 
-</ResponseExample>
+```json 403
+{
+  "error": {
+    "code": "insufficient_permissions",
+    "message": "Only organization owners can update payment methods"
+  }
+}
+```
 
+</ResponseExample>

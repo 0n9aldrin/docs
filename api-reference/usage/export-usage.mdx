@@ -4,14 +4,6 @@ api: "POST /api/organizations/{org_id}/usage/export"
 description: "Request an export of usage data"
 ---
 
-## Overview
-
-Initiates an asynchronous export of usage data. Returns an export ID to check status and download the file when ready.
-
-## Authentication
-
-Requires valid Clerk session token. User must be a member of the organization.
-
 ## Path Parameters
 
 <ParamField path="org_id" type="string" required>
@@ -29,7 +21,9 @@ Requires valid Clerk session token. User must be a member of the organization.
 </ParamField>
 
 <ParamField body="format" type="string" default="csv">
-  Export format: `csv`, `json`, or `xlsx`
+  Export format
+  
+  **Available options:** `csv`, `json`, `xlsx`
 </ParamField>
 
 <ParamField body="includeDetails" type="boolean" default={false}>
@@ -93,11 +87,33 @@ export_id = response.json()["exportId"]
 print(f"Export started: {export_id}")
 ```
 
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/usage/export`,
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${clerkToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      startDate: '2025-01-01T00:00:00Z',
+      endDate: '2025-01-31T23:59:59Z',
+      format: 'csv',
+      includeDetails: true
+    })
+  }
+);
+
+const { exportId } = await response.json();
+console.log(`Export started: ${exportId}`);
+```
+
 </RequestExample>
 
 <ResponseExample>
 
-```json 202 Accepted
+```json 202
 {
   "exportId": "exp_abc123xyz",
   "status": "processing",
@@ -107,25 +123,3 @@ print(f"Export started: {export_id}")
 ```
 
 </ResponseExample>
-
-## Check Export Status
-
-Use `GET /api/organizations/{org_id}/usage/export/{export_id}` to check the status.
-
-```bash
-curl -X GET "https://api.photomem.io/api/organizations/{org_id}/usage/export/exp_abc123xyz" \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
-```
-
-Response when completed:
-
-```json
-{
-  "exportId": "exp_abc123xyz",
-  "status": "completed",
-  "downloadUrl": "https://api.photomem.io/downloads/exp_abc123xyz.csv",
-  "expiresAt": "2025-01-16T14:30:00Z",
-  "fileSize": 1024000
-}
-```
-

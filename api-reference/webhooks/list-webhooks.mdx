@@ -4,29 +4,32 @@ api: "GET /api/organizations/{org_id}/projects/{project_id}/webhooks"
 description: "List all webhooks for a project"
 ---
 
-## Overview
-
-Returns all webhooks configured for a project, including statistics and delivery information.
-
-## Authentication
-
-Requires valid Clerk session token. User must be a member of the organization.
-
 ## Path Parameters
 
-<ParamField path="org_id" type="string" required>Organization identifier</ParamField>
-<ParamField path="project_id" type="string" required>Project identifier</ParamField>
+<ParamField path="org_id" type="string" required>
+  Organization identifier
+</ParamField>
+
+<ParamField path="project_id" type="string" required>
+  Project identifier
+</ParamField>
 
 ## Response
 
 <ResponseField name="webhooks" type="array">
   Array of webhook objects
   
-  <Expandable title="Webhook Object">
+  <Expandable title="Webhook">
     <ResponseField name="id" type="string">Webhook identifier</ResponseField>
     <ResponseField name="url" type="string">Webhook URL</ResponseField>
-    <ResponseField name="events" type="array">Array of event types to trigger on</ResponseField>
-    <ResponseField name="status" type="string">Status: "active" or "paused"</ResponseField>
+    <ResponseField name="events" type="array">
+      Array of event types to trigger on
+      
+      **Available events:** `memory.created`, `memory.updated`, `memory.deleted`, `project.updated`
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      Status: `active` or `paused`
+    </ResponseField>
     <ResponseField name="secret" type="string">Webhook signing secret</ResponseField>
     <ResponseField name="description" type="string">Optional description</ResponseField>
     <ResponseField name="createdAt" type="string">Creation timestamp</ResponseField>
@@ -34,6 +37,7 @@ Requires valid Clerk session token. User must be a member of the organization.
     <ResponseField name="lastDeliveredAt" type="string">Last successful delivery (nullable)</ResponseField>
     <ResponseField name="statistics" type="object">
       Delivery statistics
+      
       <Expandable title="Statistics">
         <ResponseField name="totalDeliveries" type="number">Total deliveries</ResponseField>
         <ResponseField name="successfulDeliveries" type="number">Successful deliveries</ResponseField>
@@ -62,15 +66,27 @@ response = requests.get(
 webhooks = response.json()["webhooks"]
 for wh in webhooks:
     print(f"{wh['url']}: {wh['status']}")
-    if wh['statistics']:
-        print(f"  Success rate: {wh['statistics']['successfulDeliveries']}/{wh['statistics']['totalDeliveries']}")
+```
+
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/projects/${projectId}/webhooks`,
+  {
+    headers: {
+      'Authorization': `Bearer ${clerkToken}`
+    }
+  }
+);
+
+const { webhooks } = await response.json();
+webhooks.forEach(wh => console.log(`${wh.url}: ${wh.status}`));
 ```
 
 </RequestExample>
 
 <ResponseExample>
 
-```json 200 Success
+```json 200
 {
   "webhooks": [
     {
@@ -94,12 +110,13 @@ for wh in webhooks:
 }
 ```
 
+```json 404
+{
+  "error": {
+    "code": "project_not_found",
+    "message": "Project not found"
+  }
+}
+```
+
 </ResponseExample>
-
-## Event Types
-
-- `memory.created` - Fired when a memory is created
-- `memory.updated` - Fired when a memory is updated
-- `memory.deleted` - Fired when a memory is deleted
-- `project.updated` - Fired when project settings change
-

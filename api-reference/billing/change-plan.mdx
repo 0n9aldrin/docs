@@ -4,14 +4,6 @@ api: "POST /api/organizations/{org_id}/billing/plan/change"
 description: "Change billing plan with automatic proration"
 ---
 
-## Overview
-
-Changes the organization's billing plan. Handles upgrades and downgrades with automatic proration. Validates that current usage fits within new plan limits before changing.
-
-## Authentication
-
-Requires a valid Clerk session token. User must have `owner` role in the organization.
-
 ## Path Parameters
 
 <ParamField path="org_id" type="string" required>
@@ -21,11 +13,15 @@ Requires a valid Clerk session token. User must have `owner` role in the organiz
 ## Request Body
 
 <ParamField body="planId" type="string" required>
-  The plan identifier to change to (e.g., "plan_pro", "plan_free")
+  The plan identifier to change to
+  
+  **Available options:** `plan_free`, `plan_starter`, `plan_pro`, `plan_enterprise`
 </ParamField>
 
 <ParamField body="interval" type="string" default="month">
-  Billing interval: "month" or "year"
+  Billing interval
+  
+  **Available options:** `month`, `year`
 </ParamField>
 
 ## Response
@@ -33,7 +29,7 @@ Requires a valid Clerk session token. User must have `owner` role in the organiz
 <ResponseField name="subscription" type="object">
   Updated subscription details
   
-  <Expandable title="Subscription Object">
+  <Expandable title="Subscription">
     <ResponseField name="id" type="string">
       Subscription identifier
     </ResponseField>
@@ -63,7 +59,7 @@ Requires a valid Clerk session token. User must have `owner` role in the organiz
 <ResponseField name="invoice" type="object">
   Invoice for proration charge (null if no charge)
   
-  <Expandable title="Invoice Object">
+  <Expandable title="Invoice">
     <ResponseField name="id" type="string">
       Invoice identifier
     </ResponseField>
@@ -110,7 +106,7 @@ print(f"Plan changed to: {result['subscription']['planId']}")
 print(f"Proration: ${result['subscription']['prorationAmount']}")
 ```
 
-```javascript JavaScript
+```typescript TypeScript
 const response = await fetch(
   `https://api.photomem.io/api/organizations/${orgId}/billing/plan/change`,
   {
@@ -134,7 +130,7 @@ console.log(`Plan changed: ${result.subscription.planId}`);
 
 <ResponseExample>
 
-```json 200 Success - Upgrade
+```json 200
 {
   "subscription": {
     "id": "sub_abc123xyz",
@@ -152,21 +148,7 @@ console.log(`Plan changed: ${result.subscription.planId}`);
 }
 ```
 
-```json 200 Success - Downgrade
-{
-  "subscription": {
-    "id": "sub_abc123xyz",
-    "planId": "plan_starter",
-    "status": "active",
-    "nextBillingDate": "2025-02-01T00:00:00Z",
-    "prorationAmount": -35.00,
-    "currency": "USD"
-  },
-  "invoice": null
-}
-```
-
-```json 400 Bad Request - Exceeds Limits
+```json 400
 {
   "error": {
     "code": "exceeds_limit",
@@ -175,7 +157,7 @@ console.log(`Plan changed: ${result.subscription.planId}`);
 }
 ```
 
-```json 403 Forbidden
+```json 403
 {
   "error": {
     "code": "insufficient_permissions",
@@ -185,66 +167,3 @@ console.log(`Plan changed: ${result.subscription.planId}`);
 ```
 
 </ResponseExample>
-
-## Proration
-
-<AccordionGroup>
-  <Accordion title="How Proration Works">
-    When you change plans mid-billing cycle:
-    
-    - **Upgrades**: You're charged the prorated difference for the remaining time
-    - **Downgrades**: You receive a prorated credit applied to next billing cycle
-    - **Same-day changes**: No proration if changing on the same day
-  </Accordion>
-
-  <Accordion title="Calculation Example">
-    Upgrading from Starter ($29) to Pro ($99) with 15 days left in cycle:
-    
-    ```
-    Days remaining: 15
-    Days in cycle: 30
-    Proration factor: 15 / 30 = 0.5
-    
-    Price difference: $99 - $29 = $70
-    Prorated charge: $70 * 0.5 = $35.00
-    ```
-  </Accordion>
-
-  <Accordion title="Payment Timing">
-    - **Upgrades**: Charged immediately via saved payment method
-    - **Downgrades**: Credit applied to next billing cycle
-    - **Failed payments**: Plan change is rolled back
-  </Accordion>
-</AccordionGroup>
-
-## Downgrade Validations
-
-Before downgrading, the system validates:
-
-<Steps>
-  <Step title="Project Count">
-    Current projects must not exceed new plan's project limit
-  </Step>
-  
-  <Step title="Team Members">
-    Current team size must fit within new plan's member limit
-  </Step>
-  
-  <Step title="Storage Usage">
-    Current storage must be under new plan's storage limit
-  </Step>
-  
-  <Step title="Active Webhooks">
-    Active webhooks must not exceed new plan's webhook limit
-  </Step>
-</Steps>
-
-If validation fails, you'll receive a 400 error with details about what needs to be reduced before downgrading.
-
-## Best Practices
-
-- **Monitor Usage**: Check current usage before downgrading
-- **Delete Unused Resources**: Remove unused projects, webhooks, etc. before downgrading
-- **Timing**: Change plans at the end of billing cycles to minimize proration
-- **Test First**: Verify the new plan meets your needs before committing
-

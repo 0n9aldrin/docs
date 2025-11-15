@@ -4,30 +4,41 @@ api: "POST /api/organizations/{org_id}/projects/{project_id}/webhooks"
 description: "Create a new webhook"
 ---
 
-## Overview
-
-Creates a new webhook for the project. Automatically generates a signing secret and performs a test delivery.
-
-## Authentication
-
-Requires valid Clerk session token. User must be a member of the organization.
-
 ## Path Parameters
 
-<ParamField path="org_id" type="string" required>Organization identifier</ParamField>
-<ParamField path="project_id" type="string" required>Project identifier</ParamField>
+<ParamField path="org_id" type="string" required>
+  Organization identifier
+</ParamField>
+
+<ParamField path="project_id" type="string" required>
+  Project identifier
+</ParamField>
 
 ## Request Body
 
-<ParamField body="url" type="string" required>Webhook URL (must be HTTPS)</ParamField>
-<ParamField body="events" type="array" required>Array of event types to subscribe to</ParamField>
-<ParamField body="description" type="string">Optional description</ParamField>
+<ParamField body="url" type="string" required>
+  Webhook URL (must be HTTPS)
+</ParamField>
+
+<ParamField body="events" type="array" required>
+  Array of event types to subscribe to
+  
+  **Available events:** `memory.created`, `memory.updated`, `memory.deleted`, `project.updated`
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional description
+</ParamField>
 
 ## Response
 
-<ResponseField name="webhook" type="object">Created webhook object</ResponseField>
+<ResponseField name="webhook" type="object">
+  Created webhook object
+</ResponseField>
+
 <ResponseField name="testDelivery" type="object">
   Test delivery result
+  
   <Expandable title="Test Delivery">
     <ResponseField name="success" type="boolean">Whether test succeeded</ResponseField>
     <ResponseField name="responseCode" type="number">HTTP response code</ResponseField>
@@ -70,11 +81,32 @@ print(f"Webhook created: {webhook['id']}")
 print(f"Secret: {webhook['secret']}")
 ```
 
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/projects/${projectId}/webhooks`,
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${clerkToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      url: 'https://api.example.com/webhooks/photomem',
+      events: ['memory.created', 'memory.updated'],
+      description: 'Production webhook'
+    })
+  }
+);
+
+const { webhook } = await response.json();
+console.log(`Webhook created: ${webhook.id}`);
+```
+
 </RequestExample>
 
 <ResponseExample>
 
-```json 201 Created
+```json 201
 {
   "webhook": {
     "id": "hook_abc123xyz",
@@ -97,22 +129,13 @@ print(f"Secret: {webhook['secret']}")
 }
 ```
 
-</ResponseExample>
-
-## Webhook Security
-
-Save the `secret` immediately - use it to verify webhook signatures:
-
-```python Verify Signature
-import hmac
-import hashlib
-
-def verify_webhook(payload, signature, secret):
-    expected = hmac.new(
-        secret.encode(),
-        payload.encode(),
-        hashlib.sha256
-    ).hexdigest()
-    return hmac.compare_digest(signature, expected)
+```json 400
+{
+  "error": {
+    "code": "invalid_url",
+    "message": "Webhook URL must use HTTPS"
+  }
+}
 ```
 
+</ResponseExample>

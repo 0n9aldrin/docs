@@ -4,14 +4,6 @@ api: "GET /api/organizations/{org_id}/analytics"
 description: "Get comprehensive analytics dashboard data"
 ---
 
-## Overview
-
-Returns comprehensive analytics including top tags, top users, daily statistics, and performance metrics for visualization in dashboards.
-
-## Authentication
-
-Requires valid Clerk session token. User must be a member of the organization.
-
 ## Path Parameters
 
 <ParamField path="org_id" type="string" required>
@@ -48,31 +40,9 @@ Requires valid Clerk session token. User must be a member of the organization.
     <ResponseField name="totalApiCalls" type="number">Total API calls</ResponseField>
     <ResponseField name="averageResponseTime" type="string">Average response time</ResponseField>
     <ResponseField name="errorRate" type="number">Error rate percentage</ResponseField>
-    <ResponseField name="topTags" type="array">
-      Most used tags
-      <Expandable title="Top Tag">
-        <ResponseField name="tag" type="string">Tag name</ResponseField>
-        <ResponseField name="count" type="number">Usage count</ResponseField>
-      </Expandable>
-    </ResponseField>
-    <ResponseField name="topUsers" type="array">
-      Most active users
-      <Expandable title="Top User">
-        <ResponseField name="userId" type="string">User ID</ResponseField>
-        <ResponseField name="userName" type="string">User name</ResponseField>
-        <ResponseField name="memoryCount" type="number">Memory count</ResponseField>
-      </Expandable>
-    </ResponseField>
-    <ResponseField name="dailyStats" type="array">
-      Daily breakdown
-      <Expandable title="Daily Stat">
-        <ResponseField name="date" type="string">Date (YYYY-MM-DD)</ResponseField>
-        <ResponseField name="apiCalls" type="number">API calls</ResponseField>
-        <ResponseField name="memoriesCreated" type="number">Memories created</ResponseField>
-        <ResponseField name="memoriesDeleted" type="number">Memories deleted</ResponseField>
-        <ResponseField name="errors" type="number">Error count</ResponseField>
-      </Expandable>
-    </ResponseField>
+    <ResponseField name="topTags" type="array">Most used tags</ResponseField>
+    <ResponseField name="topUsers" type="array">Most active users</ResponseField>
+    <ResponseField name="dailyStats" type="array">Daily breakdown</ResponseField>
   </Expandable>
 </ResponseField>
 
@@ -99,18 +69,28 @@ response = requests.get(
     headers={"Authorization": f"Bearer {clerk_token}"}
 )
 
-data = response.json()
-metrics = data["metrics"]
-
+metrics = response.json()["metrics"]
 print(f"Total Memories: {metrics['totalMemories']:,}")
 print(f"Top Tags: {[t['tag'] for t in metrics['topTags'][:5]]}")
+```
+
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/analytics`,
+  {
+    headers: {'Authorization': `Bearer ${clerkToken}`}
+  }
+);
+
+const data = await response.json();
+console.log(`Total Memories: ${data.metrics.totalMemories.toLocaleString()}`);
 ```
 
 </RequestExample>
 
 <ResponseExample>
 
-```json 200 Success
+```json 200
 {
   "dateRange": {
     "start": "2025-01-01T00:00:00Z",
@@ -124,15 +104,10 @@ print(f"Top Tags: {[t['tag'] for t in metrics['topTags'][:5]]}")
     "errorRate": 1.06,
     "topTags": [
       {"tag": "important", "count": 1250},
-      {"tag": "work", "count": 980},
-      {"tag": "personal", "count": 765},
-      {"tag": "project-a", "count": 543},
-      {"tag": "follow-up", "count": 432}
+      {"tag": "work", "count": 980}
     ],
     "topUsers": [
-      {"userId": "user_abc123", "userName": "User abc123", "memoryCount": 1250},
-      {"userId": "user_def456", "userName": "User def456", "memoryCount": 890},
-      {"userId": "user_ghi789", "userName": "User ghi789", "memoryCount": 678}
+      {"userId": "user_abc123", "userName": "User abc123", "memoryCount": 1250}
     ],
     "dailyStats": [
       {
@@ -141,13 +116,6 @@ print(f"Top Tags: {[t['tag'] for t in metrics['topTags'][:5]]}")
         "memoriesCreated": 456,
         "memoriesDeleted": 12,
         "errors": 8
-      },
-      {
-        "date": "2025-01-02",
-        "apiCalls": 1567,
-        "memoriesCreated": 523,
-        "memoriesDeleted": 15,
-        "errors": 10
       }
     ]
   }
@@ -155,4 +123,3 @@ print(f"Top Tags: {[t['tag'] for t in metrics['topTags'][:5]]}")
 ```
 
 </ResponseExample>
-

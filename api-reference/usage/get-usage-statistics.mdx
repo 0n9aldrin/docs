@@ -1,153 +1,296 @@
 ---
-title: "Get Usage Statistics"
-api: "GET /api/organizations/{org_id}/usage"
-description: "Get detailed usage statistics for an organization"
+title: 'Get Usage Statistics'
+openapi: get /api/organizations/{org_id}/usage
 ---
+
+Get comprehensive usage statistics for an organization, including API calls, storage metrics, and cost estimates.
+
+<Info>
+Track your PhotoMem usage across all projects to optimize costs and monitor API consumption patterns.
+</Info>
+
+## Authentication
+
+This endpoint requires JWT authentication.
+
+```bash
+Authorization: Bearer YOUR_JWT_TOKEN
+```
 
 ## Path Parameters
 
 <ParamField path="org_id" type="string" required>
-  Organization identifier
+  The unique identifier of the organization
 </ParamField>
 
 ## Query Parameters
 
 <ParamField query="period" type="string" default="30d">
-  Time period
-  
-  **Available options:** `7d`, `30d`, `90d`, `current_month`
+  Time period for statistics. Options: `7d`, `30d`, `90d`, `current_month`
 </ParamField>
 
 <ParamField query="projectId" type="string">
-  Optional project ID to filter statistics
+  Optional project ID to filter statistics to a specific project
 </ParamField>
 
 ## Response
 
-<ResponseField name="period" type="string">
-  The time period for the statistics
-</ResponseField>
-
-<ResponseField name="usage" type="object">
-  Usage metrics
-  
-  <Expandable title="Usage">
-    <ResponseField name="apiCalls" type="object">
-      API call statistics
-      
-      <Expandable title="API Calls">
-        <ResponseField name="total" type="number">Total API calls</ResponseField>
-        <ResponseField name="successful" type="number">Successful calls</ResponseField>
-        <ResponseField name="failed" type="number">Failed calls</ResponseField>
-        <ResponseField name="breakdown" type="object">Breakdown by operation type</ResponseField>
-      </Expandable>
+<ResponseField name="period" type="object">
+  <Expandable title="Period Information">
+    <ResponseField name="start" type="string">
+      ISO 8601 timestamp of period start
     </ResponseField>
     
-    <ResponseField name="storage" type="object">
-      Storage usage metrics
-      
-      <Expandable title="Storage">
-        <ResponseField name="totalBytes" type="number">Total storage in bytes</ResponseField>
-        <ResponseField name="memoryCount" type="number">Number of memories</ResponseField>
-        <ResponseField name="averageMemorySize" type="number">Average memory size in bytes</ResponseField>
-      </Expandable>
-    </ResponseField>
-    
-    <ResponseField name="costs" type="object">
-      Cost breakdown
-      
-      <Expandable title="Costs">
-        <ResponseField name="apiCalls" type="number">API call costs</ResponseField>
-        <ResponseField name="storage" type="number">Storage costs</ResponseField>
-        <ResponseField name="total" type="number">Total costs</ResponseField>
-        <ResponseField name="currency" type="string">Currency code</ResponseField>
-      </Expandable>
+    <ResponseField name="end" type="string">
+      ISO 8601 timestamp of period end
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-<ResponseField name="limits" type="object">
-  Plan limits and usage percentages
-  
-  <Expandable title="Limits">
-    <ResponseField name="apiCallsPerMonth" type="number">Monthly API call limit</ResponseField>
-    <ResponseField name="storageGB" type="number">Storage limit in GB</ResponseField>
-    <ResponseField name="percentUsed" type="object">Usage percentages</ResponseField>
+<ResponseField name="usage" type="object">
+  <Expandable title="Usage Metrics">
+    <ResponseField name="memoriesCreated" type="integer">
+      Total number of memories created in this period
+    </ResponseField>
+    
+    <ResponseField name="memoriesSearched" type="integer">
+      Total number of search operations performed
+    </ResponseField>
+    
+    <ResponseField name="storageBytes" type="integer">
+      Total storage used in bytes
+    </ResponseField>
+    
+    <ResponseField name="estimatedCost" type="number">
+      Estimated cost in USD for the period
+    </ResponseField>
   </Expandable>
 </ResponseField>
 
 <RequestExample>
-
 ```bash cURL
-curl -X GET "https://api.photomem.io/api/organizations/{org_id}/usage?period=30d" \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+curl -X GET "https://api.photomem.ai/api/organizations/{org_id}/usage?period=30d" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.ai/api/organizations/${orgId}/usage?period=30d`,
+  {
+    headers: {
+      'Authorization': `Bearer ${jwtToken}`
+    }
+  }
+);
+
+const data = await response.json();
+console.log(`Memories created: ${data.usage.memoriesCreated}`);
+console.log(`Estimated cost: $${data.usage.estimatedCost.toFixed(2)}`);
 ```
 
 ```python Python
 import requests
 
 response = requests.get(
-    f"https://api.photomem.io/api/organizations/{org_id}/usage",
-    params={"period": "30d"},
-    headers={"Authorization": f"Bearer {clerk_token}"}
+    f"https://api.photomem.ai/api/organizations/{org_id}/usage",
+    headers={"Authorization": f"Bearer {jwt_token}"},
+    params={"period": "30d"}
 )
 
 data = response.json()
-print(f"API Calls: {data['usage']['apiCalls']['total']:,}")
-print(f"Total Cost: ${data['usage']['costs']['total']:.2f}")
+print(f"Memories created: {data['usage']['memoriesCreated']}")
+print(f"Estimated cost: ${data['usage']['estimatedCost']:.2f}")
 ```
-
-```typescript TypeScript
-const response = await fetch(
-  `https://api.photomem.io/api/organizations/${orgId}/usage?period=30d`,
-  {
-    headers: {'Authorization': `Bearer ${clerkToken}`}
-  }
-);
-
-const data = await response.json();
-console.log(`API Calls: ${data.usage.apiCalls.total.toLocaleString()}`);
-```
-
 </RequestExample>
 
 <ResponseExample>
-
-```json 200
+```json Response
 {
-  "period": "30d",
-  "usage": {
-    "apiCalls": {
-      "total": 45678,
-      "successful": 45203,
-      "failed": 475,
-      "breakdown": {
-        "memories_create": 12500,
-        "memories_search": 25000,
-        "memories_get": 5678
-      }
-    },
-    "storage": {
-      "totalBytes": 2147483648,
-      "memoryCount": 12500,
-      "averageMemorySize": 171798
-    },
-    "costs": {
-      "apiCalls": 4.57,
-      "storage": 2.00,
-      "total": 6.57,
-      "currency": "USD"
-    }
+  "period": {
+    "start": "2024-01-01T00:00:00Z",
+    "end": "2024-01-31T23:59:59Z"
   },
-  "limits": {
-    "apiCallsPerMonth": 1000000,
-    "storageGB": 100,
-    "percentUsed": {
-      "apiCalls": 4.57,
-      "storage": 2.00
-    }
+  "usage": {
+    "memoriesCreated": 1250,
+    "memoriesSearched": 4830,
+    "storageBytes": 52428800,
+    "estimatedCost": 12.50
   }
 }
 ```
-
 </ResponseExample>
+
+## Period Options
+
+<Tabs>
+  <Tab title="7d - Last 7 Days">
+    Rolling 7-day window from now
+    
+    ```bash
+    ?period=7d
+    ```
+  </Tab>
+  
+  <Tab title="30d - Last 30 Days">
+    Rolling 30-day window from now (default)
+    
+    ```bash
+    ?period=30d
+    ```
+  </Tab>
+  
+  <Tab title="90d - Last 90 Days">
+    Rolling 90-day window from now
+    
+    ```bash
+    ?period=90d
+    ```
+  </Tab>
+  
+  <Tab title="current_month - Calendar Month">
+    From 1st of current month to now
+    
+    ```bash
+    ?period=current_month
+    ```
+  </Tab>
+</Tabs>
+
+## Usage Dashboard Example
+
+Build a usage dashboard with this data:
+
+```typescript
+async function buildUsageDashboard(orgId: string, jwtToken: string) {
+  // Get different time periods
+  const [week, month, quarter] = await Promise.all([
+    fetch(`/api/organizations/${orgId}/usage?period=7d`, {
+      headers: { 'Authorization': `Bearer ${jwtToken}` }
+    }).then(r => r.json()),
+    fetch(`/api/organizations/${orgId}/usage?period=30d`, {
+      headers: { 'Authorization': `Bearer ${jwtToken}` }
+    }).then(r => r.json()),
+    fetch(`/api/organizations/${orgId}/usage?period=90d`, {
+      headers: { 'Authorization': `Bearer ${jwtToken}` }
+    }).then(r => r.json())
+  ]);
+
+  return {
+    weekly: {
+      memories: week.usage.memoriesCreated,
+      searches: week.usage.memoriesSearched,
+      cost: week.usage.estimatedCost
+    },
+    monthly: {
+      memories: month.usage.memoriesCreated,
+      searches: month.usage.memoriesSearched,
+      cost: month.usage.estimatedCost
+    },
+    quarterly: {
+      memories: quarter.usage.memoriesCreated,
+      searches: quarter.usage.memoriesSearched,
+      cost: quarter.usage.estimatedCost
+    },
+    trends: {
+      memoriesPerDay: month.usage.memoriesCreated / 30,
+      searchesPerDay: month.usage.memoriesSearched / 30,
+      avgCostPerMemory: month.usage.estimatedCost / month.usage.memoriesCreated
+    }
+  };
+}
+```
+
+## Cost Estimation
+
+The `estimatedCost` includes:
+
+<CardGroup cols={2}>
+  <Card title="Memory Storage" icon="database">
+    Based on total storage bytes and your plan
+  </Card>
+  
+  <Card title="API Operations" icon="arrows-spin">
+    Create, update, delete operations
+  </Card>
+  
+  <Card title="Search Queries" icon="magnifying-glass">
+    Semantic search operations
+  </Card>
+  
+  <Card title="Embedding Generation" icon="microchip">
+    AI model usage for embeddings
+  </Card>
+</CardGroup>
+
+<Note>
+Costs are estimates based on your current plan. Actual billing may vary based on final usage calculations. Check your [billing dashboard](/api-reference/billing/get-current-plan) for precise charges.
+</Note>
+
+## Project-Specific Usage
+
+Filter statistics for a specific project:
+
+```typescript
+const projectUsage = await fetch(
+  `/api/organizations/${orgId}/usage?period=30d&projectId=${projectId}`,
+  { headers: { 'Authorization': `Bearer ${token}` } }
+).then(r => r.json());
+
+console.log(`Project ${projectId} usage:`);
+console.log(`- Memories: ${projectUsage.usage.memoriesCreated}`);
+console.log(`- Searches: ${projectUsage.usage.memoriesSearched}`);
+```
+
+## Monitoring & Alerts
+
+Use this endpoint to implement usage monitoring:
+
+```typescript
+async function checkUsageAlerts(orgId: string, token: string) {
+  const usage = await fetch(
+    `/api/organizations/${orgId}/usage?period=current_month`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  ).then(r => r.json());
+
+  const alerts = [];
+
+  // Check if approaching plan limits
+  if (usage.usage.memoriesCreated > 9000) { // 90% of 10k limit
+    alerts.push({
+      level: 'warning',
+      message: 'Approaching monthly memory limit'
+    });
+  }
+
+  // Check for unusual cost spike
+  if (usage.usage.estimatedCost > 100) {
+    alerts.push({
+      level: 'warning',
+      message: 'Unusually high cost this month'
+    });
+  }
+
+  return alerts;
+}
+```
+
+## Storage Calculation
+
+The `storageBytes` value represents the total size of:
+- Memory content (raw text)
+- Vector embeddings
+- Metadata and tags
+- Change history (if enabled)
+
+To convert to human-readable format:
+
+```typescript
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+console.log(formatBytes(data.usage.storageBytes)); // "50.00 MB"
+```

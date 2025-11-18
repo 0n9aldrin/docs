@@ -1,6 +1,4 @@
 ---
 title: 'Update Memory'
-openapi: patch /v1/memories/{memory_id}
+openapi: put /v1/memories/{memory_id}/
 ---
-
-Update the content of an existing memory. This endpoint allows you to modify the text of a memory while preserving its ID and metadata. The update will regenerate embeddings based on the new content.

@@ -1,8 +1,21 @@
 ---
-title: "Rotate API Key"
-api: "POST /api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate"
-description: "Rotate an API key with optional grace period"
+title: 'Rotate API Key'
+openapi: post /api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate
 ---
+
+Rotate an API key by creating a new key and optionally keeping the old key active for a grace period. This allows zero-downtime key rotation.
+
+<Info>
+Key rotation is a security best practice that should be performed regularly. This endpoint makes it safe and convenient.
+</Info>
+
+## Authentication
+
+This endpoint requires JWT authentication with at least Admin role in the organization.
+
+```bash
+Authorization: Bearer YOUR_JWT_TOKEN
+```
 
 ## Path Parameters
 
@@ -20,107 +33,94 @@ description: "Rotate an API key with optional grace period"
 
 ## Request Body
 
-<ParamField body="gracePeriodDays" type="number" default={0}>
-  Number of days to keep the old key active (0-30). If 0, old key is revoked immediately.
+<ParamField body="gracePeriodDays" type="integer" default={0}>
+  Number of days to keep the old key active (0-30). If 0, the old key is immediately revoked.
 </ParamField>
 
 ## Response
 
 <ResponseField name="newApiKey" type="object">
-  The newly created API key object
+  The newly created API key
   
-  <Expandable title="New API Key">
+  <Expandable title="New API Key Object">
     <ResponseField name="id" type="string">
-      Unique identifier for the new key
+      Unique identifier for the new API key
     </ResponseField>
-
+    
     <ResponseField name="name" type="string">
-      Name of the new key (includes "(Rotated)" suffix)
+      Name of the new key (original name + " (Rotated)")
     </ResponseField>
-
+    
     <ResponseField name="key" type="string">
-      **Full API key value** - only shown once!
+      **Full API key** - Only shown here, save it immediately!
     </ResponseField>
-
+    
     <ResponseField name="keyPrefix" type="string">
-      First 12 characters of the new key
+      First 12 characters for identification
     </ResponseField>
-
+    
     <ResponseField name="status" type="string">
-      Status (always "active")
+      Will be `active`
     </ResponseField>
-
+    
     <ResponseField name="permissions" type="array">
-      Inherited permissions from old key
+      Inherits permissions from the old key
     </ResponseField>
-
+    
     <ResponseField name="createdAt" type="string">
-      ISO 8601 timestamp
-    </ResponseField>
-
-    <ResponseField name="expiresAt" type="string">
-      Always null for rotated keys
+      ISO 8601 timestamp of creation
     </ResponseField>
   </Expandable>
 </ResponseField>
 
 <ResponseField name="oldApiKey" type="object">
-  Information about the old key
+  Information about the old API key
   
-  <Expandable title="Old API Key">
+  <Expandable title="Old API Key Info">
     <ResponseField name="id" type="string">
-      Identifier of the old key
+      ID of the old key
     </ResponseField>
-
+    
     <ResponseField name="status" type="string">
-      Either "active" (during grace period) or "revoked" (immediate revocation)
+      Either `active` (during grace period) or `revoked` (if no grace period)
     </ResponseField>
-
+    
     <ResponseField name="expiresAt" type="string">
-      When the old key will expire (if grace period set)
+      When the old key will expire (null if immediately revoked)
     </ResponseField>
   </Expandable>
 </ResponseField>
 
 <ResponseField name="warning" type="string">
-  Warning message about updating applications
+  Important message about updating your applications
 </ResponseField>
 
 <RequestExample>
-
-```bash cURL
-curl -X POST "https://api.photomem.io/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate" \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+```bash cURL - With Grace Period
+curl -X POST https://api.photomem.ai/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "gracePeriodDays": 7
   }'
 ```
 
-```python Python
-import requests
-
-response = requests.post(
-    f"https://api.photomem.io/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate",
-    headers={
-        "Authorization": f"Bearer {clerk_token}",
-        "Content-Type": "application/json"
-    },
-    json={"gracePeriodDays": 7}
-)
-
-result = response.json()
-print(f"New key: {result['newApiKey']['key']}")
-print(f"Warning: {result['warning']}")
+```bash cURL - Immediate Revocation
+curl -X POST https://api.photomem.ai/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gracePeriodDays": 0
+  }'
 ```
 
 ```typescript TypeScript
 const response = await fetch(
-  `https://api.photomem.io/api/organizations/${orgId}/projects/${projectId}/api-keys/${keyId}/rotate`,
+  `https://api.photomem.ai/api/organizations/${orgId}/projects/${projectId}/api-keys/${keyId}/rotate`,
   {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${clerkToken}`,
+      'Authorization': `Bearer ${jwtToken}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
@@ -129,42 +129,133 @@ const response = await fetch(
   }
 );
 
-const result = await response.json();
-console.log(`New key: ${result.newApiKey.key}`);
+const data = await response.json();
+// Save the new key immediately!
+const newKey = data.newApiKey.key;
+console.log(data.warning);
 ```
 
+```python Python
+import requests
+
+response = requests.post(
+    f"https://api.photomem.ai/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}/rotate",
+    headers={
+        "Authorization": f"Bearer {jwt_token}",
+        "Content-Type": "application/json"
+    },
+    json={"gracePeriodDays": 7}
+)
+
+data = response.json()
+# Save the new key immediately!
+new_key = data["newApiKey"]["key"]
+print(data["warning"])
+```
 </RequestExample>
 
 <ResponseExample>
-
-```json 200
+```json With Grace Period
 {
   "newApiKey": {
-    "id": "key_new789xyz",
+    "id": "key_new123",
     "name": "Production API Key (Rotated)",
-    "key": "pm_live_new789xyz456abc123def890ghi567jkl234mno901pqr678",
-    "keyPrefix": "pm_live_new7",
+    "key": "pm_live_new123xyz789...",
+    "keyPrefix": "pm_live_new1",
     "status": "active",
     "permissions": ["read", "write"],
-    "createdAt": "2025-01-15T14:30:00Z",
-    "expiresAt": null
+    "createdAt": "2024-01-20T17:00:00Z"
   },
   "oldApiKey": {
-    "id": "key_abc123xyz",
+    "id": "key_old456",
     "status": "active",
-    "expiresAt": "2025-01-22T14:30:00Z"
+    "expiresAt": "2024-01-27T17:00:00Z"
   },
   "warning": "Update your applications with the new key within 7 days"
 }
 ```
 
-```json 404
+```json Immediate Revocation
 {
-  "error": {
-    "code": "not_found",
-    "message": "API key not found"
-  }
+  "newApiKey": {
+    "id": "key_new123",
+    "name": "Production API Key (Rotated)",
+    "key": "pm_live_new123xyz789...",
+    "keyPrefix": "pm_live_new1",
+    "status": "active",
+    "permissions": ["read", "write"],
+    "createdAt": "2024-01-20T17:00:00Z"
+  },
+  "oldApiKey": {
+    "id": "key_old456",
+    "status": "revoked",
+    "expiresAt": null
+  },
+  "warning": "Old key has been immediately revoked. Update your applications now."
 }
 ```
-
 </ResponseExample>
+
+## Rotation Strategies
+
+<Tabs>
+  <Tab title="Zero-Downtime Rotation">
+    Use a grace period to ensure continuous service:
+    
+    <Steps>
+      <Step title="Rotate with grace period">
+        Call the rotate endpoint with `gracePeriodDays: 7`
+      </Step>
+      
+      <Step title="Update applications">
+        Deploy the new key to all your applications within the grace period
+      </Step>
+      
+      <Step title="Verify migration">
+        Check that the old key's `lastUsedAt` is not updating anymore
+      </Step>
+      
+      <Step title="Automatic expiration">
+        The old key will automatically expire after the grace period
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Immediate Rotation">
+    Use when the old key might be compromised:
+    
+    <Steps>
+      <Step title="Rotate without grace period">
+        Call the rotate endpoint with `gracePeriodDays: 0`
+      </Step>
+      
+      <Step title="Update applications immediately">
+        Deploy the new key to all applications right away
+      </Step>
+      
+      <Step title="Old key revoked instantly">
+        The old key stops working immediately
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Regular Schedule" icon="calendar">
+    Rotate keys every 90 days as a security best practice
+  </Card>
+  
+  <Card title="Use Grace Periods" icon="clock">
+    Always use a grace period for production keys to avoid downtime
+  </Card>
+  
+  <Card title="Track Rotation" icon="list-check">
+    Keep a schedule of when keys were last rotated
+  </Card>
+  
+  <Card title="Test First" icon="flask">
+    Test the rotation process with test keys before rotating production keys
+  </Card>
+</CardGroup>

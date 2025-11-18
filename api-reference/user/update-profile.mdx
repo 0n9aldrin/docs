@@ -1,98 +1,89 @@
 ---
-title: "Update User Profile"
-api: "PATCH /api/users/me"
-description: "Update current user's profile"
+title: 'Update User Profile'
+openapi: patch /api/users/me
 ---
+
+Update the current user's profile information.
+
+## Authentication
+
+This endpoint requires JWT authentication.
+
+```bash
+Authorization: Bearer YOUR_JWT_TOKEN
+```
 
 ## Request Body
 
-<ParamField body="email" type="string">
-  New email address
+<ParamField body="name" type="string">
+  Updated full name
 </ParamField>
 
-<ParamField body="fullName" type="string">
-  New full name
+<ParamField body="imageUrl" type="string">
+  Updated profile image URL
 </ParamField>
+
+<Note>
+Provide only the fields you want to update. Fields not included will remain unchanged.
+</Note>
 
 ## Response
 
-Returns the updated user profile (same format as GET /api/users/me).
+Returns the updated user profile with all fields.
 
 <RequestExample>
-
 ```bash cURL
-curl -X PATCH "https://api.photomem.io/api/users/me" \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+curl -X PATCH https://api.photomem.ai/api/users/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "fullName": "John Smith",
-    "email": "john.smith@example.com"
+    "name": "Alice M. Johnson"
   }'
+```
+
+```typescript TypeScript
+const response = await fetch('https://api.photomem.ai/api/users/me', {
+  method: 'PATCH',
+  headers: {
+    'Authorization': `Bearer ${jwtToken}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Alice M. Johnson',
+    imageUrl: 'https://avatars.example.com/alice-new.jpg'
+  })
+});
+
+const updatedProfile = await response.json();
 ```
 
 ```python Python
 import requests
 
 response = requests.patch(
-    "https://api.photomem.io/api/users/me",
+    "https://api.photomem.ai/api/users/me",
     headers={
-        "Authorization": f"Bearer {clerk_token}",
+        "Authorization": f"Bearer {jwt_token}",
         "Content-Type": "application/json"
     },
     json={
-        "fullName": "John Smith",
-        "email": "john.smith@example.com"
+        "name": "Alice M. Johnson",
+        "imageUrl": "https://avatars.example.com/alice-new.jpg"
     }
 )
 
-profile = response.json()
-print(f"Updated: {profile['fullName']}")
+updated_profile = response.json()
 ```
-
-```typescript TypeScript
-const response = await fetch('https://api.photomem.io/api/users/me', {
-  method: 'PATCH',
-  headers: {
-    'Authorization': `Bearer ${clerkToken}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    fullName: 'John Smith',
-    email: 'john.smith@example.com'
-  })
-});
-
-const profile = await response.json();
-console.log(`Updated: ${profile.fullName}`);
-```
-
 </RequestExample>
 
 <ResponseExample>
-
-```json 200
+```json Response
 {
-  "id": "user_abc123xyz",
-  "clerkId": "clerk_abc123",
-  "email": "john.smith@example.com",
-  "fullName": "John Smith",
-  "organizationId": "org_xyz789",
-  "role": "admin",
-  "isActive": true,
-  "needsOnboarding": false,
-  "createdAt": "2025-01-01T10:00:00Z",
-  "updatedAt": "2025-01-15T15:00:00Z",
-  "lastLoginAt": "2025-01-15T14:30:00Z"
+  "id": "user_abc123",
+  "email": "alice@example.com",
+  "name": "Alice M. Johnson",
+  "imageUrl": "https://avatars.example.com/alice-new.jpg",
+  "createdAt": "2024-01-15T10:30:00Z"
 }
 ```
-
-```json 409
-{
-  "error": {
-    "code": "email_exists",
-    "message": "A user with this email already exists"
-  }
-}
-```
-
 </ResponseExample>

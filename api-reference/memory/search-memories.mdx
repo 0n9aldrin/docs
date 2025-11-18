@@ -1,160 +1,104 @@
 ---
-title: Search Memories
-description: Semantic search for relevant memories using natural language
-icon: "magnifying-glass"
-method: "POST"
-path: "/v1/search"
+title: 'Search Memories'
+openapi: post /v2/memories/search/
 ---
 
-# POST /v1/search
-
-| Method | Path | Auth | Rate Limit |
-| --- | --- | --- | --- |
-| POST | `/v1/search` | Bearer (API Key) | 100 req/min |
-
-<Info>
-  Use semantic search to find relevant memories based on natural language queries. PhotoMem uses vector similarity to match meaning, not just keywords.
-</Info>
-
-## Request
-
-### Headers
-
-| Name | Required | Description |
-| --- | --- | --- |
-| `Authorization` | Yes | `Bearer YOUR_API_KEY` |
-| `Content-Type` | Yes | `application/json` |
-
-### Body
-
-| Field | Type | Required | Description | Example |
-| --- | --- | --- | --- | --- |
-| `query` | string | Yes | Natural language search query | `"What does the user do for work?"` |
-| `user_id` | string | No | Filter results to specific user | `"user_123"` |
-| `agent_id` | string | No | Filter results to specific agent | `"agent_456"` |
-| `run_id` | string | No | Filter results to specific run/session | `"run_789"` |
-| `limit` | integer | No | Max results to return (default: 10) | `5` |
-| `threshold` | float | No | Minimum similarity score (0-1, default: 0.7) | `0.8` |
-| `filters` | object | No | Additional metadata filters | `{"tags": ["important"]}` |
+The v2 search API is powerful and flexible, allowing for more precise memory retrieval. It supports complex logical operations (AND, OR, NOT) and comparison operators for advanced filtering capabilities. The comparison operators include:
+- `in`: Matches any of the values specified
+- `gte`: Greater than or equal to
+- `lte`: Less than or equal to
+- `gt`: Greater than
+- `lt`: Less than
+- `ne`: Not equal to
+- `icontains`: Case-insensitive containment check
+- `*`: Wildcard character that matches everything
 
 <CodeGroup>
-```bash Shell
-curl https://api.photomem.ai/v1/search \
-  -H "Authorization: Bearer $PHOTOMEM_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "What does the user do for work?",
-    "user_id": "user_123",
-    "limit": 5
-  }'
-```
-
-```python Python
-import requests
-
-response = requests.post(
-    "https://api.photomem.ai/v1/search",
-    headers={"Authorization": f"Bearer {API_KEY}"},
-    json={
-        "query": "What does the user do for work?",
-        "user_id": "user_123",
-        "limit": 5
-    }
+```python Platform API Example
+related_memories = client.search(
+    query="What are Alice's hobbies?",
+    filters={
+        "OR": [
+            {
+              "user_id": "alice"
+            },
+            {
+              "agent_id": {"in": ["travel-agent", "sports-agent"]}
+            }
+        ]
+    },
 )
-response.raise_for_status()
-print(response.json())
 ```
 
-```ts TypeScript
-const response = await fetch("https://api.photomem.ai/v1/search", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${process.env.PHOTOMEM_API_KEY}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    query: "What does the user do for work?",
-    user_id: "user_123",
-    limit: 5
-  }),
-});
-
-const data = await response.json();
-console.log(data);
+```json Output
+{
+  "memories": [
+    {
+      "id": "ea925981-272f-40dd-b576-be64e4871429",
+      "memory": "Likes to play cricket and plays cricket on weekends.",
+      "metadata": {
+        "category": "hobbies"
+      },
+      "score": 0.32116443111457704,
+      "created_at": "2024-07-26T10:29:36.630547-07:00",
+      "updated_at": null,
+      "user_id": "alice",
+      "agent_id": "sports-agent"
+    }
+  ],
+}
 ```
 </CodeGroup>
 
-<Tip>
-  Use natural language queries for best results. PhotoMem understands context and meaning beyond simple keyword matching.
-</Tip>
-
-## Response
-
-```json
-{
-  "results": [
-    {
-      "id": "mem_def456",
-      "memory": "User works as a software engineer",
-      "score": 0.95,
-      "rerank_score": 0.98,
-      "hash": "hash_456",
-      "metadata": {
-        "user_id": "user_123",
-        "agent_id": null,
-        "tags": ["career"],
-        "created_at": "2024-01-15T10:30:00Z"
-      }
+<CodeGroup>
+```python Wildcard Example
+# Using wildcard to match all run_ids for a specific user
+all_memories = client.search(
+    query="What are Alice's hobbies?",
+    filters={
+        "AND": [
+            {
+                "user_id": "alice"
+            },
+            {
+                "run_id": "*"
+            }
+        ]
     },
-    {
-      "id": "mem_ghi789",
-      "memory": "User has 5 years of backend development experience",
-      "score": 0.87,
-      "rerank_score": 0.89,
-      "hash": "hash_789",
-      "metadata": {
-        "user_id": "user_123",
-        "agent_id": null,
-        "tags": ["skills"],
-        "created_at": "2024-01-14T14:20:00Z"
-      }
-    }
-  ],
-  "query": "What does the user do for work?",
-  "count": 2,
-  "total_matched": 2,
-  "search_time_ms": 45.2
-}
+)
 ```
+</CodeGroup>
 
-| Status | Meaning | Fix |
-| --- | --- | --- |
-| `200` | Search completed successfully | — |
-| `400` | Missing or invalid query | Provide valid `query` string |
-| `401` | Invalid or missing API key | Check your API key in dashboard |
-| `429` | Rate limit exceeded | Slow down requests or upgrade plan |
+<CodeGroup>
+```python Categories Filter Examples
+# Example 1: Using 'contains' for partial matching
+finance_memories = client.search(
+    query="What are my financial goals?",
+    filters={
+        "AND": [
+            { "user_id": "alice" },
+            {
+                "categories": {
+                    "contains": "finance"
+                }
+            }
+        ]
+    },
+)
 
-<Note>
-  Results are sorted by relevance score (highest first). The `score` represents vector similarity, while `rerank_score` (when available) provides a more refined relevance ranking.
-</Note>
-
-## Related endpoints
-
-- [POST /v1/memories](./add-memories) - Add new memories
-- [GET /v1/memories](./get-memories) - List all memories
-- [PATCH /v1/memories/{memory_id}](./update-memory) - Update memory
-
-<CardGroup cols={2}>
-  <Card
-    title="Advanced Retrieval"
-    description="Learn about reranking and threshold tuning"
-    icon="sparkles"
-    href="/platform/features/advanced-retrieval"
-  />
-  <Card
-    title="Memory Filters"
-    description="Use filters for precise search results"
-    icon="filter"
-    href="/platform/features/v2-memory-filters"
-  />
-</CardGroup>
+# Example 2: Using 'in' for exact matching
+personal_memories = client.search(
+    query="What personal information do you have?",
+    filters={
+        "AND": [
+            { "user_id": "alice" },
+            {
+                "categories": {
+                    "in": ["personal_information"]
+                }
+            }
+        ]
+    },
+)
+```
+</CodeGroup>

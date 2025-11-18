@@ -52,18 +52,6 @@
       ]
     },
     {
-      "group": "API Reference",
-      "pages": [
-        "api-reference/introduction"
-      ]
-    },
-    {
-      "group": "SDK",
-      "pages": [
-        "api-reference/memory"
-      ]
-    },
-    {
       "group": "Core Memory Operations",
       "pages": [
         "api-reference/operations/add-memories",
@@ -72,6 +60,16 @@
         "api-reference/operations/update-memory",
         "api-reference/operations/delete-memory",
         "api-reference/operations/memory-history"
+      ]
+    },
+    {
+      "group": "Memory APIs",
+      "pages": [
+        "api-reference/memories-api/create-memory",
+        "api-reference/memories-api/list-memories",
+        "api-reference/memories-api/search-memories",
+        "api-reference/memories-api/update-memory",
+        "api-reference/memories-api/delete-memory"
       ]
     },
     {
@@ -98,16 +96,6 @@
       "group": "Entities APIs",
       "pages": [
         "api-reference/entities/get-users"
-      ]
-    },
-    {
-      "group": "Memory Management APIs",
-      "pages": [
-        "api-reference/memories-api/create-memory",
-        "api-reference/memories-api/list-memories",
-        "api-reference/memories-api/search-memories",
-        "api-reference/memories-api/update-memory",
-        "api-reference/memories-api/delete-memory"
       ]
     },
     {
@@ -151,13 +139,6 @@
         "api-reference/webhooks/list-webhooks",
         "api-reference/webhooks/create-webhook",
         "api-reference/webhooks/delete-webhook"
-      ]
-    },
-    {
-      "group": "Reference",
-      "pages": [
-        "api-reference/types",
-        "api-reference/errors"
       ]
     },
     {

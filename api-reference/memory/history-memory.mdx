@@ -1,4 +1,209 @@
 ---
-title: 'Memory History'
-openapi: get /v1/memories/{memory_id}/history/
+title: 'Get Memory History'
+openapi: get /v1/memories/{memory_id}/history
 ---
+
+## Overview
+
+Retrieve the change history for a specific memory, including all updates, modifications, and events. This endpoint provides an audit trail of how a memory has evolved over time.
+
+<Info>
+Memory history tracks all changes including updates, metadata modifications, and soft deletions. This is useful for auditing and understanding memory evolution.
+</Info>
+
+## Path Parameters
+
+<ParamField path="memory_id" type="string" required>
+  Unique identifier of the memory to retrieve history for.
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="limit" type="integer" default="50">
+  Maximum number of history entries to return. Must be between 1 and 100.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://api.photomem.ai/v1/memories/mem_abc123/history?limit=10" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import httpx
+
+async def get_memory_history(api_key: str, memory_id: str, limit: int = 50):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"https://api.photomem.ai/v1/memories/{memory_id}/history",
+            headers={"Authorization": f"Bearer {api_key}"},
+            params={"limit": limit},
+        )
+        response.raise_for_status()
+        return response.json()
+
+# Example usage:
+# history = await get_memory_history("YOUR_API_KEY", "mem_abc123", limit=10)
+```
+
+```javascript TypeScript
+async function getMemoryHistory(
+  apiKey: string,
+  memoryId: string,
+  limit: number = 50
+): Promise<any> {
+  const params = new URLSearchParams({
+    limit: limit.toString(),
+  });
+
+  const response = await fetch(
+    `https://api.photomem.ai/v1/memories/${memoryId}/history?${params}`,
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// Example usage:
+// const history = await getMemoryHistory("YOUR_API_KEY", "mem_abc123", 10);
+```
+</RequestExample>
+
+<Tip>
+Use memory history to implement undo/redo functionality, audit trails, or to understand how user preferences have changed over time.
+</Tip>
+
+## Response
+
+<ResponseField name="history" type="array">
+  Array of history events for the memory, ordered by most recent first.
+  
+  <Expandable title="History Event Object">
+    <ResponseField name="id" type="string">
+      Unique identifier for this history entry
+    </ResponseField>
+    
+    <ResponseField name="memory_id" type="string">
+      ID of the memory this history belongs to
+    </ResponseField>
+    
+    <ResponseField name="old_memory" type="string">
+      Previous content of the memory (null for CREATE events)
+    </ResponseField>
+    
+    <ResponseField name="new_memory" type="string">
+      New content of the memory (null for DELETE events)
+    </ResponseField>
+    
+    <ResponseField name="event" type="string">
+      Type of event: `CREATE`, `UPDATE`, `DELETE`, `METADATA_UPDATE`
+    </ResponseField>
+    
+    <ResponseField name="actor_id" type="string">
+      User or system ID that performed the action
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      ISO 8601 timestamp when this change occurred
+    </ResponseField>
+    
+    <ResponseField name="is_deleted" type="boolean">
+      Whether this history entry has been deleted
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="count" type="integer">
+  Number of history entries returned in this response
+</ResponseField>
+
+<ResponseField name="total" type="integer">
+  Total number of history entries available
+</ResponseField>
+
+<ResponseExample>
+```json 200
+{
+  "history": [
+    {
+      "id": "hist_xyz789",
+      "memory_id": "mem_abc123",
+      "old_memory": "User's favorite color is blue.",
+      "new_memory": "User's favorite color is dark blue.",
+      "event": "UPDATE",
+      "actor_id": "user_123",
+      "created_at": "2024-01-20T15:45:00Z",
+      "is_deleted": false
+    },
+    {
+      "id": "hist_xyz456",
+      "memory_id": "mem_abc123",
+      "old_memory": null,
+      "new_memory": "User's favorite color is blue.",
+      "event": "CREATE",
+      "actor_id": "system",
+      "created_at": "2024-01-15T10:30:00Z",
+      "is_deleted": false
+    }
+  ],
+  "count": 2,
+  "total": 2
+}
+```
+
+```json 404
+{
+  "detail": "Memory not found"
+}
+```
+
+```json 401
+{
+  "detail": "Invalid or missing API key."
+}
+```
+</ResponseExample>
+
+| Status | Meaning | Fix |
+| --- | --- | --- |
+| `200` | Success - returns history array | — |
+| `404` | Memory not found | Verify the memory_id exists |
+| `401` | Authentication failed | Verify API key in Authorization header |
+| `400` | Invalid limit parameter | Ensure limit is between 1 and 100 |
+
+<Note>
+History is ordered from most recent to oldest. The `old_memory` field will be `null` for CREATE events, and `new_memory` will be `null` for DELETE events.
+</Note>
+
+## Related endpoints
+
+- [GET /v1/memories/{memory_id}](/api-reference/memory/get-memory) - Get current memory state
+- [PATCH /v1/memories/{memory_id}](/api-reference/memory/update-memory) - Update memory
+- [DELETE /v1/memories/{memory_id}](/api-reference/memory/delete-memory) - Delete memory
+
+## Sample workflow
+
+- [Memory Operations Guide](/core-concepts/memory-operations)
+
+<CardGroup cols={2}>
+  <Card
+    title="Update Memory"
+    description="Learn about updating memories"
+    icon="pen"
+    href="/api-reference/memory/update-memory"
+  />
+  <Card
+    title="Audit & Compliance"
+    description="Track changes for compliance"
+    icon="shield-check"
+    href="/platform/features/audit-trail"
+  />
+</CardGroup>

@@ -1,99 +1,245 @@
 ---
-title: "Get Memories"
-openapi: post /v2/memories/
+title: 'Get Memories'
+openapi: get /v1/memories
 ---
 
-The v2 get memories API is powerful and flexible, allowing for more precise memory listing without the need for a search query. It supports complex logical operations (AND, OR, NOT) and comparison operators for advanced filtering capabilities. The comparison operators include:
+## Overview
 
-- `in`: Matches any of the values specified
-- `gte`: Greater than or equal to
-- `lte`: Less than or equal to
-- `gt`: Greater than
-- `lt`: Less than
-- `ne`: Not equal to
-- `icontains`: Case-insensitive containment check
-- `*`: Wildcard character that matches everything
+Retrieve a list of memories with optional filtering by user, agent, run, tags, and memory type. This endpoint supports pagination for large result sets.
 
-<CodeGroup>
-```python Code
-memories = client.get_all(
-    filters={
-        "AND": [
-            {
-                "user_id": "alex"
+<Info>
+Use this endpoint when you need to fetch all memories for a given entity or want to browse memories with specific attributes. For semantic search, use [Search Memories](/api-reference/memory/search-memories).
+</Info>
+
+## Query Parameters
+
+<ParamField query="user_id" type="string">
+  Filter memories by user ID. Returns only memories associated with this user.
+</ParamField>
+
+<ParamField query="agent_id" type="string">
+  Filter memories by agent ID. Returns only memories associated with this agent.
+</ParamField>
+
+<ParamField query="run_id" type="string">
+  Filter memories by run/session ID. Returns only memories from a specific conversation session.
+</ParamField>
+
+<ParamField query="tags" type="array">
+  Filter memories by tags. Can be specified multiple times to filter by multiple tags.
+  
+  **Example:** `?tags=work&tags=important`
+</ParamField>
+
+<ParamField query="memory_type" type="string">
+  Filter by memory type (e.g., `fact`, `preference`, `short_term`, `long_term`).
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum number of memories to return. Must be between 1 and 1000.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of memories to skip for pagination. Must be >= 0.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://api.photomem.ai/v1/memories?user_id=user_123&limit=50&offset=0" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import httpx
+
+async def get_memories(api_key: str, user_id: str, limit: int = 100, offset: int = 0):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            "https://api.photomem.ai/v1/memories",
+            headers={"Authorization": f"Bearer {api_key}"},
+            params={
+                "user_id": user_id,
+                "limit": limit,
+                "offset": offset,
             },
-            {
-                "created_at": {"gte": "2024-07-01", "lte": "2024-07-31"}
-            }
-        ]
+        )
+        response.raise_for_status()
+        return response.json()
+
+# Example usage:
+# memories = await get_memories("YOUR_API_KEY", "user_123", limit=50)
+```
+
+```javascript TypeScript
+async function getMemories(
+  apiKey: string,
+  userId: string,
+  limit: number = 100,
+  offset: number = 0
+): Promise<any> {
+  const params = new URLSearchParams({
+    user_id: userId,
+    limit: limit.toString(),
+    offset: offset.toString(),
+  });
+
+  const response = await fetch(
+    `https://api.photomem.ai/v1/memories?${params}`,
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
     }
-)
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// Example usage:
+// const memories = await getMemories("YOUR_API_KEY", "user_123", 50, 0);
+```
+</RequestExample>
+
+<Tip>
+For complex filtering (e.g., date ranges, metadata queries, OR logic), use the [POST /v1/memories/query](/api-reference/memory/query-memories) endpoint instead.
+</Tip>
+
+## Response
+
+<ResponseField name="memories" type="array">
+  Array of memory objects matching the query filters.
+  
+  <Expandable title="Memory Object">
+    <ResponseField name="id" type="string">
+      Unique identifier for the memory
+    </ResponseField>
+    
+    <ResponseField name="memory" type="string">
+      The extracted memory text/fact
+    </ResponseField>
+    
+    <ResponseField name="hash" type="string">
+      Content hash for deduplication
+    </ResponseField>
+    
+    <ResponseField name="metadata" type="object">
+      <Expandable title="Metadata Fields">
+        <ResponseField name="user_id" type="string">
+          User ID associated with the memory
+        </ResponseField>
+        
+        <ResponseField name="agent_id" type="string">
+          Agent ID associated with the memory
+        </ResponseField>
+        
+        <ResponseField name="run_id" type="string">
+          Run/session ID associated with the memory
+        </ResponseField>
+        
+        <ResponseField name="tags" type="array">
+          Array of tags associated with the memory
+        </ResponseField>
+        
+        <ResponseField name="custom" type="object">
+          Custom metadata key-value pairs
+        </ResponseField>
+        
+        <ResponseField name="created_at" type="string">
+          ISO 8601 timestamp when memory was created
+        </ResponseField>
+        
+        <ResponseField name="updated_at" type="string">
+          ISO 8601 timestamp when memory was last updated
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+```json 200
+[
+  {
+    "id": "mem_abc123",
+    "memory": "User's favorite color is blue.",
+    "hash": "a1b2c3d4e5f6",
+    "metadata": {
+      "user_id": "user_123",
+      "agent_id": null,
+      "run_id": "run_456",
+      "tags": ["preference"],
+      "custom": {"source": "chat"},
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  },
+  {
+    "id": "mem_def456",
+    "memory": "User enjoys hiking on weekends.",
+    "hash": "b2c3d4e5f6a7",
+    "metadata": {
+      "user_id": "user_123",
+      "agent_id": null,
+      "run_id": "run_789",
+      "tags": ["hobby", "activity"],
+      "custom": {"source": "chat"},
+      "created_at": "2024-01-16T14:20:00Z",
+      "updated_at": "2024-01-16T14:20:00Z"
+    }
+  }
+]
 ```
 
-```python Output
+```json 400
 {
-    "results": [
-        {
-            "id": "f4cbdb08-7062-4f3e-8eb2-9f5c80dfe64c",
-            "memory": "Alex is planning a trip to San Francisco from July 1st to July 10th",
-            "created_at": "2024-07-01T12:00:00Z",
-            "updated_at": "2024-07-01T12:00:00Z"
-        },
-        {
-            "id": "a2b8c3d4-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
-            "memory": "Alex prefers vegetarian restaurants",
-            "created_at": "2024-07-05T15:30:00Z",
-            "updated_at": "2024-07-05T15:30:00Z"
-        }
-    ],
-    "total": 2
+  "detail": "Invalid query parameter: limit must be between 1 and 1000"
 }
 ```
 
-</CodeGroup>
-
-## Graph Memory
-
-To retrieve graph memory relationships between entities, pass `output_format="v1.1"` in your request. This will return memories with entity and relationship information from the knowledge graph.
-
-<CodeGroup>
-```python Code
-memories = client.get_all(
-    filters={
-        "user_id": "alex"
-    },
-    output_format="v1.1"
-)
-```
-
-```python Output
+```json 401
 {
-    "results": [
-        {
-            "id": "f4cbdb08-7062-4f3e-8eb2-9f5c80dfe64c",
-            "memory": "Alex is planning a trip to San Francisco",
-            "entities": [
-                {
-                    "id": "entity-1",
-                    "name": "Alex",
-                    "type": "person"
-                },
-                {
-                    "id": "entity-2",
-                    "name": "San Francisco",
-                    "type": "location"
-                }
-            ],
-            "relations": [
-                {
-                    "source": "entity-1",
-                    "target": "entity-2",
-                    "relationship": "traveling_to"
-                }
-            ]
-        }
-    ]
+  "detail": "Invalid or missing API key."
 }
 ```
+</ResponseExample>
 
-</CodeGroup>
+| Status | Meaning | Fix |
+| --- | --- | --- |
+| `200` | Success - returns array of memories | — |
+| `400` | Invalid query parameters | Check that limit is 1-1000 and offset >= 0 |
+| `401` | Authentication failed | Verify API key in Authorization header |
+
+<Note>
+Empty result set returns `[]`. Use `offset` and `limit` for pagination through large result sets.
+</Note>
+
+## Related endpoints
+
+- [POST /v1/memories](/api-reference/memory/add-memories) - Add new memories
+- [POST /v1/search](/api-reference/memory/search-memories) - Semantic search
+- [GET /v1/memories/{memory_id}](/api-reference/memory/get-memory) - Get single memory
+- [POST /v1/memories/query](/api-reference/memory/query-memories) - Advanced filtering
+
+## Sample workflow
+
+- [Build an AI Companion](/cookbooks/companions/ai-companion)
+- [Exporting Memories](/cookbooks/essentials/exporting-memories)
+
+<CardGroup cols={2}>
+  <Card
+    title="Memory Operations"
+    description="Learn about all memory CRUD operations"
+    icon="database"
+    href="/core-concepts/memory-operations"
+  />
+  <Card
+    title="Filtering & Search"
+    description="Advanced filtering and retrieval techniques"
+    icon="filter"
+    href="/platform/features/advanced-retrieval"
+  />
+</CardGroup>

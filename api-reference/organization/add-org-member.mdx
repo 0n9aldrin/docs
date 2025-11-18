@@ -1,9 +1,6 @@
 ---
-title: 'Add Member'
+title: 'Add Organization Member'
 openapi: post /api/v1/orgs/organizations/{org_id}/members/
 ---
 
-The API provides two roles for organization members:
-
-- `READER`: Allows viewing of organization resources.
-- `OWNER`: Grants full administrative access to manage the organization and its resources.
+Invite a new member to join an organization by email. The member will be assigned the specified role and receive an invitation to access the organization's resources.

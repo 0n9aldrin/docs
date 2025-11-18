@@ -1,9 +1,6 @@
 ---
-title: 'Add Member'
+title: 'Add Project Member'
 openapi: post /api/v1/orgs/organizations/{org_id}/projects/{project_id}/members/
 ---
 
-The API provides two roles for project members:
-
-- `READER`: Allows viewing of project resources.
-- `OWNER`: Grants full administrative access to manage the project and its resources.
+Add a new member to a project with specific role and permissions. Members must already be part of the parent organization to be added to a project.

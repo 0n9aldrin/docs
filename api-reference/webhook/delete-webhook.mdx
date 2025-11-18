@@ -2,3 +2,5 @@
 title: 'Delete Webhook'
 openapi: delete /api/v1/webhooks/{webhook_id}/
 ---
+
+Permanently delete a webhook. Once deleted, the webhook will no longer receive events and cannot be restored. Consider disabling the webhook instead if you may need it again.

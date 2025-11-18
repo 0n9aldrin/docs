@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "PhotoMem API",
-    "description": "PhotoMem Platform API - Intelligent memory management for AI applications",
+    "description": "PhotoMem is a self-improving memory layer for LLM applications, enabling personalized AI experiences that save costs and delight users.",
     "contact": {
       "email": "support@photomem.ai"
     },
@@ -14,7 +14,12 @@
   },
   "servers": [
     {
-      "url": "https://api.photomem.ai"
+      "url": "https://api.photomem.ai",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development server"
     }
   ],
   "security": [
@@ -26,30 +31,68 @@
     }
   ],
   "paths": {
-    "/api/organizations/{org_id}/projects/{project_id}/api-keys": {
+    "/api/v1/memories": {
+      "post": {
+        "tags": ["Memory Management"],
+        "summary": "Create Memory",
+        "description": "Create a new memory entry. Automatically generates embeddings and indexes for semantic search.",
+        "operationId": "create_memory",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Memory created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryCreateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLargeError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
       "get": {
-        "tags": ["API Keys"],
-        "summary": "List API Keys",
-        "description": "List all API keys for a project. Returns masked keys (only prefix visible).",
-        "operationId": "listApiKeys",
+        "tags": ["Memory Management"],
+        "summary": "List Memories",
+        "description": "List all memories with pagination support.",
+        "operationId": "list_memories",
         "parameters": [
           {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
+            "name": "limit",
+            "in": "query",
             "schema": {
-              "type": "string"
-            },
-            "description": "Organization ID"
+              "type": "integer",
+              "default": 20,
+              "maximum": 100
+            }
           },
           {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
+            "name": "offset",
+            "in": "query",
             "schema": {
-              "type": "string"
-            },
-            "description": "Project ID"
+              "type": "integer",
+              "default": 0
+            }
           }
         ],
         "responses": {
@@ -58,19 +101,208 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyListResponse"
+                  "$ref": "#/components/schemas/MemoryListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/memories/{memory_id}": {
+      "get": {
+        "tags": ["Memory Management"],
+        "summary": "Get Memory",
+        "description": "Get a specific memory by ID.",
+        "operationId": "get_memory",
+        "parameters": [
+          {
+            "name": "memory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Memory found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryCreateResponse"
                 }
               }
             }
           },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": ["Memory Management"],
+        "summary": "Update Memory",
+        "description": "Update an existing memory's content or tags.",
+        "operationId": "update_memory",
+        "parameters": [
+          {
+            "name": "memory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Memory updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryCreateResponse"
+                }
+              }
+            }
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Memory Management"],
+        "summary": "Delete Memory",
+        "description": "Delete a specific memory permanently.",
+        "operationId": "delete_memory",
+        "parameters": [
+          {
+            "name": "memory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Memory deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteMemoryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/memories/search": {
+      "post": {
+        "tags": ["Memory Management"],
+        "summary": "Search Memories",
+        "description": "Search memories using semantic similarity.",
+        "operationId": "search_memories",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemorySearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemorySearchResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/projects/{project_id}/api-keys": {
+      "get": {
+        "tags": ["API Keys"],
+        "summary": "List API Keys",
+        "description": "List all API keys for a project.",
+        "operationId": "listApiKeys",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyListResponse"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -82,7 +314,7 @@
       "post": {
         "tags": ["API Keys"],
         "summary": "Create API Key",
-        "description": "Create a new API key for a project. The full key is only shown once upon creation.",
+        "description": "Create a new API key for a project.",
         "operationId": "createApiKey",
         "parameters": [
           {
@@ -91,8 +323,7 @@
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "description": "Organization ID"
+            }
           },
           {
             "name": "project_id",
@@ -100,8 +331,7 @@
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "description": "Project ID"
+            }
           }
         ],
         "requestBody": {
@@ -116,7 +346,7 @@
         },
         "responses": {
           "201": {
-            "description": "API key created successfully",
+            "description": "API key created",
             "content": {
               "application/json": {
                 "schema": {
@@ -124,15 +354,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequestError"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
           }
         },
         "security": [
@@ -146,7 +367,7 @@
       "delete": {
         "tags": ["API Keys"],
         "summary": "Revoke API Key",
-        "description": "Revoke an API key. Revoked keys cannot be reactivated.",
+        "description": "Revoke an API key permanently.",
         "operationId": "revokeApiKey",
         "parameters": [
           {
@@ -176,7 +397,7 @@
         ],
         "responses": {
           "200": {
-            "description": "API key revoked successfully",
+            "description": "API key revoked",
             "content": {
               "application/json": {
                 "schema": {
@@ -184,9 +405,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
           }
         },
         "security": [
@@ -200,7 +418,7 @@
       "post": {
         "tags": ["API Keys"],
         "summary": "Rotate API Key",
-        "description": "Rotate an API key. Creates a new key and optionally keeps the old key active for a grace period.",
+        "description": "Rotate an API key with optional grace period.",
         "operationId": "rotateApiKey",
         "parameters": [
           {
@@ -240,7 +458,7 @@
         },
         "responses": {
           "200": {
-            "description": "API key rotated successfully",
+            "description": "API key rotated",
             "content": {
               "application/json": {
                 "schema": {
@@ -261,7 +479,7 @@
       "get": {
         "tags": ["Usage & Analytics"],
         "summary": "Get Usage Statistics",
-        "description": "Get usage statistics for an organization including API calls, storage metrics, and costs.",
+        "description": "Get usage statistics for an organization.",
         "operationId": "getUsageStatistics",
         "parameters": [
           {
@@ -280,18 +498,11 @@
               "enum": ["7d", "30d", "90d", "current_month"],
               "default": "30d"
             }
-          },
-          {
-            "name": "projectId",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "Usage statistics",
             "content": {
               "application/json": {
                 "schema": {
@@ -312,7 +523,7 @@
       "get": {
         "tags": ["Billing"],
         "summary": "Get Current Plan",
-        "description": "Get current subscription plan and usage information.",
+        "description": "Get current subscription plan and usage.",
         "operationId": "getCurrentPlan",
         "parameters": [
           {
@@ -326,7 +537,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "Plan information",
             "content": {
               "application/json": {
                 "schema": {
@@ -347,11 +558,11 @@
       "get": {
         "tags": ["User Profile"],
         "summary": "Get Current User",
-        "description": "Get the currently authenticated user's profile information.",
+        "description": "Get the currently authenticated user's profile.",
         "operationId": "getCurrentUser",
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "User profile",
             "content": {
               "application/json": {
                 "schema": {
@@ -370,7 +581,7 @@
       "patch": {
         "tags": ["User Profile"],
         "summary": "Update User Profile",
-        "description": "Update the current user's profile information.",
+        "description": "Update the current user's profile.",
         "operationId": "updateUserProfile",
         "requestBody": {
           "required": true,
@@ -384,7 +595,7 @@
         },
         "responses": {
           "200": {
-            "description": "Profile updated successfully",
+            "description": "Profile updated",
             "content": {
               "application/json": {
                 "schema": {
@@ -407,7 +618,7 @@
         "operationId": "deleteAccount",
         "responses": {
           "200": {
-            "description": "Account deleted successfully",
+            "description": "Account deleted",
             "content": {
               "application/json": {
                 "schema": {
@@ -420,280 +631,6 @@
         "security": [
           {
             "BearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/organizations/{org_id}/projects/{project_id}/memories": {
-      "get": {
-        "tags": ["Memory Management"],
-        "summary": "List Memories",
-        "description": "List all memories for a project with optional filtering.",
-        "operationId": "listMemories",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 20,
-              "maximum": 100
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 0
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MemoryListResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ]
-      },
-      "post": {
-        "tags": ["Memory Management"],
-        "summary": "Create Memory",
-        "description": "Create a new memory entry for a user.",
-        "operationId": "createMemory",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MemoryCreateRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Memory created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MemoryCreateResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ]
-      }
-    },
-    "/api/organizations/{org_id}/projects/{project_id}/memories/{memory_id}": {
-      "patch": {
-        "tags": ["Memory Management"],
-        "summary": "Update Memory",
-        "description": "Update an existing memory entry.",
-        "operationId": "updateMemory",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "memory_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MemoryUpdateRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Memory updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MemoryResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ]
-      },
-      "delete": {
-        "tags": ["Memory Management"],
-        "summary": "Delete Memory",
-        "description": "Delete a specific memory entry.",
-        "operationId": "deleteMemory",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "memory_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Memory deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeleteMemoryResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ]
-      }
-    },
-    "/api/organizations/{org_id}/projects/{project_id}/memories/search": {
-      "post": {
-        "tags": ["Memory Management"],
-        "summary": "Search Memories",
-        "description": "Search memories using semantic similarity or keyword matching.",
-        "operationId": "searchMemories",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MemorySearchRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Search results",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MemorySearchResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "ApiKeyAuth": []
           }
         ]
       }
@@ -715,16 +652,6 @@
       }
     },
     "responses": {
-      "BadRequestError": {
-        "description": "Bad request",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            }
-          }
-        }
-      },
       "UnauthorizedError": {
         "description": "Unauthorized",
         "content": {
@@ -735,8 +662,8 @@
           }
         }
       },
-      "ForbiddenError": {
-        "description": "Forbidden",
+      "NotFoundError": {
+        "description": "Not found",
         "content": {
           "application/json": {
             "schema": {
@@ -745,8 +672,8 @@
           }
         }
       },
-      "NotFoundError": {
-        "description": "Not found",
+      "PayloadTooLargeError": {
+        "description": "Payload too large",
         "content": {
           "application/json": {
             "schema": {
@@ -773,308 +700,6 @@
           }
         }
       },
-      "APIKeyCreate": {
-        "type": "object",
-        "required": ["name"],
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 3,
-            "description": "A descriptive name for the API key"
-          },
-          "permissions": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": ["read", "write"]
-            },
-            "default": ["read", "write"]
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        }
-      },
-      "APIKeyResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "keyPrefix": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["active", "expired", "revoked"]
-          },
-          "permissions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastUsedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        }
-      },
-      "APIKeyListResponse": {
-        "type": "object",
-        "properties": {
-          "apiKeys": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/APIKeyResponse"
-            }
-          }
-        }
-      },
-      "CreateAPIKeyResponse": {
-        "type": "object",
-        "properties": {
-          "apiKey": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "key": {
-                "type": "string",
-                "description": "Full API key - only shown once"
-              },
-              "keyPrefix": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              },
-              "permissions": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "createdAt": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "expiresAt": {
-                "type": "string",
-                "format": "date-time",
-                "nullable": true
-              }
-            }
-          }
-        }
-      },
-      "RevokeAPIKeyResponse": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          },
-          "revokedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "RotateAPIKeyRequest": {
-        "type": "object",
-        "properties": {
-          "gracePeriodDays": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 30,
-            "default": 0
-          }
-        }
-      },
-      "RotateAPIKeyResponse": {
-        "type": "object",
-        "properties": {
-          "newApiKey": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "key": {
-                "type": "string"
-              },
-              "keyPrefix": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              },
-              "permissions": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "createdAt": {
-                "type": "string",
-                "format": "date-time"
-              }
-            }
-          },
-          "oldApiKey": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              },
-              "expiresAt": {
-                "type": "string",
-                "format": "date-time",
-                "nullable": true
-              }
-            }
-          },
-          "warning": {
-            "type": "string"
-          }
-        }
-      },
-      "UsageStatisticsResponse": {
-        "type": "object",
-        "properties": {
-          "period": {
-            "type": "object",
-            "properties": {
-              "start": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "end": {
-                "type": "string",
-                "format": "date-time"
-              }
-            }
-          },
-          "usage": {
-            "type": "object",
-            "properties": {
-              "memoriesCreated": {
-                "type": "integer"
-              },
-              "memoriesSearched": {
-                "type": "integer"
-              },
-              "storageBytes": {
-                "type": "integer"
-              },
-              "estimatedCost": {
-                "type": "number"
-              }
-            }
-          }
-        }
-      },
-      "GetPlanResponse": {
-        "type": "object",
-        "properties": {
-          "plan": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "price": {
-                "type": "number"
-              },
-              "currency": {
-                "type": "string"
-              },
-              "interval": {
-                "type": "string"
-              },
-              "features": {
-                "type": "object"
-              }
-            }
-          },
-          "subscription": {
-            "type": "object",
-            "nullable": true
-          },
-          "usage": {
-            "type": "object"
-          }
-        }
-      },
-      "UserProfileResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "imageUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "UpdateUserProfileRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "imageUrl": {
-            "type": "string"
-          }
-        }
-      },
-      "DeleteAccountResponse": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          }
-        }
-      },
       "MemoryCreateRequest": {
         "type": "object",
         "required": ["userId", "userName", "content"],
@@ -1082,22 +707,28 @@
           "userId": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 255
+            "maxLength": 255,
+            "description": "User ID"
           },
           "userName": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 255
+            "maxLength": 255,
+            "description": "User name"
           },
           "content": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Memory content (max 10KB)"
           },
           "tags": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "type": "string",
+              "maxLength": 50
+            },
+            "maxItems": 20,
+            "description": "Tags for categorization"
           }
         }
       },
@@ -1144,13 +775,18 @@
         "type": "object",
         "properties": {
           "content": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "description": "Updated content (max 10KB)"
           },
           "tags": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "type": "string",
+              "maxLength": 50
+            },
+            "maxItems": 20,
+            "description": "Updated tags"
           }
         }
       },
@@ -1184,6 +820,10 @@
         "properties": {
           "message": {
             "type": "string"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -1192,14 +832,38 @@
         "required": ["query"],
         "properties": {
           "query": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "description": "Search query"
           },
           "userId": {
-            "type": "string"
+            "type": "string",
+            "description": "Filter by user ID"
           },
           "limit": {
             "type": "integer",
-            "default": 20
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10,
+            "description": "Number of results"
+          },
+          "minRelevance": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.7,
+            "description": "Minimum relevance score"
+          }
+        }
+      },
+      "MemorySearchResult": {
+        "type": "object",
+        "properties": {
+          "memory": {
+            "$ref": "#/components/schemas/MemoryResponse"
+          },
+          "relevanceScore": {
+            "type": "number"
           }
         }
       },
@@ -1209,16 +873,223 @@
           "results": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "memory": {
-                  "$ref": "#/components/schemas/MemoryResponse"
-                },
-                "score": {
-                  "type": "number"
+              "$ref": "#/components/schemas/MemorySearchResult"
+            }
+          },
+          "query": {
+            "type": "string"
+          },
+          "totalResults": {
+            "type": "integer"
+          }
+        }
+      },
+      "APIKeyCreate": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["read", "write"]
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "APIKeyResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "keyPrefix": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "expired", "revoked"]
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "APIKeyListResponse": {
+        "type": "object",
+        "properties": {
+          "apiKeys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/APIKeyResponse"
+            }
+          }
+        }
+      },
+      "CreateAPIKeyResponse": {
+        "type": "object",
+        "properties": {
+          "apiKey": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "keyPrefix": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
                 }
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time"
               }
             }
+          }
+        }
+      },
+      "RevokeAPIKeyResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "revokedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RotateAPIKeyRequest": {
+        "type": "object",
+        "properties": {
+          "gracePeriodDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30,
+            "default": 0
+          }
+        }
+      },
+      "RotateAPIKeyResponse": {
+        "type": "object",
+        "properties": {
+          "newApiKey": {
+            "type": "object"
+          },
+          "oldApiKey": {
+            "type": "object"
+          },
+          "warning": {
+            "type": "string"
+          }
+        }
+      },
+      "UsageStatisticsResponse": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "object"
+          },
+          "usage": {
+            "type": "object"
+          }
+        }
+      },
+      "GetPlanResponse": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "object"
+          },
+          "subscription": {
+            "type": "object"
+          },
+          "usage": {
+            "type": "object"
+          }
+        }
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdateUserProfileRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "DeleteAccountResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
           }
         }
       }

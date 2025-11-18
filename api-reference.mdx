@@ -1,0 +1,113 @@
+---
+title: "Overview"
+icon: "terminal"
+iconType: "solid"
+description: "REST APIs for memory management, search, and entity operations"
+---
+
+## PhotoMem REST API
+
+PhotoMem provides a comprehensive REST API for integrating advanced memory capabilities into your applications. Create, search, update, and manage memories across users, agents, and custom entities with simple HTTP requests.
+
+<Info>
+**Quick start:** Get your API key from the [PhotoMem Dashboard](https://app.photomem.ai/dashboard/api-keys) and make your first memory operation in minutes.
+</Info>
+
+---
+
+## Quick Start Guide
+
+Get started with PhotoMem API in three simple steps:
+
+1. **[Add Memories](/api-reference/operations/add-memories)** - Store information and context from user conversations
+2. **[Search Memories](/api-reference/operations/search-memories)** - Retrieve relevant memories using semantic search
+3. **[Get Memories](/api-reference/operations/get-memories)** - Fetch all memories for a specific entity
+
+---
+
+## Core Operations
+
+<CardGroup cols={2}>
+  <Card title="Add Memories" icon="plus" href="/api-reference/operations/add-memories">
+    Store new memories from conversations and interactions
+  </Card>
+
+  <Card title="Search Memories" icon="magnifying-glass" href="/api-reference/operations/search-memories">
+    Find relevant memories using semantic search with filters
+  </Card>
+
+  <Card title="Update Memory" icon="pen" href="/api-reference/operations/update-memory">
+    Modify existing memory content and metadata
+  </Card>
+
+  <Card title="Delete Memory" icon="trash" href="/api-reference/operations/delete-memory">
+    Remove specific memories or batch delete operations
+  </Card>
+</CardGroup>
+
+---
+
+## API Categories
+
+Explore the full API organized by functionality:
+
+<CardGroup cols={2}>
+  <Card title="Memory APIs" icon="microchip" href="/api-reference/memories-api/create-memory">
+    Core and advanced operations: CRUD, search, batch updates, and history
+  </Card>
+
+  <Card title="Entities APIs" icon="users" href="/api-reference/entities/get-users">
+    Manage users, agents, and their associated memory data
+  </Card>
+
+  <Card title="Organizations & Projects" icon="building" href="/api-reference/organizations/create-organization">
+    Multi-tenant support, access control, and team collaboration
+  </Card>
+
+  <Card title="Webhooks" icon="webhook" href="/api-reference/webhooks/create-webhook">
+    Real-time notifications for memory events and updates
+  </Card>
+</CardGroup>
+
+<Note>
+**Building multi-tenant apps?** Learn about Organizations & Projects for team isolation and access control.
+</Note>
+
+---
+
+## Authentication
+
+All API requests require authentication using JWT-based authentication via Clerk. Include your JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer <your-jwt-token>
+```
+
+Get your API key from the [PhotoMem Dashboard](https://app.photomem.ai/dashboard/api-keys).
+
+<Warning>
+**Keep your credentials secure.** Never expose API keys in client-side code or public repositories. Use environment variables and server-side requests only.
+</Warning>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Add Your First Memory" icon="rocket" href="/api-reference/operations/add-memories">
+    Start storing memories via the REST API
+  </Card>
+
+  <Card title="Search with Filters" icon="filter" href="/api-reference/operations/search-memories">
+    Learn advanced search and filtering techniques
+  </Card>
+
+  <Card title="Organizations Setup" icon="building" href="/api-reference/organizations/create-organization">
+    Set up multi-tenant organizations
+  </Card>
+
+  <Card title="API Keys" icon="key" href="/api-reference/api-keys/list-api-keys">
+    Manage your API keys
+  </Card>
+</CardGroup>
+

@@ -1,8 +1,8 @@
 {
   "name": "PhotoMem",
   "logo": {
-    "dark": "/logo/dark.png",
-    "light": "/logo/light.png"
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
@@ -27,6 +27,20 @@
     "name": "Get Started",
     "url": "https://github.com/photomem/photomem"
   },
+  "tabs": [
+    {
+      "name": "Documentation",
+      "url": "docs"
+    },
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "Integrations",
+      "url": "integrations"
+    }
+  ],
   "navigation": [
     {
       "group": "Getting Started",
@@ -49,6 +63,32 @@
         "advanced/filtering",
         "advanced/llm-prompts",
         "advanced/graph-memory"
+      ]
+    },
+    {
+      "group": "Development",
+      "pages": [
+        "development"
+      ]
+    },
+    {
+      "group": "AI Tools",
+      "pages": [
+        "ai-tools/cursor",
+        "ai-tools/windsurf",
+        "ai-tools/claude-code"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        "examples/python"
+      ]
+    },
+    {
+      "group": "Getting Started",
+      "pages": [
+        "api-reference"
       ]
     },
     {
@@ -142,9 +182,26 @@
       ]
     },
     {
-      "group": "Examples",
+      "group": "Overview",
       "pages": [
-        "examples/python"
+        "integrations"
+      ]
+    },
+    {
+      "group": "Agent Frameworks",
+      "pages": [
+        "integrations/langchain",
+        "integrations/llamaindex",
+        "integrations/crewai",
+        "integrations/autogen"
+      ]
+    },
+    {
+      "group": "Developer Tools",
+      "pages": [
+        "ai-tools/cursor",
+        "ai-tools/windsurf",
+        "ai-tools/claude-code"
       ]
     }
   ],

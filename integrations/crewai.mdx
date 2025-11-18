@@ -1,0 +1,34 @@
+---
+title: "CrewAI"
+icon: "users"
+description: "Build multi-agent systems with shared memory"
+---
+
+## CrewAI Integration
+
+Build powerful multi-agent systems with PhotoMem's shared memory capabilities.
+
+<Info>
+This integration guide is coming soon! Check back for updates or [join our Discord](https://discord.gg/photomem) for early access.
+</Info>
+
+## Quick Example
+
+```python
+from crewai import Agent, Task, Crew
+from photomem import PhotoMem
+
+# Initialize PhotoMem
+memory = PhotoMem(api_key="your-api-key")
+
+# Create agents with shared memory
+agent = Agent(
+    role="Assistant",
+    memory=memory
+)
+```
+
+<Note>
+Want to contribute this integration? Check out our [Contributing Guide](/contributing) or reach out on [Discord](https://discord.gg/photomem).
+</Note>
+

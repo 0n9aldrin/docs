@@ -1,0 +1,973 @@
+---
+title: 'REST API'
+description: 'Complete HTTP API reference for PhotoMem'
+icon: 'server'
+---
+
+## Overview
+
+PhotoMem provides a production-grade REST API built with FastAPI. The API is faster than mem0, with better deduplication, graph memory support, and multiple vector database backends.
+
+### Key Features
+
+- 🚀 **High Performance** - Async FastAPI with connection pooling
+- 🔒 **Secure** - API key authentication with rate limiting
+- 🎯 **Accurate** - Advanced semantic search with reranking
+- 🧠 **Graph Memory** - Relationship tracking with Neo4j
+- 📦 **Flexible** - Multiple vector DB backends (pgvector, Qdrant, Pinecone, Weaviate)
+- ⚡ **Fast** - Redis caching layer for embeddings and results
+
+## Base URLs
+
+```
+Production:  https://api.photomem.ai
+Self-hosted: http://localhost:8000
+```
+
+---
+
+## Authentication
+
+All API requests require authentication via API keys in the `Authorization` header.
+
+```bash
+curl https://api.photomem.ai/v1/memories \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx" \
+  -H "Content-Type: application/json"
+```
+
+### API Key Format
+
+API keys follow the format: `pm_sk_` + 32 character alphanumeric string
+
+Example: `pm_sk_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6`
+
+### Getting Your API Key
+
+**Hosted Version:**
+1. Sign up at [photomem.ai](https://photomem.ai)
+2. Go to Dashboard → API Keys
+3. Click "Create New Key"
+4. Store securely (shown only once)
+
+**Self-Hosted:**
+Generate keys using the admin CLI:
+```bash
+photomem-admin create-api-key --name "My App"
+```
+
+---
+
+## Core Endpoints
+
+### POST /v1/memories
+
+Add new memories from messages with automatic extraction.
+
+**Headers:**
+```
+Authorization: Bearer pm_sk_xxxxxxxxxxxxx
+Content-Type: application/json
+X-Request-ID: optional-trace-id
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messages` | string \| object \| array | Yes | Messages to extract memories from |
+| `user_id` | string | Conditional* | User identifier (e.g., `phone:15103651277`) |
+| `agent_id` | string | Conditional* | Agent identifier |
+| `run_id` | string | No | Run/session identifier |
+| `metadata` | object | No | Custom metadata (max 50 fields) |
+| `tags` | string[] | No | Tags for categorization (max 20) |
+| `memory_type` | string | No | `semantic` \| `episodic` \| `procedural` (default: `semantic`) |
+| `infer_entities` | boolean | No | Extract entities (people, places, etc.) (default: `true`) |
+| `build_graph` | boolean | No | Build knowledge graph relationships (default: `true`) |
+| `deduplicate` | boolean | No | Check for duplicates (default: `true`) |
+| `rerank` | boolean | No | Use reranking for better accuracy (default: `false`) |
+
+*At least one of `user_id` or `agent_id` required.
+
+**Example Request:**
+
+```bash
+curl -X POST https://api.photomem.ai/v1/memories \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "role": "user",
+        "content": "I love hiking in the mountains every weekend"
+      },
+      {
+        "role": "assistant",
+        "content": "That sounds wonderful! Do you have a favorite trail?"
+      },
+      {
+        "role": "user",
+        "content": "Yes, Mount Tamalpais in Marin County"
+      }
+    ],
+    "user_id": "phone:15103651277",
+    "metadata": {
+      "source": "chat",
+      "session_id": "sess_abc123",
+      "location": "San Francisco"
+    },
+    "tags": ["hobbies", "outdoors"],
+    "infer_entities": true,
+    "build_graph": true
+  }'
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "memories": [
+    {
+      "id": "mem_550e8400e29b41d4a716446655440000",
+      "memory": "User loves hiking in mountains every weekend, favorite trail is Mount Tamalpais in Marin County",
+      "event": "ADD",
+      "hash": "5d41402abc4b2a76b9719d911017c592",
+      "metadata": {
+        "user_id": "phone:15103651277",
+        "tags": ["hobbies", "outdoors"],
+        "custom": {
+          "source": "chat",
+          "session_id": "sess_abc123",
+          "location": "San Francisco"
+        },
+        "created_at": "2025-01-08T10:30:00Z",
+        "updated_at": "2025-01-08T10:30:00Z"
+      },
+      "entities": [
+        {
+          "type": "LOCATION",
+          "name": "Mount Tamalpais",
+          "context": "favorite hiking trail"
+        },
+        {
+          "type": "LOCATION",
+          "name": "Marin County",
+          "context": "location of trail"
+        },
+        {
+          "type": "ACTIVITY",
+          "name": "hiking",
+          "frequency": "weekly"
+        }
+      ],
+      "relations": [
+        {
+          "from": "mem_550e8400e29b41d4a716446655440000",
+          "to": "Mount Tamalpais",
+          "type": "LOCATED_AT",
+          "properties": {
+            "context": "favorite_place"
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "extracted": 1,
+    "duplicates_found": 0,
+    "entities_found": 3,
+    "relationships_created": 1
+  }
+}
+```
+
+---
+
+### POST /v1/search
+
+Search memories semantically with optional reranking.
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `query` | string | Yes | Search query (natural language) |
+| `user_id` | string | No | Filter by user |
+| `agent_id` | string | No | Filter by agent |
+| `run_id` | string | No | Filter by run |
+| `limit` | integer | No | Max results (default: 10, max: 100) |
+| `threshold` | number | No | Min similarity score 0-1 (default: 0.7) |
+| `rerank` | boolean | No | Use reranking (default: `false`) |
+| `include_graph` | boolean | No | Include graph context (default: `false`) |
+| `filters` | object | No | Advanced filters |
+
+**Filters Object:**
+
+```typescript
+{
+  "tags": string[],           // Filter by tags (AND logic)
+  "memory_type": string,      // semantic | episodic | procedural
+  "created_after": string,    // ISO 8601 date
+  "created_before": string,   // ISO 8601 date
+  "updated_after": string,    // ISO 8601 date
+  "updated_before": string,   // ISO 8601 date
+  "has_entities": boolean,    // Must have entities
+  "entity_types": string[],   // Filter by entity types
+  "metadata": object          // Custom metadata filters
+}
+```
+
+**Example Request:**
+
+```bash
+curl -X POST https://api.photomem.ai/v1/search \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What outdoor activities does the user enjoy?",
+    "user_id": "phone:15103651277",
+    "limit": 5,
+    "threshold": 0.75,
+    "rerank": true,
+    "include_graph": true,
+    "filters": {
+      "tags": ["hobbies"],
+      "created_after": "2025-01-01T00:00:00Z"
+    }
+  }'
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "results": [
+    {
+      "id": "mem_550e8400e29b41d4a716446655440000",
+      "memory": "User loves hiking in mountains every weekend",
+      "score": 0.95,
+      "rerank_score": 0.98,
+      "hash": "5d41402abc4b2a76b9719d911017c592",
+      "metadata": {
+        "user_id": "phone:15103651277",
+        "tags": ["hobbies", "outdoors"],
+        "created_at": "2025-01-08T10:30:00Z"
+      },
+      "entities": [
+        {
+          "type": "ACTIVITY",
+          "name": "hiking",
+          "confidence": 0.96
+        }
+      ],
+      "graph_context": {
+        "related_memories": [
+          {
+            "id": "mem_abc123",
+            "memory": "User prefers morning activities",
+            "relationship": "TEMPORAL_PATTERN"
+          }
+        ],
+        "related_entities": [
+          {
+            "name": "Mount Tamalpais",
+            "type": "LOCATION",
+            "relationship": "FREQUENTLY_VISITS"
+          }
+        ]
+      }
+    }
+  ],
+  "query": "What outdoor activities does the user enjoy?",
+  "count": 1,
+  "total_matched": 3,
+  "search_time_ms": 45,
+  "rerank_time_ms": 12
+}
+```
+
+---
+
+### GET /v1/memories/:id
+
+Get a specific memory by ID.
+
+**Path Parameters:**
+- `id` (string) - Memory ID
+
+**Query Parameters:**
+- `include_graph` (boolean) - Include graph relationships (default: `false`)
+- `include_history` (boolean) - Include change history (default: `false`)
+
+**Example Request:**
+
+```bash
+curl https://api.photomem.ai/v1/memories/mem_550e8400e29b41d4a716446655440000?include_graph=true \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "mem_550e8400e29b41d4a716446655440000",
+  "memory": "User loves hiking in mountains every weekend",
+  "hash": "5d41402abc4b2a76b9719d911017c592",
+  "metadata": {
+    "user_id": "phone:15103651277",
+    "tags": ["hobbies", "outdoors"],
+    "created_at": "2025-01-08T10:30:00Z",
+    "updated_at": "2025-01-08T10:30:00Z"
+  },
+  "entities": [...],
+  "graph": {
+    "incoming": [
+      {
+        "from_id": "mem_abc123",
+        "type": "SUPPORTS",
+        "created_at": "2025-01-08T11:00:00Z"
+      }
+    ],
+    "outgoing": [
+      {
+        "to_id": "entity_mount_tam",
+        "type": "LOCATED_AT",
+        "created_at": "2025-01-08T10:30:00Z"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### GET /v1/memories
+
+List memories with filtering and pagination.
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `user_id` | string | Filter by user |
+| `agent_id` | string | Filter by agent |
+| `run_id` | string | Filter by run |
+| `tags` | string | Comma-separated tags |
+| `memory_type` | string | Filter by type |
+| `limit` | integer | Results per page (default: 100, max: 1000) |
+| `offset` | integer | Skip N results (default: 0) |
+| `sort` | string | Sort field: `created_at` \| `updated_at` \| `relevance` |
+| `order` | string | Sort order: `asc` \| `desc` (default: `desc`) |
+| `created_after` | string | ISO 8601 date |
+| `created_before` | string | ISO 8601 date |
+
+**Example Request:**
+
+```bash
+curl "https://api.photomem.ai/v1/memories?user_id=phone:15103651277&tags=hobbies&limit=20&sort=created_at&order=desc" \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "memories": [...],
+  "pagination": {
+    "count": 20,
+    "total": 247,
+    "limit": 20,
+    "offset": 0,
+    "has_more": true,
+    "next_offset": 20
+  }
+}
+```
+
+---
+
+### PATCH /v1/memories/:id
+
+Update an existing memory.
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `data` | string | No | New memory content |
+| `metadata` | object | No | Update metadata |
+| `tags` | string[] | No | Update tags |
+
+**Example Request:**
+
+```bash
+curl -X PATCH https://api.photomem.ai/v1/memories/mem_550e8400e29b41d4a716446655440000 \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": "User loves hiking and rock climbing in mountains every weekend",
+    "tags": ["hobbies", "outdoors", "climbing"]
+  }'
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "mem_550e8400e29b41d4a716446655440000",
+  "memory": "User loves hiking and rock climbing in mountains every weekend",
+  "event": "UPDATE",
+  "hash": "new_hash_value",
+  "metadata": {
+    "updated_at": "2025-01-08T11:00:00Z"
+  }
+}
+```
+
+---
+
+### DELETE /v1/memories/:id
+
+Delete a specific memory.
+
+**Example Request:**
+
+```bash
+curl -X DELETE https://api.photomem.ai/v1/memories/mem_550e8400e29b41d4a716446655440000 \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx"
+```
+
+**Response (204 No Content)**
+
+---
+
+### DELETE /v1/memories
+
+Bulk delete memories by filter.
+
+**Query Parameters:**
+- `user_id` (string) - Delete all for user
+- `agent_id` (string) - Delete all for agent
+- `run_id` (string) - Delete all for run
+- `tags` (string) - Delete by tags (comma-separated)
+- `confirm` (boolean) - Must be `true` for safety
+
+**Example Request:**
+
+```bash
+curl -X DELETE "https://api.photomem.ai/v1/memories?user_id=phone:15103651277&confirm=true" \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "deleted": 42,
+  "message": "Successfully deleted 42 memories"
+}
+```
+
+---
+
+### GET /v1/memories/:id/history
+
+Get change history for a memory.
+
+**Query Parameters:**
+- `limit` (integer) - Max history entries (default: 50)
+- `offset` (integer) - Skip entries
+
+**Example Request:**
+
+```bash
+curl https://api.photomem.ai/v1/memories/mem_550e8400e29b41d4a716446655440000/history \
+  -H "Authorization: Bearer pm_sk_xxxxxxxxxxxxx"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "history": [
+    {
+      "id": "hist_123",
+      "memory_id": "mem_550e8400e29b41d4a716446655440000",
+      "old_memory": "User loves hiking",
+      "new_memory": "User loves hiking and rock climbing",
+      "event": "UPDATE",
+      "actor_id": "phone:15103651277",
+      "created_at": "2025-01-08T11:00:00Z"
+    }
+  ],
+  "count": 1,
+  "total": 3
+}
+```
+
+---
+
+## Graph & Entities
+
+### GET /v1/graph/:id/neighbors
+
+Get graph neighbors for a memory or entity.
+
+**Path Parameters:**
+- `id` (string) - Memory or entity ID
+
+**Query Parameters:**
+- `depth` (integer) - Traversal depth (default: 1, max: 3)
+- `relationship_types` (string) - Comma-separated types
+- `limit` (integer) - Max neighbors (default: 50)
+
+**Response (200 OK):**
+
+```json
+{
+  "node": {
+    "id": "mem_550e8400e29b41d4a716446655440000",
+    "type": "MEMORY",
+    "data": {...}
+  },
+  "neighbors": [
+    {
+      "id": "entity_mount_tam",
+      "type": "ENTITY",
+      "relationship": "LOCATED_AT",
+      "distance": 1,
+      "data": {...}
+    }
+  ]
+}
+```
+
+---
+
+### POST /v1/entities/extract
+
+Extract entities from text without creating memory.
+
+**Request Body:**
+
+```json
+{
+  "text": "I live in San Francisco and work at OpenAI",
+  "entity_types": ["PERSON", "LOCATION", "ORGANIZATION"]
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "entities": [
+    {
+      "type": "LOCATION",
+      "name": "San Francisco",
+      "start": 10,
+      "end": 23,
+      "confidence": 0.98
+    },
+    {
+      "type": "ORGANIZATION",
+      "name": "OpenAI",
+      "start": 37,
+      "end": 43,
+      "confidence": 0.96
+    }
+  ]
+}
+```
+
+---
+
+## Analytics & Insights
+
+### GET /v1/analytics/summary
+
+Get memory analytics for a user or agent.
+
+**Query Parameters:**
+- `user_id` (string)
+- `agent_id` (string)
+- `start_date` (string) - ISO 8601
+- `end_date` (string) - ISO 8601
+
+**Response (200 OK):**
+
+```json
+{
+  "total_memories": 247,
+  "memory_types": {
+    "semantic": 189,
+    "episodic": 45,
+    "procedural": 13
+  },
+  "entities": {
+    "total": 456,
+    "by_type": {
+      "PERSON": 123,
+      "LOCATION": 89,
+      "ORGANIZATION": 67
+    }
+  },
+  "relationships": {
+    "total": 892,
+    "by_type": {
+      "LOCATED_AT": 234,
+      "WORKS_AT": 156
+    }
+  },
+  "top_tags": [
+    {"tag": "hobbies", "count": 45},
+    {"tag": "work", "count": 38}
+  ],
+  "activity": {
+    "memories_per_day": 3.2,
+    "peak_hours": [9, 14, 20]
+  }
+}
+```
+
+---
+
+### GET /v1/analytics/clusters
+
+Get memory clusters and themes.
+
+**Response (200 OK):**
+
+```json
+{
+  "clusters": [
+    {
+      "id": "cluster_1",
+      "theme": "Outdoor Activities",
+      "memory_count": 45,
+      "keywords": ["hiking", "mountains", "trails"],
+      "representative_memories": [...]
+    }
+  ]
+}
+```
+
+---
+
+## Administration
+
+### POST /v1/admin/reindex
+
+Trigger reindexing of memories (admin only).
+
+**Request Body:**
+
+```json
+{
+  "user_id": "phone:15103651277",
+  "rebuild_graph": true,
+  "recalculate_embeddings": false
+}
+```
+
+---
+
+### GET /v1/health
+
+Health check endpoint (no auth required).
+
+**Response (200 OK):**
+
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "uptime_seconds": 86400,
+  "checks": {
+    "database": {
+      "status": "healthy",
+      "latency_ms": 2
+    },
+    "vector_db": {
+      "status": "healthy",
+      "latency_ms": 5
+    },
+    "graph_db": {
+      "status": "healthy",
+      "latency_ms": 3
+    },
+    "cache": {
+      "status": "healthy",
+      "latency_ms": 1
+    },
+    "llm": {
+      "status": "healthy",
+      "latency_ms": 250
+    }
+  }
+}
+```
+
+---
+
+## Configuration Options
+
+Configure PhotoMem via environment variables or config file.
+
+### Environment Variables
+
+```bash
+# Core
+PHOTOMEM_ENV=production
+PHOTOMEM_API_HOST=0.0.0.0
+PHOTOMEM_API_PORT=8000
+PHOTOMEM_DEBUG=false
+PHOTOMEM_LOG_LEVEL=INFO
+
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/photomem
+DATABASE_POOL_SIZE=20
+DATABASE_MAX_OVERFLOW=10
+DATABASE_POOL_TIMEOUT=30
+
+# Vector Database (choose one)
+VECTOR_DB_PROVIDER=pgvector  # pgvector | qdrant | pinecone | weaviate
+VECTOR_DB_URL=postgresql://...
+# Or for Qdrant
+QDRANT_URL=http://localhost:6333
+QDRANT_API_KEY=optional
+# Or for Pinecone
+PINECONE_API_KEY=xxx
+PINECONE_ENVIRONMENT=us-west1-gcp
+# Or for Weaviate
+WEAVIATE_URL=http://localhost:8080
+WEAVIATE_API_KEY=optional
+
+# Graph Database
+GRAPH_DB_ENABLED=true
+NEO4J_URL=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=password
+
+# LLM
+LLM_PROVIDER=openai  # openai | anthropic | cohere
+OPENAI_API_KEY=sk-...
+LLM_MODEL=gpt-4-turbo-preview
+LLM_TEMPERATURE=0.2
+LLM_MAX_TOKENS=1000
+
+# Embeddings
+EMBEDDING_PROVIDER=openai  # openai | cohere | sentence-transformers
+EMBEDDING_MODEL=text-embedding-3-small
+EMBEDDING_DIMENSIONS=1536
+EMBEDDING_BATCH_SIZE=100
+
+# Reranking
+RERANK_ENABLED=true
+RERANK_PROVIDER=cohere  # cohere | cross-encoder
+COHERE_API_KEY=optional
+
+# Redis Cache
+REDIS_URL=redis://localhost:6379/0
+REDIS_PASSWORD=optional
+REDIS_MAX_CONNECTIONS=50
+CACHE_TTL_EMBEDDINGS=86400
+CACHE_TTL_SEARCH=3600
+
+# Performance
+MAX_CONCURRENT_REQUESTS=100
+REQUEST_TIMEOUT=30
+EMBEDDING_CACHE_SIZE=10000
+CONNECTION_POOL_SIZE=20
+
+# Security
+API_KEY_REQUIRED=true
+RATE_LIMIT_PER_MINUTE=60
+RATE_LIMIT_PER_DAY=10000
+CORS_ORIGINS=*
+ALLOWED_HOSTS=*
+
+# Features
+ENABLE_GRAPH_MEMORY=true
+ENABLE_ENTITY_EXTRACTION=true
+ENABLE_DEDUPLICATION=true
+ENABLE_AUTO_RERANK=false
+DEDUPLICATION_THRESHOLD=0.95
+
+# Monitoring
+SENTRY_DSN=optional
+PROMETHEUS_ENABLED=true
+PROMETHEUS_PORT=9090
+```
+
+### Configuration File
+
+`config.yaml`:
+
+```yaml
+server:
+  host: 0.0.0.0
+  port: 8000
+  workers: 4
+  log_level: INFO
+
+database:
+  url: postgresql://user:pass@localhost:5432/photomem
+  pool_size: 20
+  max_overflow: 10
+
+vector_db:
+  provider: pgvector
+  url: postgresql://...
+  collection: memories
+  
+graph_db:
+  enabled: true
+  url: bolt://localhost:7687
+  user: neo4j
+  password: password
+
+llm:
+  provider: openai
+  model: gpt-4-turbo-preview
+  temperature: 0.2
+  
+embeddings:
+  provider: openai
+  model: text-embedding-3-small
+  dimensions: 1536
+  batch_size: 100
+
+reranking:
+  enabled: true
+  provider: cohere
+  model: rerank-english-v2.0
+
+cache:
+  redis_url: redis://localhost:6379/0
+  ttl_embeddings: 86400
+  ttl_search: 3600
+
+security:
+  api_keys_required: true
+  rate_limits:
+    per_minute: 60
+    per_day: 10000
+
+features:
+  graph_memory: true
+  entity_extraction: true
+  deduplication: true
+  auto_rerank: false
+```
+
+---
+
+## Rate Limits
+
+| Plan | Requests/min | Requests/day | Memories | Graph Relationships |
+|------|--------------|--------------|----------|-------------------|
+| Free | 60 | 1,000 | 1,000 | 5,000 |
+| Pro | 600 | 100,000 | 100,000 | 500,000 |
+| Enterprise | Custom | Custom | Unlimited | Unlimited |
+
+**Rate Limit Headers:**
+
+```http
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1704715200
+X-RateLimit-Resource: requests
+```
+
+---
+
+## Error Responses
+
+All errors use this format:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "user_id or agent_id required",
+    "details": {
+      "field": "user_id",
+      "constraint": "required"
+    },
+    "suggestion": "Provide at least one identifier",
+    "docs_url": "https://docs.photomem.ai/api-reference/errors"
+  },
+  "request_id": "req_abc123xyz"
+}
+```
+
+### HTTP Status Codes
+
+| Code | Meaning | Common Causes |
+|------|---------|---------------|
+| 200 | OK | Success |
+| 201 | Created | Memory added |
+| 204 | No Content | Delete success |
+| 400 | Bad Request | Invalid input |
+| 401 | Unauthorized | Invalid API key |
+| 403 | Forbidden | Insufficient permissions |
+| 404 | Not Found | Memory doesn't exist |
+| 409 | Conflict | Duplicate memory |
+| 422 | Unprocessable Entity | Validation failed |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Server error |
+| 503 | Service Unavailable | Maintenance/overload |
+
+---
+
+## Performance Optimizations
+
+### Caching Strategy
+
+1. **Embedding Cache** - Redis cache for embeddings (1 day TTL)
+2. **Search Cache** - Cache frequent queries (1 hour TTL)
+3. **Graph Cache** - Cache graph traversals (30 min TTL)
+
+### Connection Pooling
+
+- PostgreSQL: 20 connections per worker
+- Redis: 50 connections pool
+- Neo4j: 10 connections per worker
+
+### Batch Processing
+
+- Embeddings: Process in batches of 100
+- Bulk operations: Up to 1000 items per request
+
+---
+
+## SDK vs REST API
+
+| Feature | SDK (Recommended) | REST API |
+|---------|------------------|----------|
+| Ease of Use | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Type Safety | ✅ Full | ⚠️ Manual |
+| Error Handling | ✅ Structured | ⚠️ HTTP codes |
+| Retry Logic | ✅ Automatic | ❌ Manual |
+| Connection Pooling | ✅ Built-in | ❌ Manual |
+| Best For | Apps & Services | Integrations |
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Python SDK" icon="python" href="/installation">
+    Install the Python SDK
+  </Card>
+  <Card title="TypeScript SDK" icon="js" href="/installation">
+    Install the TypeScript SDK
+  </Card>
+  <Card title="Authentication" icon="key" href="/quickstart">
+    Get your API key
+  </Card>
+  <Card title="Examples" icon="code" href="/examples/python">
+    See integration examples
+  </Card>
+</CardGroup>

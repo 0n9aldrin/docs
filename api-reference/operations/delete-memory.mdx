@@ -1,0 +1,36 @@
+---
+title: "Delete Memory"
+api: "DELETE /v1/memories/{memory_id}"
+description: "Delete a specific memory"
+---
+
+## Path Parameters
+
+<ParamField path="memory_id" type="string" required>
+  The unique identifier of the memory to delete
+</ParamField>
+
+## Response
+
+Returns a 204 No Content on successful deletion.
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://api.photomem.ai/v1/memories/mem_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+await memory.delete(memory_id="mem_abc123")
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 204
+```
+
+</ResponseExample>
+

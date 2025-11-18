@@ -1,18 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
   "name": "PhotoMem",
-  "description": "PhotoMem is a self-improving memory layer for LLM applications, enabling personalized AI experiences.",
-  "theme": "aspen",
   "colors": {
     "primary": "#00D9FF",
     "light": "#00D9FF",
-    "dark": "#00D9FF"
+    "dark": "#0A0F1E"
   },
   "favicon": "/favicon.svg",
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
   "navigation": {
     "tabs": [
       {
@@ -20,10 +15,32 @@
         "groups": [
           {
             "group": "Getting Started",
-            "icon": "rocket",
             "pages": [
+              "index",
               "introduction",
-              "platform/quickstart"
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core",
+            "pages": [
+              "core-concepts",
+              "development"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "examples/python"
+            ]
+          },
+          {
+            "group": "AI Tools",
+            "pages": [
+              "ai-tools/cursor",
+              "ai-tools/claude-code",
+              "ai-tools/windsurf"
             ]
           }
         ]
@@ -32,30 +49,77 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "Getting Started",
-            "icon": "rocket",
+            "group": "Overview",
             "pages": [
-              "api-reference"
+              "api-reference/introduction"
             ]
           },
           {
-            "group": "Core Memory Operations",
-            "icon": "microchip",
+            "group": "SDK",
             "pages": [
-              "api-reference/memory/add-memories",
-              "api-reference/memory/get-memories",
-              "api-reference/memory/search-memories",
-              "api-reference/memory/update-memory",
-              "api-reference/memory/delete-memory"
+              "api-reference/memory",
+              "api-reference/types",
+              "api-reference/errors"
+            ]
+          },
+          {
+            "group": "REST API",
+            "pages": [
+              "api-reference/rest-api"
             ]
           }
         ]
       }
-    ]
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/yourusername/photomem",
+          "icon": "github"
+        },
+        {
+          "anchor": "Community",
+          "href": "https://discord.gg/photomem",
+          "icon": "discord"
+        }
+      ]
+    }
   },
-  "footerSocials": {
-    "github": "https://github.com/photomem/photomem",
-    "twitter": "https://twitter.com/photomem",
-    "discord": "https://discord.gg/photomem"
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@photomem.ai"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get Started",
+      "href": "https://github.com/photomem/photomem"
+    }
+  },
+  "contextual": {
+    "options": [
+     "copy",
+     "view",
+     "chatgpt",
+     "claude",
+     "perplexity",
+     "mcp",
+     "cursor",
+     "vscode"
+   ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/yourusername/photomem",
+      "twitter": "https://twitter.com/photomem",
+      "discord": "https://discord.gg/photomem"
+    }
   }
 }

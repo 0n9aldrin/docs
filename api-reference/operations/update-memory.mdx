@@ -1,0 +1,79 @@
+---
+title: "Update Memory"
+api: "PATCH /v1/memories/{memory_id}"
+description: "Update an existing memory"
+---
+
+## Path Parameters
+
+<ParamField path="memory_id" type="string" required>
+  The unique identifier of the memory to update
+</ParamField>
+
+## Request Body
+
+<ParamField body="memory" type="string">
+  New memory content
+</ParamField>
+
+<ParamField body="tags" type="array">
+  Updated tags
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Updated metadata
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string">
+  Memory identifier
+</ResponseField>
+
+<ResponseField name="memory" type="string">
+  Updated memory content
+</ResponseField>
+
+<ResponseField name="event" type="string">
+  Event type: `UPDATE`
+</ResponseField>
+
+<ResponseField name="metadata" type="object">
+  Updated metadata
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X PATCH https://api.photomem.ai/v1/memories/mem_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "memory": "User loves hiking in the Swiss Alps, especially Zermatt"
+  }'
+```
+
+```python Python
+result = await memory.update(
+    memory_id="mem_abc123",
+    memory="User loves hiking in the Swiss Alps, especially Zermatt"
+)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "mem_abc123",
+  "memory": "User loves hiking in the Swiss Alps, especially Zermatt",
+  "event": "UPDATE",
+  "metadata": {
+    "updated_at": "2023-11-07T06:15:22Z"
+  }
+}
+```
+
+</ResponseExample>
+

@@ -1,0 +1,656 @@
+---
+title: 'Memory Class'
+description: 'Complete API reference for the Memory class'
+icon: 'brain'
+---
+
+## Overview
+
+The `Memory` class is the main interface for all PhotoMem operations. It provides methods for adding, searching, updating, and deleting memories with full support for both Python and TypeScript.
+
+## Constructor
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem import Memory, MemoryConfig
+
+    # With defaults (uses environment variables)
+    memory = Memory()
+
+    # With custom configuration
+    config = MemoryConfig(
+        llm_model="gpt-4-turbo-preview",
+        embedding_model="text-embedding-3-small",
+        vector_store_url="postgresql://localhost:5432/photomem"
+    )
+    memory = Memory(config)
+
+    # Initialize connections
+    await memory.initialize()
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { Memory, MemoryConfig } from 'photomem';
+
+    // With defaults (uses environment variables)
+    const memory = new Memory();
+
+    // With custom configuration
+    const config: MemoryConfig = {
+      llmModel: 'gpt-4-turbo-preview',
+      embeddingModel: 'text-embedding-3-small',
+      vectorStoreUrl: 'postgresql://localhost:5432/photomem'
+    };
+    const memory = new Memory(config);
+
+    // Initialize connections
+    await memory.initialize();
+    ```
+  </Tab>
+</Tabs>
+
+## Methods
+
+### add()
+
+Add new memories from messages. The system extracts relevant facts and stores them semantically.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    result = await memory.add(
+        messages="I love hiking in the mountains",
+        user_id="phone:15103651277",
+        agent_id="assistant_1",
+        run_id="run_123",
+        metadata={"source": "chat"},
+        memory_type=MemoryType.SEMANTIC
+    )
+    ```
+
+    **Parameters:**
+    - `messages` (Union[str, Dict[str, str], List]): Messages to extract memories from
+    - `user_id` (Optional[str]): User identifier in format 'type:value'
+    - `agent_id` (Optional[str]): Agent identifier
+    - `run_id` (Optional[str]): Run identifier for tracking
+    - `metadata` (Optional[Dict[str, Any]]): Additional metadata
+    - `memory_type` (MemoryType): Type of memory (SEMANTIC, EPISODIC, PROCEDURAL)
+
+    **Returns:** `MemoryResult`
+
+    **Raises:**
+    - `ValidationError`: Invalid input parameters
+    - `LLMError`: LLM extraction failed
+    - `StorageError`: Storage operation failed
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    const result = await memory.add(
+      "I love hiking in the mountains",
+      {
+        userId: "phone:15103651277",
+        agentId: "assistant_1",
+        runId: "run_123",
+        metadata: { source: "chat" },
+        memoryType: MemoryType.SEMANTIC
+      }
+    );
+    ```
+
+    **Parameters:**
+    - `messages` (string | Message | Array): Messages to extract memories from
+    - `options` (AddMemoryOptions): Configuration object with:
+      - `userId`: User identifier
+      - `agentId`: Agent identifier
+      - `runId`: Run identifier
+      - `metadata`: Additional metadata
+      - `memoryType`: Type of memory
+
+    **Returns:** `Promise<MemoryResult>`
+
+    **Throws:**
+    - `ValidationError`: Invalid input
+    - `LLMError`: Extraction failed
+    - `StorageError`: Storage failed
+  </Tab>
+</Tabs>
+
+**Response Format:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "memory": "User loves hiking in the mountains",
+  "event": "ADD",
+  "hash": "5d41402abc4b2a76b9719d911017c592",
+  "metadata": {
+    "user_id": "phone:15103651277",
+    "agent_id": "assistant_1",
+    "run_id": "run_123",
+    "tags": [],
+    "custom": { "source": "chat" },
+    "created_at": "2025-01-08T10:30:00Z",
+    "updated_at": "2025-01-08T10:30:00Z"
+  },
+  "relations": []
+}
+```
+
+---
+
+### search()
+
+Perform semantic search across memories. Returns the most relevant memories based on similarity.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.core.types import SearchFilters
+
+    results = await memory.search(
+        query="What outdoor activities does the user enjoy?",
+        user_id="phone:15103651277",
+        limit=10,
+        filters=SearchFilters(
+            tags=["hobbies"],
+            created_after=datetime(2025, 1, 1)
+        )
+    )
+    ```
+
+    **Parameters:**
+    - `query` (str): Search query
+    - `user_id` (Optional[str]): Filter by user
+    - `agent_id` (Optional[str]): Filter by agent
+    - `run_id` (Optional[str]): Filter by run
+    - `limit` (int): Maximum results (default: 10)
+    - `filters` (Optional[SearchFilters]): Advanced filters
+
+    **Returns:** `List[SearchResult]`
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    const results = await memory.search(
+      "What outdoor activities does the user enjoy?",
+      {
+        userId: "phone:15103651277",
+        limit: 10,
+        filters: {
+          tags: ["hobbies"],
+          createdAfter: new Date("2025-01-01")
+        }
+      }
+    );
+    ```
+
+    **Parameters:**
+    - `query` (string): Search query
+    - `options` (SearchOptions): Configuration with:
+      - `userId`: Filter by user
+      - `agentId`: Filter by agent
+      - `runId`: Filter by run
+      - `limit`: Max results
+      - `filters`: Advanced filters
+
+    **Returns:** `Promise<SearchResult[]>`
+  </Tab>
+</Tabs>
+
+**Response Format:**
+
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "memory": "User loves hiking in the mountains",
+    "score": 0.95,
+    "hash": "5d41402abc4b2a76b9719d911017c592",
+    "metadata": {
+      "user_id": "phone:15103651277",
+      "created_at": "2025-01-08T10:30:00Z"
+    }
+  }
+]
+```
+
+---
+
+### get()
+
+Retrieve a specific memory by ID.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    memory_result = await memory.get("550e8400-e29b-41d4-a716-446655440000")
+    ```
+
+    **Parameters:**
+    - `memory_id` (str): UUID of the memory
+
+    **Returns:** `MemoryResult`
+
+    **Raises:**
+    - `MemoryNotFoundError`: Memory doesn't exist
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    const memoryResult = await memory.get("550e8400-e29b-41d4-a716-446655440000");
+    ```
+
+    **Parameters:**
+    - `memoryId` (string): UUID of the memory
+
+    **Returns:** `Promise<MemoryResult>`
+
+    **Throws:**
+    - `MemoryNotFoundError`: Memory not found
+  </Tab>
+</Tabs>
+
+---
+
+### getAll() / get_all()
+
+List all memories with optional filtering and pagination.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    memories = await memory.get_all(
+        user_id="phone:15103651277",
+        limit=50,
+        offset=0
+    )
+    ```
+
+    **Parameters:**
+    - `user_id` (Optional[str]): Filter by user
+    - `agent_id` (Optional[str]): Filter by agent
+    - `limit` (int): Number of results (default: 100)
+    - `offset` (int): Skip N results (default: 0)
+
+    **Returns:** `List[MemoryResult]`
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    const memories = await memory.getAll({
+      userId: "phone:15103651277",
+      limit: 50,
+      offset: 0
+    });
+    ```
+
+    **Parameters:**
+    - `options` (ListOptions): Configuration object
+
+    **Returns:** `Promise<MemoryResult[]>`
+  </Tab>
+</Tabs>
+
+---
+
+### update()
+
+Update an existing memory with new information.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    updated = await memory.update(
+        memory_id="550e8400-e29b-41d4-a716-446655440000",
+        data="User loves hiking and rock climbing"
+    )
+    ```
+
+    **Parameters:**
+    - `memory_id` (str): Memory to update
+    - `data` (str): New memory content
+
+    **Returns:** `MemoryResult`
+
+    **Raises:**
+    - `MemoryNotFoundError`: Memory doesn't exist
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    const updated = await memory.update(
+      "550e8400-e29b-41d4-a716-446655440000",
+      "User loves hiking and rock climbing"
+    );
+    ```
+
+    **Parameters:**
+    - `memoryId` (string): Memory ID
+    - `data` (string): New content
+
+    **Returns:** `Promise<MemoryResult>`
+  </Tab>
+</Tabs>
+
+---
+
+### delete()
+
+Delete a specific memory by ID.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    await memory.delete("550e8400-e29b-41d4-a716-446655440000")
+    ```
+
+    **Parameters:**
+    - `memory_id` (str): Memory to delete
+
+    **Returns:** `None`
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    await memory.delete("550e8400-e29b-41d4-a716-446655440000");
+    ```
+
+    **Parameters:**
+    - `memoryId` (string): Memory ID
+
+    **Returns:** `Promise<void>`
+  </Tab>
+</Tabs>
+
+---
+
+### deleteAll() / delete_all()
+
+Delete all memories for a user or agent.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    # Delete all user memories
+    await memory.delete_all(user_id="phone:15103651277")
+
+    # Delete all agent memories
+    await memory.delete_all(agent_id="assistant_1")
+    ```
+
+    **Parameters:**
+    - `user_id` (Optional[str]): Delete all for user
+    - `agent_id` (Optional[str]): Delete all for agent
+
+    **Returns:** `int` (number deleted)
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    // Delete all user memories
+    await memory.deleteAll({ userId: "phone:15103651277" });
+
+    // Delete all agent memories
+    await memory.deleteAll({ agentId: "assistant_1" });
+    ```
+
+    **Parameters:**
+    - `options` (object): Filter criteria
+
+    **Returns:** `Promise<number>` (count deleted)
+  </Tab>
+</Tabs>
+
+---
+
+### history()
+
+Get the change history for a specific memory.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    history = await memory.history("550e8400-e29b-41d4-a716-446655440000")
+    ```
+
+    **Parameters:**
+    - `memory_id` (str): Memory ID
+
+    **Returns:** `List[MemoryHistory]`
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    const history = await memory.history("550e8400-e29b-41d4-a716-446655440000");
+    ```
+
+    **Parameters:**
+    - `memoryId` (string): Memory ID
+
+    **Returns:** `Promise<MemoryHistory[]>`
+  </Tab>
+</Tabs>
+
+**Response Format:**
+
+```json
+[
+  {
+    "id": "hist_123",
+    "memory_id": "550e8400-e29b-41d4-a716-446655440000",
+    "old_memory": "User loves hiking",
+    "new_memory": "User loves hiking and rock climbing",
+    "event": "UPDATE",
+    "actor_id": "phone:15103651277",
+    "created_at": "2025-01-08T11:00:00Z",
+    "is_deleted": false
+  }
+]
+```
+
+---
+
+## Utility Methods
+
+### initialize()
+
+Initialize database connections and prepare the memory system.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    await memory.initialize()
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    await memory.initialize();
+    ```
+  </Tab>
+</Tabs>
+
+<Info>
+  This method is idempotent - calling it multiple times is safe.
+</Info>
+
+---
+
+### close()
+
+Close all connections and cleanup resources.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    await memory.close()
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    await memory.close();
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+  Always call `close()` when done to prevent connection leaks.
+</Warning>
+
+---
+
+### getCacheStats() / get_cache_stats()
+
+Get embedding cache performance metrics.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    stats = memory.get_cache_stats()
+    ```
+
+    **Returns:**
+    ```python
+    {
+        "size": 234,
+        "hits": 1523,
+        "misses": 456,
+        "hit_rate": 0.77
+    }
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    const stats = memory.getCacheStats();
+    ```
+
+    **Returns:**
+    ```typescript
+    {
+      size: 234,
+      hits: 1523,
+      misses: 456,
+      hitRate: 0.77
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Context Manager (Python Only)
+
+Use the async context manager for automatic cleanup:
+
+```python
+from photomem import Memory
+
+async def main():
+    async with Memory() as memory:
+        result = await memory.add(
+            "I love pizza",
+            user_id="phone:15103651277"
+        )
+        # Automatically calls close() on exit
+```
+
+---
+
+## Error Handling
+
+All methods can raise the following errors:
+
+| Error | Description | When Raised |
+|-------|-------------|-------------|
+| `ValidationError` | Invalid input | Missing required fields, bad format |
+| `MemoryNotFoundError` | Memory doesn't exist | get(), update(), delete() on non-existent ID |
+| `StorageError` | Database error | Connection issues, query failures |
+| `EmbeddingError` | Embedding failed | API errors, invalid text |
+| `LLMError` | LLM extraction failed | API errors, rate limits |
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from photomem.exceptions import (
+        ValidationError,
+        MemoryNotFoundError,
+        StorageError
+    )
+
+    try:
+        result = await memory.add("text", user_id=None)
+    except ValidationError as e:
+        print(f"Validation failed: {e.message}")
+        print(f"Fix: {e.suggestion}")
+    except StorageError as e:
+        print(f"Storage error: {e}")
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import {
+      ValidationError,
+      MemoryNotFoundError,
+      StorageError
+    } from 'photomem';
+
+    try {
+      const result = await memory.add("text", { userId: null });
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        console.log(`Validation failed: ${error.message}`);
+        console.log(`Fix: ${error.suggestion}`);
+      } else if (error instanceof StorageError) {
+        console.log(`Storage error: ${error}`);
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Always Initialize" icon="power-off">
+    Call `initialize()` before using any methods to ensure connections are ready.
+  </Card>
+
+  <Card title="Use Context Managers" icon="brackets-curly">
+    In Python, use `async with` for automatic cleanup.
+  </Card>
+
+  <Card title="Handle Errors" icon="shield-check">
+    Wrap operations in try-catch blocks to handle failures gracefully.
+  </Card>
+
+  <Card title="Close Connections" icon="door-closed">
+    Always call `close()` when done to prevent resource leaks.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Types Reference" icon="shapes" href="/api-reference/types">
+    Learn about all type definitions
+  </Card>
+  <Card title="Error Reference" icon="triangle-exclamation" href="/api-reference/errors">
+    Complete error handling guide
+  </Card>
+  <Card title="Examples" icon="code" href="/examples/python">
+    See practical usage examples
+  </Card>
+  <Card title="Core Concepts" icon="book" href="/core-concepts">
+    Understand how memories work
+  </Card>
+</CardGroup>
+

@@ -6,11 +6,7 @@
   "colors": {
     "primary": "#00D9FF",
     "light": "#00D9FF",
-    "dark": "#00D9FF",
-    "anchors": {
-      "from": "#00D9FF",
-      "to": "#00B8D4"
-    }
+    "dark": "#00D9FF"
   },
   "favicon": "/logo/favicon.png",
   "navigation": {
@@ -135,8 +131,8 @@
               {
                 "tab": "Cookbooks",
                 "groups": [
-                  {
-                    "group": "Getting Started",
+          {
+            "group": "Getting Started",
                     "icon": "lightbulb",
                     "pages": [
                       "cookbooks/overview"
@@ -218,7 +214,7 @@
                   {
                     "group": "Agent Frameworks",
                     "icon": "robot",
-                    "pages": [
+            "pages": [
                       "integrations/langchain",
                       "integrations/langgraph",
                       "integrations/llama-index",
@@ -234,37 +230,37 @@
                   {
                     "group": "Voice & Real-time",
                     "icon": "microphone",
-                    "pages": [
+            "pages": [
                       "integrations/livekit",
                       "integrations/pipecat",
                       "integrations/elevenlabs"
-                    ]
-                  },
-                  {
+            ]
+          },
+          {
                     "group": "Cloud & Infrastructure",
                     "icon": "cloud",
-                    "pages": [
+            "pages": [
                       "integrations/aws-bedrock"
-                    ]
-                  },
-                  {
+            ]
+          },
+          {
                     "group": "Developer Tools",
                     "icon": "wrench",
-                    "pages": [
+            "pages": [
                       "integrations/dify",
                       "integrations/flowise",
                       "integrations/langchain-tools",
                       "integrations/agentops",
                       "integrations/keywords",
                       "integrations/raycast"
-                    ]
-                  }
-                ]
-              },
-              {
-                "tab": "API Reference",
-                "groups": [
-                  {
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
                     "group": "Getting Started",
                     "icon": "rocket",
                     "pages": [
@@ -332,7 +328,7 @@
                   {
                     "group": "Webhook APIs",
                     "icon": "webhook",
-                    "pages": [
+            "pages": [
                       "api-reference/webhook/create-webhook",
                       "api-reference/webhook/get-webhook",
                       "api-reference/webhook/update-webhook",
@@ -347,14 +343,14 @@
                   {
                     "group": "Changelog",
                     "icon": "rocket",
-                    "pages": [
+            "pages": [
                       "changelog"
-                    ]
-                  },
-                  {
+            ]
+          },
+          {
                     "group": "Legacy Docs",
                     "icon": "archive",
-                    "pages": [
+            "pages": [
                       "v0x/introduction"
                     ]
                   }
@@ -403,10 +399,10 @@
   },
   "contextual": {
     "options": [
-      "copy",
-      "chatgpt",
-      "claude",
-      "perplexity",
+     "copy",
+     "chatgpt",
+     "claude",
+     "perplexity",
       {
         "title": "Try in Playground",
         "description": "Open this example in the interactive PhotoMem playground",

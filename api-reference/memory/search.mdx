@@ -1,0 +1,151 @@
+---
+title: "Search Memories"
+api: "POST /v1/memories/search/"
+description: "Find relevant memories using semantic search"
+---
+
+## Overview
+
+Search for relevant memories using natural language queries. PhotoMem uses semantic search to find memories based on meaning, not just keyword matching.
+
+## Request Body
+
+<ParamField body="query" type="string" required>
+  Natural language search query to find relevant memories
+</ParamField>
+
+<ParamField body="user_id" type="string" required>
+  User ID to search memories for
+</ParamField>
+
+<ParamField body="limit" type="integer" default="10">
+  Maximum number of memories to return. Range: 1-100
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Filter memories by metadata fields
+</ParamField>
+
+## Response
+
+<ResponseField name="memories" type="array">
+  Array of relevant memories sorted by relevance.
+
+  <Expandable title="Memory Object">
+    <ResponseField name="id" type="string">
+      Unique identifier for the memory
+    </ResponseField>
+
+    <ResponseField name="content" type="string">
+      The memory content
+    </ResponseField>
+
+    <ResponseField name="score" type="number">
+      Relevance score (0-1). Higher scores indicate better matches.
+    </ResponseField>
+
+    <ResponseField name="user_id" type="string">
+      User ID associated with this memory
+    </ResponseField>
+
+    <ResponseField name="created_at" type="string">
+      ISO 8601 timestamp of when the memory was created
+    </ResponseField>
+
+    <ResponseField name="metadata" type="object">
+      Metadata attached to the memory
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.photomem.ai/v1/memories/search/' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "query": "What is the user'\''s profession?",
+    "user_id": "user_123",
+    "limit": 5
+  }'
+```
+
+```python Python
+import requests
+
+url = "https://api.photomem.ai/v1/memories/search/"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+data = {
+    "query": "What is the user's profession?",
+    "user_id": "user_123",
+    "limit": 5
+}
+
+response = requests.post(url, json=data, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.photomem.ai/v1/memories/search/', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    query: "What is the user's profession?",
+    user_id: 'user_123',
+    limit: 5
+  })
+});
+
+const data = await response.json();
+console.log(data);
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 Success
+{
+  "memories": [
+    {
+      "id": "mem_def456",
+      "content": "User works as a software engineer",
+      "score": 0.95,
+      "user_id": "user_123",
+      "created_at": "2024-01-15T10:30:00Z",
+      "metadata": {
+        "session_id": "session_456"
+      }
+    },
+    {
+      "id": "mem_ghi789",
+      "content": "User has 5 years of experience in backend development",
+      "score": 0.82,
+      "user_id": "user_123",
+      "created_at": "2024-01-14T14:20:00Z",
+      "metadata": {
+        "session_id": "session_455"
+      }
+    }
+  ]
+}
+```
+
+```json 400 Bad Request
+{
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Missing required field: query"
+  }
+}
+```
+</ResponseExample>
+
+<Tip>
+Use natural language queries for best results. PhotoMem understands context and meaning, not just keywords.
+</Tip>
+

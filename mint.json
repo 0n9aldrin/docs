@@ -1,4 +1,5 @@
 {
+  "$schema": "https://mintlify.com/schema.json",
   "name": "PhotoMem",
   "logo": {
     "dark": "/logo/dark.svg",
@@ -12,9 +13,6 @@
     "anchors": {
       "from": "#00D9FF",
       "to": "#00B8D4"
-    },
-    "background": {
-      "dark": "#0A0F1E"
     }
   },
   "topbarLinks": [
@@ -24,203 +22,44 @@
     }
   ],
   "topbarCtaButton": {
-    "name": "Get Started",
-    "url": "https://github.com/photomem/photomem"
+    "name": "Dashboard",
+    "url": "https://app.photomem.ai"
   },
   "tabs": [
     {
-      "name": "Documentation",
-      "url": "docs"
-    },
-    {
       "name": "API Reference",
       "url": "api-reference"
-    },
-    {
-      "name": "Integrations",
-      "url": "integrations"
     }
   ],
   "navigation": [
     {
-      "group": "Getting Started",
+      "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart",
-        "installation",
-        "core-concepts"
+        "quickstart"
       ]
     },
     {
-      "group": "Migration",
+      "group": "API Documentation",
       "pages": [
-        "migration/from-mem0"
+        "api-reference/introduction",
+        "api-reference/authentication"
       ]
     },
     {
-      "group": "Advanced",
+      "group": "Memory Operations",
       "pages": [
-        "advanced/filtering",
-        "advanced/llm-prompts",
-        "advanced/graph-memory"
+        "api-reference/memory/add",
+        "api-reference/memory/get",
+        "api-reference/memory/search",
+        "api-reference/memory/update",
+        "api-reference/memory/delete"
       ]
-    },
-    {
-      "group": "Development",
-      "pages": [
-        "development"
-      ]
-    },
-    {
-      "group": "AI Tools",
-      "pages": [
-        "ai-tools/cursor",
-        "ai-tools/windsurf",
-        "ai-tools/claude-code"
-      ]
-    },
-    {
-      "group": "Examples",
-      "pages": [
-        "examples/python"
-      ]
-    },
-    {
-      "group": "Getting Started",
-      "pages": [
-        "api-reference"
-      ]
-    },
-    {
-      "group": "Core Memory Operations",
-      "pages": [
-        "api-reference/operations/add-memories",
-        "api-reference/operations/get-memories",
-        "api-reference/operations/search-memories",
-        "api-reference/operations/update-memory",
-        "api-reference/operations/delete-memory",
-        "api-reference/operations/memory-history"
-      ]
-    },
-    {
-      "group": "Memory APIs",
-      "pages": [
-        "api-reference/memories-api/create-memory",
-        "api-reference/memories-api/list-memories",
-        "api-reference/memories-api/search-memories",
-        "api-reference/memories-api/update-memory",
-        "api-reference/memories-api/delete-memory"
-      ]
-    },
-    {
-      "group": "Organizations APIs",
-      "pages": [
-        "api-reference/organizations/create-organization",
-        "api-reference/organizations/get-organizations",
-        "api-reference/organizations/get-organization",
-        "api-reference/organizations/update-organization",
-        "api-reference/organizations/delete-organization"
-      ]
-    },
-    {
-      "group": "Projects APIs",
-      "pages": [
-        "api-reference/projects/create-project",
-        "api-reference/projects/get-projects",
-        "api-reference/projects/get-project",
-        "api-reference/projects/update-project",
-        "api-reference/projects/delete-project"
-      ]
-    },
-    {
-      "group": "Entities APIs",
-      "pages": [
-        "api-reference/entities/get-users"
-      ]
-    },
-    {
-      "group": "API Keys Management",
-      "pages": [
-        "api-reference/api-keys/list-api-keys",
-        "api-reference/api-keys/create-api-key",
-        "api-reference/api-keys/revoke-api-key",
-        "api-reference/api-keys/rotate-api-key"
-      ]
-    },
-    {
-      "group": "Billing & Subscription",
-      "pages": [
-        "api-reference/billing/get-current-plan",
-        "api-reference/billing/change-plan",
-        "api-reference/billing/get-invoices",
-        "api-reference/billing/update-payment-method",
-        "api-reference/billing/cancel-subscription"
-      ]
-    },
-    {
-      "group": "Usage & Analytics",
-      "pages": [
-        "api-reference/usage/get-usage-statistics",
-        "api-reference/usage/get-analytics-dashboard",
-        "api-reference/usage/export-usage"
-      ]
-    },
-    {
-      "group": "User Profile Management",
-      "pages": [
-        "api-reference/user/get-profile",
-        "api-reference/user/update-profile",
-        "api-reference/user/delete-account"
-      ]
-    },
-    {
-      "group": "Webhooks Management",
-      "pages": [
-        "api-reference/webhooks/list-webhooks",
-        "api-reference/webhooks/create-webhook",
-        "api-reference/webhooks/delete-webhook"
-      ]
-    },
-    {
-      "group": "Overview",
-      "pages": [
-        "integrations"
-      ]
-    },
-    {
-      "group": "Agent Frameworks",
-      "pages": [
-        "integrations/langchain",
-        "integrations/llamaindex",
-        "integrations/crewai",
-        "integrations/autogen"
-      ]
-    },
-    {
-      "group": "Developer Tools",
-      "pages": [
-        "ai-tools/cursor",
-        "ai-tools/windsurf",
-        "ai-tools/claude-code"
-      ]
-    }
-  ],
-  "anchors": [
-    {
-      "name": "Discord",
-      "icon": "discord",
-      "url": "https://discord.gg/photomem"
-    },
-    {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://photomem.ai/blog"
     }
   ],
   "footerSocials": {
     "github": "https://github.com/photomem/photomem",
     "twitter": "https://twitter.com/photomem",
     "discord": "https://discord.gg/photomem"
-  },
-  "backgroundImage": "/images/background.png"
+  }
 }

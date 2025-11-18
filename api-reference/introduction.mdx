@@ -1,243 +1,84 @@
 ---
-title: API Reference
-description: 'Complete API documentation for PhotoMem'
+title: "API Overview"
+description: "RESTful API for memory management and retrieval"
 ---
 
-## Overview
+## Welcome to PhotoMem API
 
-PhotoMem provides identical APIs across Python and TypeScript, making it easy to switch between languages or use both in the same project.
+The PhotoMem API provides a simple REST interface for storing, searching, and managing memories for your AI applications.
 
-<CardGroup cols={2}>
-  <Card title="Memory Class" icon="brain" href="/api-reference/memory">
-    Main interface for all memory operations
-  </Card>
-  <Card title="Types & Schemas" icon="shapes" href="/api-reference/types">
-    Type definitions and data models
-  </Card>
-  <Card title="Error Handling" icon="triangle-exclamation" href="/api-reference/errors">
-    Exception classes and error codes
-  </Card>
-  <Card title="REST API" icon="server" href="/api-reference/rest-api">
-    HTTP endpoints and request/response formats
-  </Card>
-</CardGroup>
+## Base URL
 
-## Quick Reference
+All API requests should be made to:
 
-### Memory Operations
-
-| Method | Description | Python | TypeScript |
-|--------|-------------|--------|------------|
-| `add()` | Add new memories | ✅ | ✅ |
-| `search()` | Search semantically | ✅ | ✅ |
-| `get()` | Get by ID | ✅ | ✅ |
-| `get_all()` / `getAll()` | List memories | ✅ | ✅ |
-| `update()` | Update memory | ✅ | ✅ |
-| `delete()` | Delete memory | ✅ | ✅ |
-| `delete_all()` / `deleteAll()` | Bulk delete | ✅ | ✅ |
-| `history()` | Get change history | ✅ | ✅ |
-
-### Utility Methods
-
-| Method | Description | Python | TypeScript |
-|--------|-------------|--------|------------|
-| `initialize()` | Setup connections | ✅ | ✅ |
-| `close()` | Cleanup | ✅ | ✅ |
-| `get_cache_stats()` / `getCacheStats()` | Cache metrics | ✅ | ✅ |
-
-## Response Formats
-
-All methods return strongly-typed objects:
-
-### Add Response
-
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "memory": "Loves hiking in the mountains",
-  "event": "ADD",
-  "hash": "5d41402abc4b2a76b9719d911017c592",
-  "metadata": {
-    "user_id": "phone:15103651277",
-    "agent_id": null,
-    "run_id": null,
-    "tags": [],
-    "custom": {},
-    "created_at": "2025-01-08T10:30:00Z",
-    "updated_at": "2025-01-08T10:30:00Z"
-  },
-  "relations": []
-}
 ```
-
-### Search Response
-
-```json
-{
-  "results": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "memory": "Loves hiking in the mountains",
-      "score": 0.95,
-      "hash": "5d41402abc4b2a76b9719d911017c592",
-      "metadata": {
-        "user_id": "phone:15103651277",
-        "created_at": "2025-01-08T10:30:00Z"
-      }
-    }
-  ]
-}
+https://api.photomem.ai
 ```
-
-## Error Handling
-
-All errors extend `PhotoMemError` with structured details:
-
-```python
-try:
-    await memory.add("text", user_id=None)
-except ValidationError as e:
-    print(e.error_code)  # VALIDATION_ERROR
-    print(e.message)     # Detailed error message
-    print(e.suggestion)  # How to fix
-    print(e.details)     # Additional context
-```
-
-## Type Safety
-
-<Tabs>
-  <Tab title="Python">
-    All methods have complete type hints:
-
-    ```python
-    from typing import List, Optional, Union, Dict, Any
-    from photomem.core.types import (
-        MemoryResult,
-        SearchResult,
-        MemoryType,
-        SearchFilters
-    )
-
-    async def add(
-        self,
-        messages: Union[str, Dict[str, str], List[Union[str, Dict[str, str]]]],
-        user_id: Optional[str] = None,
-        agent_id: Optional[str] = None,
-        run_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        memory_type: MemoryType = MemoryType.SEMANTIC,
-    ) -> MemoryResult:
-        ...
-    ```
-  </Tab>
-
-  <Tab title="TypeScript">
-    Full TypeScript support with Zod validation:
-
-    ```typescript
-    import {
-      MemoryResult,
-      SearchResult,
-      MemoryType,
-      SearchOptions
-    } from 'photomem';
-
-    async add(
-      messages: string | Message | Array<string | Message>,
-      options: AddMemoryOptions = {}
-    ): Promise<MemoryResult>
-
-    async search(
-      query: string,
-      options: SearchOptions = {}
-    ): Promise<SearchResult[]>
-    ```
-  </Tab>
-</Tabs>
 
 ## Authentication
 
-<Tabs>
-  <Tab title="Library">
-    Authentication happens via API keys in environment variables:
+All API requests require authentication using an API key in the Authorization header:
 
-    ```bash
-    export OPENAI_API_KEY="sk-..."
-    export DATABASE_URL="postgresql://..."
-    ```
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
 
-    Or pass in configuration:
+<Warning>
+Never expose your API key in client-side code. Always make API calls from your backend server.
+</Warning>
 
-    ```python
-    config = MemoryConfig(
-        llm_api_key="sk-...",
-        embedding_api_key="sk-...",
-        vector_store_url="postgresql://..."
-    )
-    ```
-  </Tab>
+## Core Endpoints
 
-  <Tab title="REST API">
-    Coming soon: Bearer token authentication
+<CardGroup cols={2}>
+  <Card title="Add Memories" icon="plus" href="/api-reference/memory/add">
+    Store new memories from conversations
+  </Card>
+  <Card title="Search Memories" icon="magnifying-glass" href="/api-reference/memory/search">
+    Find relevant memories using semantic search
+  </Card>
+  <Card title="Get Memories" icon="list" href="/api-reference/memory/get">
+    Retrieve all memories for a user
+  </Card>
+  <Card title="Update Memory" icon="pen" href="/api-reference/memory/update">
+    Modify existing memory content
+  </Card>
+</CardGroup>
 
-    ```bash
-    curl -X POST https://api.photomem.ai/memories \
-      -H "Authorization: Bearer YOUR_TOKEN" \
-      -H "Content-Type: application/json" \
-      -d '{"messages": "I love pizza", "user_id": "phone:123"}'
-    ```
-  </Tab>
-</Tabs>
+## Response Format
+
+All API responses return JSON with the following structure:
+
+<ResponseExample>
+```json Success Response
+{
+  "success": true,
+  "data": {
+    // Response data here
+  }
+}
+```
+
+```json Error Response
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message"
+  }
+}
+```
+</ResponseExample>
 
 ## Rate Limits
 
-| Tier | Requests/min | Concurrent | Memories |
-|------|--------------|------------|----------|
-| Free | 60 | 5 | 1,000 |
-| Pro | 600 | 50 | 100,000 |
-| Enterprise | Custom | Custom | Unlimited |
-
 <Info>
-  Self-hosted installations have no rate limits
+Rate limits vary by plan. Check your dashboard for current limits.
 </Info>
 
-## SDK Versions
+## Support
 
-<Tabs>
-  <Tab title="Python">
-    ```bash
-    pip install photomem==0.1.0
-    ```
+Need help? Reach out to us:
 
-    Requires:
-    - Python 3.11+
-    - asyncio support
-  </Tab>
-
-  <Tab title="TypeScript">
-    ```bash
-    npm install photomem@0.1.0
-    ```
-
-    Requires:
-    - Node.js 18+
-    - Async/await support
-  </Tab>
-</Tabs>
-
-## Next Steps
-
-<CardGroup cols={2}>
-  <Card title="Memory API" icon="brain" href="/api-reference/memory">
-    Detailed method documentation
-  </Card>
-  <Card title="Types Reference" icon="shapes" href="/api-reference/types">
-    All type definitions
-  </Card>
-  <Card title="Error Reference" icon="bug" href="/api-reference/errors">
-    Error codes and handling
-  </Card>
-  <Card title="REST API" icon="server" href="/api-reference/rest-api">
-    HTTP endpoint documentation
-  </Card>
-</CardGroup>
+- **Documentation**: [docs.photomem.ai](https://docs.photomem.ai)
+- **Discord**: [discord.gg/photomem](https://discord.gg/photomem)
+- **Email**: support@photomem.ai

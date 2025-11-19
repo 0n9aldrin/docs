@@ -3823,56 +3823,222 @@
       "patch": {
         "tags": ["User Profile"],
         "summary": "Update User Profile",
-        "description": "Update the current user's profile.",
+        "description": "Update the authenticated user's profile information. You can update email address and full name. Role changes must be performed through organization member management endpoints. Email updates will be validated for uniqueness.",
         "operationId": "updateUserProfile",
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-                "$ref": "#/components/schemas/UpdateUserProfileRequest"
-							}
-						}
-					}
-				},
-				"responses": {
-					"200": {
-            "description": "Profile updated",
-						"content": {
-							"application/json": {
-								"schema": {
-                  "$ref": "#/components/schemas/UserProfileResponse"
-									}
-								}
-							}
-						}
-					},
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "New email address",
+                    "example": "john.new@example.com"
+                  },
+                  "fullName": {
+                    "type": "string",
+                    "description": "Updated full name",
+                    "example": "John Smith"
+                  }
+                }
+              },
+              "examples": {
+                "update_email": {
+                  "summary": "Update email only",
+                  "value": {
+                    "email": "john.new@example.com"
+                  }
+                },
+                "update_name": {
+                  "summary": "Update name only",
+                  "value": {
+                    "fullName": "John Smith"
+                  }
+                },
+                "update_both": {
+                  "summary": "Update both fields",
+                  "value": {
+                    "email": "john.new@example.com",
+                    "fullName": "John Smith"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "user_abc123def456"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "john.new@example.com"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "John Smith"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T15:45:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "description": "Conflict - email already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "email_exists"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "A user with this email already exists"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "security": [
           {
             "BearerAuth": []
-					}
-				]
-			},
-			"delete": {
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Update user profile\nuser = client.users.update_me(\n    email=\"john.new@example.com\",\n    full_name=\"John Smith\"\n)\n\nprint(f\"Profile updated: {user.fullName}\")\nprint(f\"New email: {user.email}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Update user profile\nconst user = await client.users.updateMe({\n  email: 'john.new@example.com',\n  fullName: 'John Smith'\n});\n\nconsole.log(`Profile updated: ${user.fullName}`);\nconsole.log(`New email: ${user.email}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request PATCH \\\n  --url https://api.photomem.ai/api/users/me \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"email\": \"john.new@example.com\",\n    \"fullName\": \"John Smith\"\n  }'"
+          }
+        ]
+      },
+      "delete": {
         "tags": ["User Profile"],
         "summary": "Delete Account",
-        "description": "Delete the current user's account permanently.",
+        "description": "Permanently delete the authenticated user's account and all associated data. This is a destructive operation that cannot be undone. The account will be soft-deleted initially and permanently removed after a grace period. All user data, including memories in projects they own, will be affected.",
         "operationId": "deleteAccount",
-				"responses": {
-					"200": {
-            "description": "Account deleted",
-						"content": {
-							"application/json": {
-								"schema": {
-                  "$ref": "#/components/schemas/DeleteAccountResponse"
-									}
-								}
-							}
-						}
-					},
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "confirmation": {
+                    "type": "string",
+                    "description": "Type 'DELETE' to confirm account deletion",
+                    "example": "DELETE"
+                  }
+                },
+                "required": ["confirmation"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Account deleted successfully"
+                    },
+                    "deletedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T16:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid confirmation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "invalid_confirmation"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Confirmation must be 'DELETE'"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
         "security": [
           {
             "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Delete account (requires confirmation)\nresult = client.users.delete_me(confirmation=\"DELETE\")\n\nprint(f\"Account deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Delete account (requires confirmation)\nconst result = await client.users.deleteMe({ confirmation: 'DELETE' });\n\nconsole.log(`Account deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request DELETE \\\n  --url https://api.photomem.ai/api/users/me \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"confirmation\": \"DELETE\"}'"
           }
         ]
       }

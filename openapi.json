@@ -3893,6 +3893,465 @@
         ]
       }
     },
+    "/api/users/me/password": {
+      "post": {
+        "tags": ["User Profile"],
+        "summary": "Change Password",
+        "description": "Change the authenticated user's password. Requires current password for verification.",
+        "operationId": "changePassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["currentPassword", "newPassword"],
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "currentP@ssw0rd"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "newP@ssw0rd123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Password changed successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid current password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "invalid_password"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Current password is incorrect"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nresult = client.users.change_password(\n    current_password=\"currentP@ssw0rd\",\n    new_password=\"newP@ssw0rd123\"\n)\n\nprint(result.message)"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.users.changePassword({\n  currentPassword: 'currentP@ssw0rd',\n  newPassword: 'newP@ssw0rd123'\n});\n\nconsole.log(result.message);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/users/me/password \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"currentPassword\": \"currentP@ssw0rd\", \"newPassword\": \"newP@ssw0rd123\"}'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/billing/invoices": {
+      "get": {
+        "tags": ["Billing"],
+        "summary": "Get Billing History",
+        "description": "Retrieve the complete billing history for an organization, including all past invoices with their payment status and download links. Invoices are sorted by date (most recent first).",
+        "operationId": "getBillingHistory",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invoices retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invoices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "inv_abc123def456"
+                          },
+                          "number": {
+                            "type": "string",
+                            "example": "INV-2024-001"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 99.00
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "USD"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["paid", "pending", "failed"],
+                            "example": "paid"
+                          },
+                          "dueDate": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-01T00:00:00Z"
+                          },
+                          "paidAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-01T10:30:00Z"
+                          },
+                          "downloadUrl": {
+                            "type": "string",
+                            "example": "https://api.photomem.ai/invoices/inv_abc123def456.pdf"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get billing history\ninvoices = client.billing.get_invoices(org_id=\"org_abc123def456\")\n\nprint(f\"Total invoices: {len(invoices.invoices)}\")\nfor invoice in invoices.invoices:\n    print(f\"\\n{invoice.number}: ${invoice.amount:.2f}\")\n    print(f\"  Status: {invoice.status}\")\n    print(f\"  Due: {invoice.dueDate}\")\n    if invoice.paidAt:\n        print(f\"  Paid: {invoice.paidAt}\")\n    print(f\"  Download: {invoice.downloadUrl}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get billing history\nconst invoices = await client.billing.getInvoices({ orgId: 'org_abc123def456' });\n\nconsole.log(`Total invoices: ${invoices.invoices.length}`);\ninvoices.invoices.forEach(invoice => {\n  console.log(`\\n${invoice.number}: $${invoice.amount.toFixed(2)}`);\n  console.log(`  Status: ${invoice.status}`);\n  console.log(`  Due: ${invoice.dueDate}`);\n  if (invoice.paidAt) {\n    console.log(`  Paid: ${invoice.paidAt}`);\n  }\n  console.log(`  Download: ${invoice.downloadUrl}`);\n});"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/billing/invoices \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/billing/payment-method": {
+      "post": {
+        "tags": ["Billing"],
+        "summary": "Update Payment Method",
+        "description": "Update the organization's payment method for subscription billing. Only organization owners can update payment methods. The payment method will be used for all future invoices.",
+        "operationId": "updatePaymentMethod",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["paymentMethodId"],
+                "properties": {
+                  "paymentMethodId": {
+                    "type": "string",
+                    "description": "Payment method ID from Stripe",
+                    "example": "pm_1234567890abcdef"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment method updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "paymentMethod": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "pm_1234567890abcdef"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "card"
+                        },
+                        "card": {
+                          "type": "object",
+                          "properties": {
+                            "brand": {
+                              "type": "string",
+                              "example": "visa"
+                            },
+                            "last4": {
+                              "type": "string",
+                              "example": "4242"
+                            },
+                            "expMonth": {
+                              "type": "integer",
+                              "example": 12
+                            },
+                            "expYear": {
+                              "type": "integer",
+                              "example": 2025
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - only owners can update payment methods",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Only organization owners can update payment methods"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Update payment method\nresult = client.billing.update_payment_method(\n    org_id=\"org_abc123def456\",\n    payment_method_id=\"pm_1234567890abcdef\"\n)\n\nprint(f\"Payment method updated: {result.paymentMethod.type}\")\nif result.paymentMethod.card:\n    card = result.paymentMethod.card\n    print(f\"Card: {card.brand} ending in {card.last4}\")\n    print(f\"Expires: {card.expMonth}/{card.expYear}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Update payment method\nconst result = await client.billing.updatePaymentMethod({\n  orgId: 'org_abc123def456',\n  paymentMethodId: 'pm_1234567890abcdef'\n});\n\nconsole.log(`Payment method updated: ${result.paymentMethod.type}`);\nif (result.paymentMethod.card) {\n  const card = result.paymentMethod.card;\n  console.log(`Card: ${card.brand} ending in ${card.last4}`);\n  console.log(`Expires: ${card.expMonth}/${card.expYear}`);\n}"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/billing/payment-method \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"paymentMethodId\": \"pm_1234567890abcdef\"}'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/billing/subscription/cancel": {
+      "post": {
+        "tags": ["Billing"],
+        "summary": "Cancel Subscription",
+        "description": "Cancel the organization's subscription. Only organization owners can cancel subscriptions. You can choose to cancel immediately or at the end of the current billing period. Cancellation does not delete data - the organization will be downgraded to the free plan.",
+        "operationId": "cancelSubscription",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["immediate"],
+                "properties": {
+                  "immediate": {
+                    "type": "boolean",
+                    "description": "If true, cancel immediately. If false, cancel at period end.",
+                    "example": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Optional cancellation reason",
+                    "example": "Switching to another service"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription cancelled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subscription": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "sub_abc123def456"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "canceled"
+                        },
+                        "canceledAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-19T18:30:00Z"
+                        },
+                        "endsAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-02-01T00:00:00Z"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Subscription will be cancelled at the end of the current billing period"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - only owners can cancel subscriptions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Only organization owners can cancel subscriptions"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Cancel subscription at period end\nresult = client.billing.cancel_subscription(\n    org_id=\"org_abc123def456\",\n    immediate=False,\n    reason=\"Switching to another service\"\n)\n\nprint(f\"Status: {result.subscription.status}\")\nprint(f\"Ends at: {result.subscription.endsAt}\")\nprint(f\"Message: {result.message}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Cancel subscription at period end\nconst result = await client.billing.cancelSubscription({\n  orgId: 'org_abc123def456',\n  immediate: false,\n  reason: 'Switching to another service'\n});\n\nconsole.log(`Status: ${result.subscription.status}`);\nconsole.log(`Ends at: ${result.subscription.endsAt}`);\nconsole.log(`Message: ${result.message}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/billing/subscription/cancel \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"immediate\": false,\n    \"reason\": \"Switching to another service\"\n  }'"
+          }
+        ]
+      }
+    },
     "/api/organizations/{org_id}/projects/{project_id}/webhooks": {
       "get": {
         "tags": ["Webhooks"],

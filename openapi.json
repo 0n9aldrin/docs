@@ -5661,6 +5661,402 @@
         ]
       }
     },
+    "/api/organizations/{org_id}/analytics": {
+      "get": {
+        "tags": ["Usage & Analytics"],
+        "summary": "Get Analytics Dashboard",
+        "description": "Get comprehensive analytics dashboard data including top tags, top users, daily statistics, and trends.",
+        "operationId": "getAnalyticsDashboard",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-31T23:59:59Z"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dateRange": {
+                      "type": "object",
+                      "properties": {
+                        "start": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-01T00:00:00Z"
+                        },
+                        "end": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-31T23:59:59Z"
+                        }
+                      }
+                    },
+                    "metrics": {
+                      "type": "object",
+                      "properties": {
+                        "totalMemories": {
+                          "type": "integer",
+                          "example": 15680
+                        },
+                        "totalUsers": {
+                          "type": "integer",
+                          "example": 247
+                        },
+                        "totalApiCalls": {
+                          "type": "integer",
+                          "example": 47040
+                        },
+                        "averageResponseTime": {
+                          "type": "string",
+                          "example": "125ms"
+                        },
+                        "errorRate": {
+                          "type": "number",
+                          "example": 1.06
+                        },
+                        "topTags": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "tag": {
+                                "type": "string",
+                                "example": "customer-support"
+                              },
+                              "count": {
+                                "type": "integer",
+                                "example": 3245
+                              }
+                            }
+                          }
+                        },
+                        "topUsers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "userId": {
+                                "type": "string",
+                                "example": "user_abc123"
+                              },
+                              "userName": {
+                                "type": "string",
+                                "example": "John Doe"
+                              },
+                              "memoryCount": {
+                                "type": "integer",
+                                "example": 892
+                              }
+                            }
+                          }
+                        },
+                        "dailyStats": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2024-01-15"
+                              },
+                              "apiCalls": {
+                                "type": "integer",
+                                "example": 1520
+                              },
+                              "memoriesCreated": {
+                                "type": "integer",
+                                "example": 507
+                              },
+                              "memoriesDeleted": {
+                                "type": "integer",
+                                "example": 25
+                              },
+                              "errors": {
+                                "type": "integer",
+                                "example": 5
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\nfrom datetime import datetime\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nanalytics = client.analytics.get_dashboard(\n    org_id=\"org_abc123def456\",\n    start_date=\"2024-01-01T00:00:00Z\",\n    end_date=\"2024-01-31T23:59:59Z\"\n)\n\nprint(f\"Total Memories: {analytics.metrics.totalMemories}\")\nprint(f\"Top Tags: {analytics.metrics.topTags[:3]}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst analytics = await client.analytics.getDashboard({\n  orgId: 'org_abc123def456',\n  startDate: '2024-01-01T00:00:00Z',\n  endDate: '2024-01-31T23:59:59Z'\n});\n\nconsole.log(`Total Memories: ${analytics.metrics.totalMemories}`);\nconsole.log(`Top Tags:`, analytics.metrics.topTags.slice(0, 3));"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_abc123def456/analytics?startDate=2024-01-01T00:00:00Z&endDate=2024-01-31T23:59:59Z' \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/usage/export": {
+      "post": {
+        "tags": ["Usage & Analytics"],
+        "summary": "Export Usage Data",
+        "description": "Request an export of usage data. Returns immediately with export ID. Poll export status endpoint to get download URL.",
+        "operationId": "exportUsageData",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["startDate", "endDate", "format"],
+                "properties": {
+                  "startDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-01T00:00:00Z"
+                  },
+                  "endDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-31T23:59:59Z"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": ["csv", "json", "xlsx"],
+                    "example": "csv"
+                  },
+                  "includeDetails": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Export request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exportId": {
+                      "type": "string",
+                      "example": "exp_abc123def456"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "processing"
+                    },
+                    "estimatedCompletionTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T19:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nexport = client.analytics.export_usage(\n    org_id=\"org_abc123def456\",\n    start_date=\"2024-01-01T00:00:00Z\",\n    end_date=\"2024-01-31T23:59:59Z\",\n    format=\"csv\",\n    include_details=True\n)\n\nprint(f\"Export ID: {export.exportId}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst exportJob = await client.analytics.exportUsage({\n  orgId: 'org_abc123def456',\n  startDate: '2024-01-01T00:00:00Z',\n  endDate: '2024-01-31T23:59:59Z',\n  format: 'csv',\n  includeDetails: true\n});\n\nconsole.log(`Export ID: ${exportJob.exportId}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/usage/export \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"startDate\": \"2024-01-01T00:00:00Z\", \"endDate\": \"2024-01-31T23:59:59Z\", \"format\": \"csv\", \"includeDetails\": true}'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/usage/export/{export_id}": {
+      "get": {
+        "tags": ["Usage & Analytics"],
+        "summary": "Get Export Status",
+        "description": "Check the status of an export job. When completed, provides download URL valid for 24 hours.",
+        "operationId": "getExportStatus",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "export_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "exp_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exportId": {
+                      "type": "string",
+                      "example": "exp_abc123def456"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["processing", "completed", "failed"],
+                      "example": "completed"
+                    },
+                    "downloadUrl": {
+                      "type": "string",
+                      "nullable": true,
+                      "example": "https://api.photomem.io/downloads/exp_abc123def456.csv"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "example": "2024-01-20T19:25:00Z"
+                    },
+                    "fileSize": {
+                      "type": "integer",
+                      "nullable": true,
+                      "example": 1024000
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Export not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "export_not_found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\nimport time\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Poll for completion\nwhile True:\n    status = client.analytics.get_export_status(\n        org_id=\"org_abc123def456\",\n        export_id=\"exp_abc123def456\"\n    )\n    \n    if status.status == \"completed\":\n        print(f\"Download: {status.downloadUrl}\")\n        break\n    \n    time.sleep(5)"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Poll for completion\nconst pollExport = async () => {\n  const status = await client.analytics.getExportStatus({\n    orgId: 'org_abc123def456',\n    exportId: 'exp_abc123def456'\n  });\n  \n  if (status.status === 'completed') {\n    console.log(`Download: ${status.downloadUrl}`);\n    return status;\n  }\n  \n  await new Promise(resolve => setTimeout(resolve, 5000));\n  return pollExport();\n};\n\nawait pollExport();"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/usage/export/exp_abc123def456 \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
     "/api/users/me": {
       "get": {
         "tags": ["User Profile"],

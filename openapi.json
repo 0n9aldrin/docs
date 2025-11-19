@@ -1750,6 +1750,384 @@
         ]
       }
     },
+    "/api/organizations/{org_id}/members": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "List Organization Members",
+        "description": "Retrieve a list of all members in an organization, including their roles, email addresses, status, and join dates. This endpoint is useful for displaying team rosters, managing access control, and auditing membership. You must be a member of the organization to view its member list.",
+        "operationId": "getOrganizationMembers",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization members retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "user_xyz123abc456"
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email",
+                            "example": "john.doe@acme.com"
+                          },
+                          "fullName": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": ["owner", "admin", "member"],
+                            "example": "admin"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "joinedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-10T09:00:00Z"
+                          },
+                          "lastActiveAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-19T11:30:00Z"
+                          }
+                        }
+                      }
+                    },
+                    "totalMembers": {
+                      "type": "integer",
+                      "example": 12
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful member list",
+                    "value": {
+                      "members": [
+                        {
+                          "id": "user_xyz123abc456",
+                          "email": "john.doe@acme.com",
+                          "fullName": "John Doe",
+                          "role": "owner",
+                          "isActive": true,
+                          "joinedAt": "2024-01-01T10:00:00Z",
+                          "lastActiveAt": "2024-01-19T11:30:00Z"
+                        },
+                        {
+                          "id": "user_abc789def012",
+                          "email": "jane.smith@acme.com",
+                          "fullName": "Jane Smith",
+                          "role": "admin",
+                          "isActive": true,
+                          "joinedAt": "2024-01-10T09:00:00Z",
+                          "lastActiveAt": "2024-01-18T16:20:00Z"
+                        },
+                        {
+                          "id": "user_def456ghi789",
+                          "email": "bob.wilson@acme.com",
+                          "fullName": "Bob Wilson",
+                          "role": "member",
+                          "isActive": true,
+                          "joinedAt": "2024-01-15T14:30:00Z",
+                          "lastActiveAt": "2024-01-19T08:45:00Z"
+                        }
+                      ],
+                      "totalMembers": 3
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - not a member of this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "forbidden"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "You don't have access to this organization"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "organization_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Organization not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List organization members\nresult = client.organizations.get_members(\"org_abc123def456\")\n\nprint(f\"Total members: {result.totalMembers}\")\nfor member in result.members:\n    print(f\"- {member.fullName} ({member.email}) - Role: {member.role}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List organization members\nconst result = await client.organizations.getMembers('org_abc123def456');\n\nconsole.log(`Total members: ${result.totalMembers}`);\nresult.members.forEach(member => {\n  console.log(`- ${member.fullName} (${member.email}) - Role: ${member.role}`);\n});"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/members \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Organizations"],
+        "summary": "Add Organization Member",
+        "description": "Invite a new member to join the organization by sending them an invitation email. You can specify their role (admin or member) at the time of invitation. Only organization admins and owners can invite new members. The invitee will receive an email with instructions to accept the invitation. Pending invitations expire after 7 days.",
+        "operationId": "addOrganizationMember",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "role"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address of the person to invite",
+                    "example": "newmember@example.com"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "member"],
+                    "description": "Role to assign to the new member",
+                    "example": "member"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Optional personal message to include in the invitation email",
+                    "maxLength": 500,
+                    "example": "Welcome to the team! Looking forward to working with you."
+                  }
+                }
+              },
+              "examples": {
+                "basic_invite": {
+                  "summary": "Basic member invitation",
+                  "value": {
+                    "email": "newmember@example.com",
+                    "role": "member"
+                  }
+                },
+                "admin_invite": {
+                  "summary": "Invite as admin with message",
+                  "value": {
+                    "email": "admin@example.com",
+                    "role": "admin",
+                    "message": "We'd love to have you as an admin!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invitationId": {
+                      "type": "string",
+                      "example": "inv_abc123def456"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "newmember@example.com"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "member"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "pending"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-26T12:00:00Z"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T12:00:00Z"
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful invitation",
+                    "value": {
+                      "invitationId": "inv_abc123def456",
+                      "email": "newmember@example.com",
+                      "role": "member",
+                      "status": "pending",
+                      "expiresAt": "2024-01-26T12:00:00Z",
+                      "createdAt": "2024-01-19T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error or user already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "user_already_exists"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "User is already a member of this organization"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Only admins can invite new members"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Invite a new member\ninvitation = client.organizations.invite_member(\n    org_id=\"org_abc123def456\",\n    email=\"newmember@example.com\",\n    role=\"member\",\n    message=\"Welcome to the team!\"\n)\n\nprint(f\"Invitation sent: {invitation.invitationId}\")\nprint(f\"Expires at: {invitation.expiresAt}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Invite a new member\nconst invitation = await client.organizations.inviteMember({\n  orgId: 'org_abc123def456',\n  email: 'newmember@example.com',\n  role: 'member',\n  message: 'Welcome to the team!'\n});\n\nconsole.log(`Invitation sent: ${invitation.invitationId}`);\nconsole.log(`Expires at: ${invitation.expiresAt}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/members \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"email\": \"newmember@example.com\",\n    \"role\": \"member\",\n    \"message\": \"Welcome to the team!\"\n  }'"
+          }
+        ]
+      }
+    },
     "/api/organizations/{org_id}/usage": {
       "get": {
         "tags": ["Usage & Analytics"],

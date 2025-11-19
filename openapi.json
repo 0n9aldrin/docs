@@ -626,6 +626,220 @@
         "security": [{"BearerAuth": []}]
       }
     },
+    "/v1/organizations": {
+      "post": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Create Organization (v1 - Admin)",
+        "description": "Create new organization. Requires admin API key.",
+        "operationId": "createOrganizationV1",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "slug": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Organization created"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "get": {
+        "tags": ["Organizations & Projects"],
+        "summary": "List Organizations (v1 - Admin)",
+        "description": "List all organizations. Requires admin API key.",
+        "operationId": "listOrganizationsV1",
+        "parameters": [
+          {"name": "is_active", "in": "query", "schema": {"type": "boolean"}},
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 100}}
+        ],
+        "responses": {
+          "200": {"description": "Organizations list"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
+    "/v1/organizations/{organization_id}": {
+      "get": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Get Organization (v1)",
+        "operationId": "getOrganizationV1",
+        "parameters": [
+          {"name": "organization_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {"description": "Organization details"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "patch": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Update Organization (v1)",
+        "operationId": "updateOrganizationV1",
+        "parameters": [
+          {"name": "organization_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "is_active": {"type": "boolean"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Organization updated"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "delete": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Delete Organization (v1)",
+        "operationId": "deleteOrganizationV1",
+        "parameters": [
+          {"name": "organization_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "204": {"description": "Organization deleted"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
+    "/v1/organizations/slug/{slug}": {
+      "get": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Get Organization by Slug (v1)",
+        "operationId": "getOrganizationBySlugV1",
+        "parameters": [
+          {"name": "slug", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {"description": "Organization details"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
+    "/v1/projects": {
+      "post": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Create Project (v1)",
+        "description": "Create project within an organization.",
+        "operationId": "createProjectV1",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {"type": "string"},
+                  "name": {"type": "string"},
+                  "slug": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Project created"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "get": {
+        "tags": ["Organizations & Projects"],
+        "summary": "List Projects (v1)",
+        "description": "List projects, optionally filtered by organization.",
+        "operationId": "listProjectsV1",
+        "parameters": [
+          {"name": "organization_id", "in": "query", "schema": {"type": "string"}},
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 100}}
+        ],
+        "responses": {
+          "200": {"description": "Projects list"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
+    "/v1/projects/{project_id}": {
+      "get": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Get Project (v1)",
+        "operationId": "getProjectV1",
+        "parameters": [
+          {"name": "project_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {"description": "Project details"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "patch": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Update Project (v1)",
+        "operationId": "updateProjectV1",
+        "parameters": [
+          {"name": "project_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "description": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Project updated"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "delete": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Delete Project (v1)",
+        "operationId": "deleteProjectV1",
+        "parameters": [
+          {"name": "project_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "204": {"description": "Project deleted"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
+    "/v1/organizations/{organization_id}/projects/{slug}": {
+      "get": {
+        "tags": ["Organizations & Projects"],
+        "summary": "Get Project by Slug (v1)",
+        "operationId": "getProjectBySlugV1",
+        "parameters": [
+          {"name": "organization_id", "in": "path", "required": true, "schema": {"type": "string"}},
+          {"name": "slug", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {"description": "Project details"}
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
     "/api/v1/memories": {
 			"post": {
         "tags": ["Memory Management"],

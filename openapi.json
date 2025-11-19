@@ -153,6 +153,479 @@
         ]
       }
     },
+    "/v1/memories": {
+      "post": {
+        "tags": ["Memory Management"],
+        "summary": "Add Memories (v1)",
+        "description": "Extract and add memories from conversation messages using LLM. Supports deduplication.",
+        "operationId": "addMemoriesV1",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["messages"],
+                "properties": {
+                  "messages": {
+                    "oneOf": [
+                      {"type": "string"},
+                      {"type": "array"}
+                    ],
+                    "example": [{"role": "user", "content": "I love hiking"}]
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "user_123"
+                  },
+                  "agent_id": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "type": "object"
+                  },
+                  "deduplicate": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Memories added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "memories": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string"},
+                          "memory": {"type": "string"},
+                          "hash": {"type": "string"}
+                        }
+                      }
+                    },
+                    "stats": {
+                      "type": "object",
+                      "properties": {
+                        "extracted": {"type": "integer"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"ApiKeyAuth": []}],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMem\n\nclient = PhotoMem(api_key=\"pm_xxx\")\n\nresult = client.add(\n    messages=[{\"role\": \"user\", \"content\": \"I love hiking\"}],\n    user_id=\"user_123\"\n)\n\nprint(f\"Added {len(result.memories)} memories\")"
+          }
+        ]
+      },
+      "get": {
+        "tags": ["Memory Management"],
+        "summary": "List Memories (v1)",
+        "description": "List memories with optional filtering by user, agent, tags.",
+        "operationId": "listMemoriesV1",
+        "parameters": [
+          {"name": "user_id", "in": "query", "schema": {"type": "string"}},
+          {"name": "agent_id", "in": "query", "schema": {"type": "string"}},
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 100}},
+          {"name": "offset", "in": "query", "schema": {"type": "integer", "default": 0}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Memories list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string"},
+                      "memory": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "delete": {
+        "tags": ["Memory Management"],
+        "summary": "Bulk Delete Memories",
+        "description": "Delete all memories for a user or agent. Requires confirm=true.",
+        "operationId": "bulkDeleteMemories",
+        "parameters": [
+          {"name": "user_id", "in": "query", "schema": {"type": "string"}},
+          {"name": "confirm", "in": "query", "required": true, "schema": {"type": "boolean"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deleted": {"type": "integer"},
+                    "message": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
+    "/v1/memories/{memory_id}": {
+      "get": {
+        "tags": ["Memory Management"],
+        "summary": "Get Memory (v1)",
+        "description": "Retrieve a specific memory by ID.",
+        "operationId": "getMemoryV1",
+        "parameters": [
+          {"name": "memory_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Memory details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string"},
+                    "memory": {"type": "string"},
+                    "metadata": {"type": "object"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "patch": {
+        "tags": ["Memory Management"],
+        "summary": "Update Memory (v1)",
+        "description": "Update memory content.",
+        "operationId": "updateMemoryV1",
+        "parameters": [
+          {"name": "memory_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {"type": "string", "example": "Updated memory text"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Memory updated"
+          }
+        },
+        "security": [{"ApiKeyAuth": []}]
+      },
+      "delete": {
+        "tags": ["Memory Management"],
+        "summary": "Delete Memory (v1)",
+        "description": "Delete a specific memory.",
+        "operationId": "deleteMemoryV1",
+        "parameters": [
+          {"name": "memory_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "204": {
+            "description": "Memory deleted"
+          }
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
+    "/v1/memories/query": {
+      "post": {
+        "tags": ["Memory Management"],
+        "summary": "Advanced Memory Query",
+        "description": "Complex filtering with OR, date ranges, metadata, text search.",
+        "operationId": "queryMemories",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filter": {
+                    "type": "object",
+                    "example": {
+                      "user_id": "user_123",
+                      "created_at": {"gte": "2024-01-01"},
+                      "tags": {"any": ["work"]}
+                    }
+                  },
+                  "limit": {"type": "integer", "default": 100}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Filtered memories"
+          }
+        },
+        "security": [{"ApiKeyAuth": []}],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMem\n\nclient = PhotoMem(api_key=\"pm_xxx\")\n\nresults = client.query(\n    filter={\n        \"user_id\": \"user_123\",\n        \"tags\": {\"any\": [\"urgent\"]}\n    }\n)\n\nprint(f\"Found {len(results)} memories\")"
+          }
+        ]
+      }
+    },
+    "/v1/memories/{memory_id}/history": {
+      "get": {
+        "tags": ["Memory Management"],
+        "summary": "Get Memory History",
+        "description": "View change history for a memory.",
+        "operationId": "getMemoryHistory",
+        "parameters": [
+          {"name": "memory_id", "in": "path", "required": true, "schema": {"type": "string"}},
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 50}}
+        ],
+        "responses": {
+          "200": {
+            "description": "History records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string"},
+                          "old_memory": {"type": "string"},
+                          "new_memory": {"type": "string"},
+                          "event": {"type": "string"},
+                          "created_at": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"ApiKeyAuth": []}]
+      }
+    },
+    "/v1/search": {
+      "post": {
+        "tags": ["Memory Management"],
+        "summary": "Semantic Search",
+        "description": "Vector similarity search for memories using natural language.",
+        "operationId": "searchMemories",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": {"type": "string", "example": "hiking memories"},
+                  "user_id": {"type": "string"},
+                  "limit": {"type": "integer", "default": 10},
+                  "threshold": {"type": "number", "default": 0.7}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string"},
+                          "memory": {"type": "string"},
+                          "score": {"type": "number"}
+                        }
+                      }
+                    },
+                    "search_time_ms": {"type": "number"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"ApiKeyAuth": []}],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMem\n\nclient = PhotoMem(api_key=\"pm_xxx\")\n\nresults = client.search(\n    query=\"hiking memories\",\n    user_id=\"user_123\",\n    limit=5\n)\n\nfor r in results:\n    print(f\"{r.memory} (score: {r.score})\")"
+          }
+        ]
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Sign Up",
+        "description": "Register new user with email/password. Creates personal organization.",
+        "operationId": "signup",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "firstName", "lastName"],
+                "properties": {
+                  "email": {"type": "string", "format": "email"},
+                  "password": {"type": "string", "minLength": 8},
+                  "firstName": {"type": "string"},
+                  "lastName": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {"type": "object"},
+                    "session": {
+                      "type": "object",
+                      "properties": {
+                        "token": {"type": "string"},
+                        "expiresAt": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already exists"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/signin": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Sign In",
+        "description": "Login with email and password.",
+        "operationId": "signin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {"type": "string"},
+                  "password": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {"type": "object"},
+                    "session": {
+                      "type": "object",
+                      "properties": {
+                        "token": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/signout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Sign Out",
+        "description": "Log out current user (client discards JWT).",
+        "operationId": "signout",
+        "responses": {
+          "200": {
+            "description": "Signed out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"BearerAuth": []}]
+      }
+    },
     "/api/v1/memories": {
 			"post": {
         "tags": ["Memory Management"],

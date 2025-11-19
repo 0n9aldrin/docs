@@ -1,115 +1,260 @@
 {
-  "openapi": "3.0.1",
-  "info": {
+	"openapi": "3.0.1",
+	"info": {
     "title": "PhotoMem API",
     "description": "PhotoMem is a self-improving memory layer for LLM applications, enabling personalized AI experiences that save costs and delight users.",
-    "contact": {
+		"contact": {
       "email": "support@photomem.ai"
-    },
-    "license": {
+		},
+		"license": {
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
-    },
-    "version": "v1"
-  },
-  "servers": [
-    {
+		},
+		"version": "v1"
+	},
+	"servers": [
+		{
       "url": "https://api.photomem.ai",
       "description": "Production server"
     },
     {
       "url": "http://localhost:8000",
       "description": "Local development server"
-    }
-  ],
-  "security": [
+		}
+	],
+	"security": [
     {
       "BearerAuth": []
     },
-    {
-      "ApiKeyAuth": []
-    }
-  ],
-  "paths": {
+		{
+			"ApiKeyAuth": []
+		}
+	],
+	"paths": {
     "/api/v1/memories": {
-      "post": {
+			"post": {
         "tags": ["Memory Management"],
         "summary": "Create Memory",
-        "description": "Create a new memory entry. Automatically generates embeddings and indexes for semantic search.",
+        "description": "Create a new memory entry for a specific user. This endpoint stores conversational context, user preferences, or any relevant information that should be remembered for future interactions. Memories are automatically deduplicated by content hash and user ID combination.",
         "operationId": "create_memory",
-        "requestBody": {
+				"requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
+					"content": {
+						"application/json": {
+							"schema": {
                 "$ref": "#/components/schemas/MemoryCreateRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Memory created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MemoryCreateResponse"
+              },
+              "examples": {
+                "user_preference": {
+                  "summary": "Store user preference",
+                  "value": {
+                    "userId": "user_123",
+                    "userName": "John Doe",
+                    "content": "Prefers dark mode and concise responses. Works in software engineering.",
+                    "tags": ["preference", "settings"]
+                  }
+                },
+                "conversation_context": {
+                  "summary": "Store conversation context",
+                  "value": {
+                    "userId": "user_456",
+                    "userName": "Jane Smith",
+                    "content": "Discussed project timeline for Q1 2024. Prefers weekly updates on Fridays.",
+                    "tags": ["conversation", "timeline"]
+                  }
                 }
               }
             }
-          },
+          }
+				},
+				"responses": {
+					"201": {
+            "description": "Memory created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+                  "$ref": "#/components/schemas/MemoryCreateResponse"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful memory creation",
+                    "value": {
+                      "memory": {
+                        "id": "mem_a1b2c3d4e5f6",
+                        "userId": "user_123",
+                        "userName": "John Doe",
+                        "content": "Prefers dark mode and concise responses. Works in software engineering.",
+                        "tags": ["preference", "settings"],
+                        "createdAt": "2024-01-15T10:30:00Z",
+                        "updatedAt": "2024-01-15T10:30:00Z"
+                      }
+                    }
+								}
+							}
+						}
+					}
+				},
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
           },
           "413": {
-            "$ref": "#/components/responses/PayloadTooLargeError"
-          }
-        },
+            "description": "Content too large",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+                    "error": {
+									"type": "object",
+									"properties": {
+                        "code": {
+											"type": "string",
+                          "example": "content_too_large"
+                        },
+										"message": {
+											"type": "string",
+                          "example": "Content exceeds 10KB limit"
+                        }
+                      }
+										}
+									}
+								}
+							}
+						}
+					}
+				},
         "security": [
           {
             "ApiKeyAuth": []
           }
+        ],
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "# Install the PhotoMem SDK:\n# pip install photomem\n\nfrom photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Create a memory\nmemory = client.memories.create(\n    user_id=\"user_123\",\n    user_name=\"John Doe\",\n    content=\"Prefers dark mode and concise responses. Works in software engineering.\",\n    tags=[\"preference\", \"settings\"]\n)\n\nprint(f\"Memory created: {memory.id}\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "// Install the PhotoMem SDK:\n// npm install photomem\n\nimport { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Create a memory\nconst memory = await client.memories.create({\n  userId: 'user_123',\n  userName: 'John Doe',\n  content: 'Prefers dark mode and concise responses. Works in software engineering.',\n  tags: ['preference', 'settings']\n});\n\nconsole.log(`Memory created: ${memory.id}`);"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/v1/memories \\\n  --header 'Authorization: Bearer pm_your_api_key' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"userId\": \"user_123\",\n    \"userName\": \"John Doe\",\n    \"content\": \"Prefers dark mode and concise responses. Works in software engineering.\",\n    \"tags\": [\"preference\", \"settings\"]\n  }'"
+          }
         ]
       },
-      "get": {
+			"get": {
         "tags": ["Memory Management"],
         "summary": "List Memories",
-        "description": "List all memories with pagination support.",
+        "description": "Retrieve a paginated list of all memories for your project. Results are ordered by creation date (newest first). Use pagination parameters to navigate through large memory sets.",
         "operationId": "list_memories",
-        "parameters": [
-          {
+				"parameters": [
+					{
             "name": "limit",
-            "in": "query",
-            "schema": {
+						"in": "query",
+            "description": "Maximum number of memories to return per page. Maximum value is 100.",
+						"schema": {
               "type": "integer",
               "default": 20,
-              "maximum": 100
+              "minimum": 1,
+              "maximum": 100,
+              "example": 20
             }
           },
           {
             "name": "offset",
-            "in": "query",
-            "schema": {
+						"in": "query",
+            "description": "Number of memories to skip. Use for pagination (e.g., offset=20 to get the second page when limit=20).",
+						"schema": {
               "type": "integer",
-              "default": 0
+              "default": 0,
+              "minimum": 0,
+              "example": 0
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
+          },
+          {
+            "name": "userId",
+						"in": "query",
+            "description": "Filter memories by specific user ID.",
+						"schema": {
+              "type": "string",
+              "example": "user_123"
+            }
+          },
+          {
+            "name": "tags",
+						"in": "query",
+            "description": "Filter memories by tags (comma-separated).",
+						"schema": {
+              "type": "string",
+              "example": "preference,settings"
+            }
+					}
+				],
+				"responses": {
+					"200": {
+            "description": "List of memories retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/MemoryListResponse"
-                }
-              }
-            }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful memory list retrieval",
+                    "value": {
+                      "memories": [
+                        {
+                          "id": "mem_a1b2c3d4e5f6",
+                          "userId": "user_123",
+                          "userName": "John Doe",
+                          "content": "Prefers dark mode and concise responses.",
+                          "tags": ["preference", "settings"],
+                          "createdAt": "2024-01-15T10:30:00Z",
+                          "updatedAt": "2024-01-15T10:30:00Z"
+                        },
+                        {
+                          "id": "mem_b2c3d4e5f6a1",
+                          "userId": "user_123",
+                          "userName": "John Doe",
+                          "content": "Discussed project timeline for Q1 2024.",
+                          "tags": ["conversation", "timeline"],
+                          "createdAt": "2024-01-14T15:20:00Z",
+                          "updatedAt": "2024-01-14T15:20:00Z"
+                        }
+                      ],
+                      "pagination": {
+                        "total": 42,
+                        "limit": 20,
+                        "offset": 0
+                      }
+                    }
+                  }
+								}
+							}
+						}
+					},
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
           }
         },
         "security": [
           {
             "ApiKeyAuth": []
+          }
+        ],
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# List all memories with pagination\nmemories = client.memories.list(\n    limit=20,\n    offset=0\n)\n\nprint(f\"Total memories: {memories.pagination['total']}\")\nfor memory in memories.memories:\n    print(f\"- {memory.id}: {memory.content[:50]}...\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// List all memories with pagination\nconst memories = await client.memories.list({\n  limit: 20,\n  offset: 0\n});\n\nconsole.log(`Total memories: ${memories.pagination.total}`);\nmemories.memories.forEach(memory => {\n  console.log(`- ${memory.id}: ${memory.content.substring(0, 50)}...`);\n});"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/v1/memories?limit=20&offset=0' \\\n  --header 'Authorization: Bearer pm_your_api_key'"
           }
         ]
       }
@@ -118,298 +263,796 @@
       "get": {
         "tags": ["Memory Management"],
         "summary": "Get Memory",
-        "description": "Get a specific memory by ID.",
+        "description": "Retrieve a specific memory by its unique identifier. This endpoint returns the complete memory object including all metadata, tags, and timestamps.",
         "operationId": "get_memory",
         "parameters": [
           {
             "name": "memory_id",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
+            "description": "The unique identifier of the memory to retrieve. Memory IDs start with 'mem_' prefix.",
+							"schema": {
+              "type": "string",
+              "example": "mem_a1b2c3d4e5f6"
+							}
+						}
         ],
-        "responses": {
-          "200": {
-            "description": "Memory found",
-            "content": {
-              "application/json": {
-                "schema": {
+				"responses": {
+					"200": {
+            "description": "Memory retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/MemoryCreateResponse"
-                }
-              }
-            }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful memory retrieval",
+                    "value": {
+											"memory": {
+                        "id": "mem_a1b2c3d4e5f6",
+                        "userId": "user_123",
+                        "userName": "John Doe",
+                        "content": "Prefers dark mode and concise responses. Works in software engineering.",
+                        "tags": ["preference", "settings"],
+                        "createdAt": "2024-01-15T10:30:00Z",
+                        "updatedAt": "2024-01-15T10:30:00Z"
+                      }
+									}
+								}
+							}
+						}
+					}
+				},
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        },
+            "description": "Memory not found",
+					"content": {
+						"application/json": {
+							"schema": {
+										"type": "object",
+										"properties": {
+                    "error": {
+												"type": "object",
+                      "properties": {
+                        "code": {
+												"type": "string",
+                          "example": "not_found"
+                        },
+                        "message": {
+												"type": "string",
+                          "example": "Memory not found"
+                        }
+                      }
+										}
+									}
+								}
+							}
+						}
+					}
+				},
         "security": [
           {
             "ApiKeyAuth": []
+          }
+        ],
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Get a specific memory by ID\nmemory = client.memories.get(\"mem_a1b2c3d4e5f6\")\n\nprint(f\"Memory: {memory.content}\")\nprint(f\"User: {memory.userName}\")\nprint(f\"Tags: {', '.join(memory.tags)}\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Get a specific memory by ID\nconst memory = await client.memories.get('mem_a1b2c3d4e5f6');\n\nconsole.log(`Memory: ${memory.content}`);\nconsole.log(`User: ${memory.userName}`);\nconsole.log(`Tags: ${memory.tags.join(', ')}`);"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/v1/memories/mem_a1b2c3d4e5f6 \\\n  --header 'Authorization: Bearer pm_your_api_key'"
           }
         ]
       },
       "patch": {
         "tags": ["Memory Management"],
         "summary": "Update Memory",
-        "description": "Update an existing memory's content or tags.",
+        "description": "Update an existing memory's content and/or tags. You can update either field independently or both at once. The userId and userName fields cannot be modified. The updatedAt timestamp will be automatically refreshed.",
         "operationId": "update_memory",
-        "parameters": [
-          {
-            "name": "memory_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
+				"parameters": [
+					{
+						"name": "memory_id",
+						"in": "path",
+						"required": true,
+            "description": "The unique identifier of the memory to update.",
+						"schema": {
+							"type": "string",
+              "example": "mem_a1b2c3d4e5f6"
             }
-          }
-        ],
+					}
+				],
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
                 "$ref": "#/components/schemas/MemoryUpdateRequest"
-              }
-            }
-          }
-        },
+              },
+              "examples": {
+                "update_content": {
+                  "summary": "Update memory content only",
+                  "value": {
+                    "content": "Prefers dark mode, concise responses, and async communication. Works in software engineering at a startup."
+                  }
+                },
+                "update_tags": {
+                  "summary": "Update tags only",
+                  "value": {
+                    "tags": ["preference", "settings", "ui", "communication"]
+                  }
+                },
+                "update_both": {
+                  "summary": "Update both content and tags",
+                  "value": {
+                    "content": "Updated memory content with more details.",
+                    "tags": ["updated", "detailed"]
+										}
+									}
+								}
+							}
+						}
+					},
         "responses": {
           "200": {
             "description": "Memory updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/MemoryCreateResponse"
-                }
-              }
-            }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful memory update",
+                    "value": {
+                      "memory": {
+                        "id": "mem_a1b2c3d4e5f6",
+                        "userId": "user_123",
+                        "userName": "John Doe",
+                        "content": "Prefers dark mode, concise responses, and async communication. Works in software engineering at a startup.",
+                        "tags": ["preference", "settings", "ui", "communication"],
+                        "createdAt": "2024-01-15T10:30:00Z",
+                        "updatedAt": "2024-01-16T14:20:00Z"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError"
-          }
-        },
+          },
+          "413": {
+            "description": "Content too large",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+                    "error": {
+									"type": "object",
+									"properties": {
+                        "code": {
+											"type": "string",
+                          "example": "content_too_large"
+										},
+                        "message": {
+											"type": "string",
+                          "example": "Content exceeds 10KB limit"
+                        }
+                      }
+										}
+									}
+								}
+							}
+						}
+					}
+				},
         "security": [
           {
             "ApiKeyAuth": []
-          }
-        ]
-      },
-      "delete": {
-        "tags": ["Memory Management"],
-        "summary": "Delete Memory",
-        "description": "Delete a specific memory permanently.",
-        "operationId": "delete_memory",
-        "parameters": [
-          {
-            "name": "memory_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Memory deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeleteMemoryResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        },
-        "security": [
-          {
-            "ApiKeyAuth": []
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Update memory content and tags\nmemory = client.memories.update(\n    memory_id=\"mem_a1b2c3d4e5f6\",\n    content=\"Updated memory content with more details.\",\n    tags=[\"updated\", \"detailed\"]\n)\n\nprint(f\"Memory updated: {memory.id}\")\nprint(f\"New content: {memory.content}\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Update memory content and tags\nconst memory = await client.memories.update('mem_a1b2c3d4e5f6', {\n  content: 'Updated memory content with more details.',\n  tags: ['updated', 'detailed']\n});\n\nconsole.log(`Memory updated: ${memory.id}`);\nconsole.log(`New content: ${memory.content}`);"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request PATCH \\\n  --url https://api.photomem.ai/api/v1/memories/mem_a1b2c3d4e5f6 \\\n  --header 'Authorization: Bearer pm_your_api_key' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"content\": \"Updated memory content with more details.\",\n    \"tags\": [\"updated\", \"detailed\"]\n  }'"
           }
         ]
-      }
-    },
+			},
+			"delete": {
+        "tags": ["Memory Management"],
+        "summary": "Delete Memory",
+        "description": "Permanently delete a specific memory by ID. This operation performs a soft delete, marking the memory as deleted rather than removing it from the database. The memory will no longer appear in queries or searches. This action cannot be undone.",
+        "operationId": "delete_memory",
+				"parameters": [
+					{
+						"name": "memory_id",
+						"in": "path",
+						"required": true,
+            "description": "The unique identifier of the memory to delete.",
+						"schema": {
+							"type": "string",
+              "example": "mem_a1b2c3d4e5f6"
+            }
+					}
+				],
+				"responses": {
+          "200": {
+            "description": "Memory deleted successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+                  "$ref": "#/components/schemas/DeleteMemoryResponse"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful memory deletion",
+                    "value": {
+                      "message": "Memory deleted successfully",
+                      "deletedAt": "2024-01-16T15:45:00Z"
+									}
+								}
+							}
+						}
+					}
+				},
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Memory not found",
+						"content": {
+							"application/json": {
+								"schema": {
+										"type": "object",
+										"properties": {
+                    "error": {
+													"type": "object",
+													"properties": {
+                        "code": {
+															"type": "string",
+                          "example": "not_found"
+                        },
+                        "message": {
+															"type": "string",
+                          "example": "Memory not found"
+                        }
+                      }
+                    }
+									}
+								}
+							}
+						}
+					}
+				},
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Delete a memory\nresult = client.memories.delete(\"mem_a1b2c3d4e5f6\")\n\nprint(f\"Memory deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Delete a memory\nconst result = await client.memories.delete('mem_a1b2c3d4e5f6');\n\nconsole.log(`Memory deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request DELETE \\\n  --url https://api.photomem.ai/api/v1/memories/mem_a1b2c3d4e5f6 \\\n  --header 'Authorization: Bearer pm_your_api_key'"
+					}
+				]
+			}
+		},
     "/api/v1/memories/search": {
-      "post": {
+			"post": {
         "tags": ["Memory Management"],
         "summary": "Search Memories",
-        "description": "Search memories using semantic similarity.",
+        "description": "Perform semantic search across memories using natural language queries. This endpoint uses advanced embedding models to find memories that are contextually similar to your search query, even if they don't contain exact keyword matches. Perfect for retrieving relevant user context in conversational AI applications.",
         "operationId": "search_memories",
-        "requestBody": {
+				"requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
+					"content": {
+						"application/json": {
+							"schema": {
                 "$ref": "#/components/schemas/MemorySearchRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Search results",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MemorySearchResponse"
+              },
+              "examples": {
+                "basic_search": {
+                  "summary": "Basic semantic search",
+                  "value": {
+                    "query": "What are the user's preferences for UI design?",
+                    "limit": 10,
+                    "minRelevance": 0.7
+                  }
+                },
+                "user_filtered_search": {
+                  "summary": "Search for specific user",
+                  "value": {
+                    "query": "project timeline and deadlines",
+                    "userId": "user_123",
+                    "limit": 5,
+                    "minRelevance": 0.8
+                  }
                 }
               }
             }
           }
         },
+				"responses": {
+					"200": {
+            "description": "Search completed successfully",
+					"content": {
+						"application/json": {
+							"schema": {
+                  "$ref": "#/components/schemas/MemorySearchResponse"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful search results",
+                    "value": {
+                      "results": [
+                        {
+                          "memory": {
+                            "id": "mem_a1b2c3d4e5f6",
+                            "userId": "user_123",
+                            "userName": "John Doe",
+                            "content": "Prefers dark mode and concise responses. Works in software engineering.",
+                            "tags": ["preference", "settings"],
+                            "createdAt": "2024-01-15T10:30:00Z",
+                            "updatedAt": "2024-01-15T10:30:00Z"
+                          },
+                          "relevanceScore": 0.92
+                        },
+                        {
+                          "memory": {
+                            "id": "mem_b2c3d4e5f6a1",
+                            "userId": "user_123",
+                            "userName": "John Doe",
+                            "content": "Likes minimalist UI with high contrast colors.",
+                            "tags": ["preference", "ui"],
+                            "createdAt": "2024-01-14T15:20:00Z",
+                            "updatedAt": "2024-01-14T15:20:00Z"
+                          },
+                          "relevanceScore": 0.87
+                        }
+                      ],
+                      "query": "What are the user's preferences for UI design?",
+                      "totalResults": 2
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
         "security": [
           {
             "ApiKeyAuth": []
+          }
+        ],
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Search memories semantically\nresults = client.memories.search(\n    query=\"What are the user's preferences for UI design?\",\n    limit=10,\n    min_relevance=0.7\n)\n\nprint(f\"Found {results.totalResults} relevant memories:\")\nfor result in results.results:\n    print(f\"- [{result.relevanceScore:.2f}] {result.memory.content}\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Search memories semantically\nconst results = await client.memories.search({\n  query: \"What are the user's preferences for UI design?\",\n  limit: 10,\n  minRelevance: 0.7\n});\n\nconsole.log(`Found ${results.totalResults} relevant memories:`);\nresults.results.forEach(result => {\n  console.log(`- [${result.relevanceScore.toFixed(2)}] ${result.memory.content}`);\n});"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/v1/memories/search \\\n  --header 'Authorization: Bearer pm_your_api_key' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"query\": \"What are the user'\\''s preferences for UI design?\",\n    \"limit\": 10,\n    \"minRelevance\": 0.7\n  }'"
           }
         ]
       }
     },
     "/api/organizations/{org_id}/projects/{project_id}/api-keys": {
-      "get": {
+			"get": {
         "tags": ["API Keys"],
         "summary": "List API Keys",
-        "description": "List all API keys for a project.",
+        "description": "Retrieve a list of all API keys for a specific project within an organization. This endpoint returns key metadata including name, prefix, status, permissions, and usage information. The full API key value is never returned for security reasons.",
         "operationId": "listApiKeys",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
+				"parameters": [
+					{
+						"name": "org_id",
+						"in": "path",
+						"required": true,
+            "description": "The unique identifier of the organization. Organization IDs start with 'org_' prefix.",
+						"schema": {
+							"type": "string",
+              "example": "org_abc123def456"
             }
           },
           {
             "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
+						"in": "path",
+						"required": true,
+            "description": "The unique identifier of the project. Project IDs start with 'proj_' prefix.",
+						"schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+            "description": "API keys retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/APIKeyListResponse"
-                }
-              }
-            }
-          }
-        },
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful API key list",
+                    "value": {
+                      "apiKeys": [
+                        {
+                          "id": "key_a1b2c3d4e5f6",
+                          "name": "Production API Key",
+                          "keyPrefix": "pm_live_a1b2c3",
+                          "status": "active",
+                          "permissions": ["read", "write"],
+                          "createdAt": "2024-01-15T10:30:00Z",
+                          "lastUsedAt": "2024-01-19T08:15:00Z",
+                          "expiresAt": null
+                        },
+                        {
+                          "id": "key_b2c3d4e5f6a1",
+                          "name": "Development API Key",
+                          "keyPrefix": "pm_test_b2c3d4",
+                          "status": "active",
+                          "permissions": ["read", "write"],
+                          "createdAt": "2024-01-10T14:20:00Z",
+                          "lastUsedAt": "2024-01-18T16:30:00Z",
+                          "expiresAt": "2024-12-31T23:59:59Z"
+                        }
+                      ]
+									}
+								}
+							}
+						}
+					}
+				},
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+                    "error": {
+												"type": "object",
+												"properties": {
+                        "code": {
+														"type": "string",
+                          "example": "forbidden"
+													},
+                        "message": {
+														"type": "string",
+                          "example": "You don't have access to this organization"
+                        }
+                      }
+										}
+									}
+								}
+							}
+						}
+					}
+				},
         "security": [
           {
             "BearerAuth": []
+          }
+        ],
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List all API keys for a project\napi_keys = client.api_keys.list(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Found {len(api_keys.apiKeys)} API keys:\")\nfor key in api_keys.apiKeys:\n    print(f\"- {key.name} ({key.keyPrefix}...) - Status: {key.status}\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List all API keys for a project\nconst apiKeys = await client.apiKeys.list({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Found ${apiKeys.apiKeys.length} API keys:`);\napiKeys.apiKeys.forEach(key => {\n  console.log(`- ${key.name} (${key.keyPrefix}...) - Status: ${key.status}`);\n});"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/api-keys \\\n  --header 'Authorization: Bearer your_clerk_token'"
           }
         ]
       },
       "post": {
         "tags": ["API Keys"],
         "summary": "Create API Key",
-        "description": "Create a new API key for a project.",
+        "description": "Generate a new API key for authenticating requests to the PhotoMem API. The full API key is only displayed once upon creation - store it securely! You must be an admin or owner of the organization to create API keys. Keys can be scoped with specific permissions and optional expiration dates.",
         "operationId": "createApiKey",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
+				"parameters": [
+					{
+						"name": "org_id",
+						"in": "path",
+						"required": true,
+            "description": "The unique identifier of the organization.",
+						"schema": {
+										"type": "string",
+              "example": "org_abc123def456"
             }
           },
           {
             "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
+						"in": "path",
+						"required": true,
+            "description": "The unique identifier of the project.",
+						"schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
                 "$ref": "#/components/schemas/APIKeyCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "API key created",
-            "content": {
-              "application/json": {
-                "schema": {
+              },
+              "examples": {
+                "production_key": {
+                  "summary": "Production API key with read/write permissions",
+                  "value": {
+                    "name": "Production API Key",
+                    "permissions": ["read", "write"],
+                    "expiresAt": null
+                  }
+                },
+                "readonly_key": {
+                  "summary": "Read-only API key with expiration",
+                  "value": {
+                    "name": "Analytics Dashboard Key",
+                    "permissions": ["read"],
+                    "expiresAt": "2024-12-31T23:59:59Z"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+            "description": "API key created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/CreateAPIKeyResponse"
-                }
-              }
-            }
-          }
-        },
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful API key creation",
+                    "value": {
+                      "apiKey": {
+                        "id": "key_a1b2c3d4e5f6",
+                        "name": "Production API Key",
+                        "key": "pm_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0",
+                        "keyPrefix": "pm_live_a1b2c3",
+                        "status": "active",
+                        "permissions": ["read", "write"],
+                        "createdAt": "2024-01-15T10:30:00Z",
+                        "expiresAt": null
+                      },
+                      "warning": "This is the only time the full API key will be displayed. Store it securely."
+									}
+								}
+							}
+						}
+					}
+				},
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+                    "error": {
+									"type": "object",
+									"properties": {
+                        "code": {
+											"type": "string",
+                          "example": "forbidden"
+                        },
+										"message": {
+											"type": "string",
+                          "example": "You must be an admin to create API keys"
+                        }
+                      }
+										}
+									}
+								}
+							}
+						}
+					}
+				},
         "security": [
           {
             "BearerAuth": []
           }
-        ]
-      }
-    },
+        ],
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Create a new API key\nresult = client.api_keys.create(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    name=\"Production API Key\",\n    permissions=[\"read\", \"write\"]\n)\n\nprint(f\"API Key created: {result.apiKey.name}\")\nprint(f\"Full key (save this!): {result.apiKey.key}\")\nprint(f\"Warning: {result.warning}\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Create a new API key\nconst result = await client.apiKeys.create({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  name: 'Production API Key',\n  permissions: ['read', 'write']\n});\n\nconsole.log(`API Key created: ${result.apiKey.name}`);\nconsole.log(`Full key (save this!): ${result.apiKey.key}`);\nconsole.log(`Warning: ${result.warning}`);"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/api-keys \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"name\": \"Production API Key\",\n    \"permissions\": [\"read\", \"write\"],\n    \"expiresAt\": null\n  }'"
+					}
+				]
+			}
+		},
     "/api/organizations/{org_id}/projects/{project_id}/api-keys/{key_id}": {
       "delete": {
         "tags": ["API Keys"],
         "summary": "Revoke API Key",
-        "description": "Revoke an API key permanently.",
+        "description": "Permanently revoke an API key, immediately invalidating it for all future requests. This action cannot be undone. Any requests made with this key after revocation will return a 401 Unauthorized error. You must be an admin or owner of the organization to revoke API keys.",
         "operationId": "revokeApiKey",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
+				"parameters": [
+					{
+						"name": "org_id",
+						"in": "path",
+						"required": true,
+            "description": "The unique identifier of the organization.",
+						"schema": {
+												"type": "string",
+              "example": "org_abc123def456"
             }
           },
           {
             "name": "project_id",
             "in": "path",
             "required": true,
+            "description": "The unique identifier of the project.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "proj_xyz789ghi012"
             }
           },
           {
             "name": "key_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
+						"in": "path",
+						"required": true,
+            "description": "The unique identifier of the API key to revoke.",
+						"schema": {
+										"type": "string",
+              "example": "key_a1b2c3d4e5f6"
+									}
+								}
         ],
-        "responses": {
-          "200": {
-            "description": "API key revoked",
-            "content": {
-              "application/json": {
-                "schema": {
+				"responses": {
+					"200": {
+            "description": "API key revoked successfully",
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/RevokeAPIKeyResponse"
-                }
-              }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful API key revocation",
+                    "value": {
+                      "message": "API key revoked successfully",
+                      "revokedAt": "2024-01-19T10:30:00Z"
+										}
+									}
+								}
+							}
+						}
+					},
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+					"403": {
+            "description": "Forbidden - insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+                    "error": {
+									"type": "object",
+									"properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "forbidden"
+                        },
+										"message": {
+											"type": "string",
+                          "example": "You must be an admin to revoke API keys"
+										}
+									}
+								}
+							}
+						}
+					}
             }
-          }
-        },
+          },
+          "404": {
+            "description": "API key not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+                    "error": {
+												"type": "object",
+												"properties": {
+                        "code": {
+														"type": "string",
+                          "example": "not_found"
+													},
+                        "message": {
+														"type": "string",
+                          "example": "API key not found"
+                        }
+                      }
+										}
+									}
+								}
+							}
+						}
+					}
+				},
         "security": [
           {
             "BearerAuth": []
+          }
+        ],
+				"x-code-samples": [
+					{
+						"lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Revoke an API key\nresult = client.api_keys.revoke(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    key_id=\"key_a1b2c3d4e5f6\"\n)\n\nprint(f\"API key revoked: {result.message}\")\nprint(f\"Revoked at: {result.revokedAt}\")"
+					},
+					{
+						"lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Revoke an API key\nconst result = await client.apiKeys.revoke({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  keyId: 'key_a1b2c3d4e5f6'\n});\n\nconsole.log(`API key revoked: ${result.message}`);\nconsole.log(`Revoked at: ${result.revokedAt}`);"
+					},
+					{
+						"lang": "cURL",
+            "source": "curl --request DELETE \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/api-keys/key_a1b2c3d4e5f6 \\\n  --header 'Authorization: Bearer your_clerk_token'"
           }
         ]
       }
@@ -418,31 +1061,37 @@
       "post": {
         "tags": ["API Keys"],
         "summary": "Rotate API Key",
-        "description": "Rotate an API key with optional grace period.",
+        "description": "Generate a new API key to replace an existing one, with an optional grace period where both keys remain valid. This is useful for zero-downtime key rotation in production environments. You can specify a grace period (0-30 days) during which the old key continues to work, allowing you to update all services before the old key expires.",
         "operationId": "rotateApiKey",
         "parameters": [
           {
             "name": "org_id",
             "in": "path",
             "required": true,
+            "description": "The unique identifier of the organization.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "org_abc123def456"
             }
           },
           {
             "name": "project_id",
             "in": "path",
             "required": true,
+            "description": "The unique identifier of the project.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "proj_xyz789ghi012"
             }
           },
           {
             "name": "key_id",
             "in": "path",
             "required": true,
+            "description": "The unique identifier of the API key to rotate.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "key_a1b2c3d4e5f6"
             }
           }
         ],
@@ -452,17 +1101,107 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RotateAPIKeyRequest"
+              },
+              "examples": {
+                "immediate_rotation": {
+                  "summary": "Rotate immediately (old key expires now)",
+                  "value": {
+                    "gracePeriodDays": 0
+                  }
+                },
+                "gradual_rotation": {
+                  "summary": "Rotate with 7-day grace period",
+                  "value": {
+                    "gracePeriodDays": 7
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "API key rotated",
+            "description": "API key rotated successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RotateAPIKeyResponse"
+                },
+                "examples": {
+                  "success_with_grace_period": {
+                    "summary": "Successful rotation with grace period",
+                    "value": {
+                      "newApiKey": {
+                        "id": "key_c3d4e5f6g7h8",
+                        "name": "Production API Key",
+                        "key": "pm_live_c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2",
+                        "keyPrefix": "pm_live_c3d4e5",
+                        "status": "active",
+                        "permissions": ["read", "write"],
+                        "createdAt": "2024-01-19T11:00:00Z",
+                        "expiresAt": null
+                      },
+                      "oldApiKey": {
+                        "id": "key_a1b2c3d4e5f6",
+                        "status": "expiring",
+                        "expiresAt": "2024-01-26T11:00:00Z"
+                      },
+                      "warning": "The old API key will remain valid until 2024-01-26T11:00:00Z. Update your services before this date."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "forbidden"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "You must be an admin to rotate API keys"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "API key not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "API key not found"
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -471,6 +1210,20 @@
         "security": [
           {
             "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Rotate API key with 7-day grace period\nresult = client.api_keys.rotate(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    key_id=\"key_a1b2c3d4e5f6\",\n    grace_period_days=7\n)\n\nprint(f\"New API key: {result.newApiKey.key}\")\nprint(f\"Old key expires at: {result.oldApiKey.expiresAt}\")\nprint(f\"Warning: {result.warning}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Rotate API key with 7-day grace period\nconst result = await client.apiKeys.rotate({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  keyId: 'key_a1b2c3d4e5f6',\n  gracePeriodDays: 7\n});\n\nconsole.log(`New API key: ${result.newApiKey.key}`);\nconsole.log(`Old key expires at: ${result.oldApiKey.expiresAt}`);\nconsole.log(`Warning: ${result.warning}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/api-keys/key_a1b2c3d4e5f6/rotate \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"gracePeriodDays\": 7\n  }'"
           }
         ]
       }
@@ -481,72 +1234,72 @@
         "summary": "Get Usage Statistics",
         "description": "Get usage statistics for an organization.",
         "operationId": "getUsageStatistics",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
+				"parameters": [
+					{
+						"name": "org_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
             "name": "period",
             "in": "query",
-            "schema": {
+						"schema": {
               "type": "string",
               "enum": ["7d", "30d", "90d", "current_month"],
               "default": "30d"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
+						}
+					}
+				],
+				"responses": {
+					"200": {
             "description": "Usage statistics",
-            "content": {
-              "application/json": {
-                "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/UsageStatisticsResponse"
-                }
-              }
-            }
-          }
-        },
+									}
+								}
+							}
+						}
+					},
         "security": [
           {
             "BearerAuth": []
-          }
-        ]
-      }
-    },
+					}
+				]
+			}
+		},
     "/api/organizations/{org_id}/billing/plan": {
-      "get": {
+			"get": {
         "tags": ["Billing"],
         "summary": "Get Current Plan",
         "description": "Get current subscription plan and usage.",
         "operationId": "getCurrentPlan",
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
+				"parameters": [
+					{
+						"name": "org_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
             "description": "Plan information",
-            "content": {
-              "application/json": {
-                "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/GetPlanResponse"
-                }
-              }
-            }
-          }
-        },
+									}
+								}
+							}
+						}
+					},
         "security": [
           {
             "BearerAuth": []
@@ -560,18 +1313,18 @@
         "summary": "Get Current User",
         "description": "Get the currently authenticated user's profile.",
         "operationId": "getCurrentUser",
-        "responses": {
-          "200": {
+				"responses": {
+					"200": {
             "description": "User profile",
-            "content": {
-              "application/json": {
-                "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/UserProfileResponse"
-                }
-              }
-            }
-          }
-        },
+									}
+								}
+							}
+						}
+					},
         "security": [
           {
             "BearerAuth": []
@@ -583,51 +1336,51 @@
         "summary": "Update User Profile",
         "description": "Update the current user's profile.",
         "operationId": "updateUserProfile",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
                 "$ref": "#/components/schemas/UpdateUserProfileRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
             "description": "Profile updated",
-            "content": {
-              "application/json": {
-                "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/UserProfileResponse"
-                }
-              }
-            }
-          }
-        },
+									}
+								}
+							}
+						}
+					},
         "security": [
           {
             "BearerAuth": []
-          }
-        ]
-      },
-      "delete": {
+					}
+				]
+			},
+			"delete": {
         "tags": ["User Profile"],
         "summary": "Delete Account",
         "description": "Delete the current user's account permanently.",
         "operationId": "deleteAccount",
-        "responses": {
-          "200": {
+				"responses": {
+					"200": {
             "description": "Account deleted",
-            "content": {
-              "application/json": {
-                "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
                   "$ref": "#/components/schemas/DeleteAccountResponse"
-                }
-              }
-            }
-          }
-        },
+									}
+								}
+							}
+						}
+					},
         "security": [
           {
             "BearerAuth": []
@@ -650,62 +1403,62 @@
         "name": "X-API-Key",
         "description": "API key for memory operations (format: pm_live_xxx or pm_test_xxx)"
       }
-    },
-    "responses": {
+				},
+				"responses": {
       "UnauthorizedError": {
         "description": "Unauthorized",
-        "content": {
-          "application/json": {
-            "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
               "$ref": "#/components/schemas/ErrorResponse"
-            }
-          }
-        }
-      },
+								}
+							}
+						}
+					},
       "NotFoundError": {
         "description": "Not found",
-        "content": {
-          "application/json": {
-            "schema": {
+						"content": {
+							"application/json": {
+								"schema": {
               "$ref": "#/components/schemas/ErrorResponse"
-            }
-          }
-        }
-      },
+							}
+						}
+					}
+				},
       "PayloadTooLargeError": {
         "description": "Payload too large",
-        "content": {
-          "application/json": {
-            "schema": {
+					"content": {
+						"application/json": {
+							"schema": {
               "$ref": "#/components/schemas/ErrorResponse"
             }
-          }
-        }
-      }
-    },
+								}
+							}
+						}
+					},
     "schemas": {
       "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
+									"type": "object",
+									"properties": {
+										"error": {
+										"type": "object",
+										"properties": {
               "code": {
-                "type": "string"
-              },
+													"type": "string"
+												},
               "message": {
                 "type": "string"
-              }
-            }
-          }
-        }
-      },
+									}
+								}
+							}
+						}
+					},
       "MemoryCreateRequest": {
-        "type": "object",
+									"type": "object",
         "required": ["userId", "userName", "content"],
-        "properties": {
+									"properties": {
           "userId": {
-            "type": "string",
+											"type": "string",
             "minLength": 1,
             "maxLength": 255,
             "description": "User ID"
@@ -716,15 +1469,15 @@
             "maxLength": 255,
             "description": "User name"
           },
-          "content": {
-            "type": "string",
+					"content": {
+										"type": "string",
             "minLength": 1,
             "description": "Memory content (max 10KB)"
           },
           "tags": {
-            "type": "array",
-            "items": {
-              "type": "string",
+										"type": "array",
+										"items": {
+											"type": "string",
               "maxLength": 50
             },
             "maxItems": 20,
@@ -733,56 +1486,56 @@
         }
       },
       "MemoryResponse": {
-        "type": "object",
-        "properties": {
+									"type": "object",
+									"properties": {
           "id": {
-            "type": "string"
-          },
+											"type": "string"
+										},
           "userId": {
-            "type": "string"
-          },
+											"type": "string"
+										},
           "userName": {
-            "type": "string"
-          },
+											"type": "string"
+										},
           "content": {
             "type": "string"
           },
           "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
           "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
+											"type": "string",
+											"format": "date-time"
+										},
           "updatedAt": {
-            "type": "string",
-            "format": "date-time"
+											"type": "string",
+											"format": "date-time"
           }
         }
       },
       "MemoryCreateResponse": {
-        "type": "object",
-        "properties": {
+									"type": "object",
+									"properties": {
           "memory": {
             "$ref": "#/components/schemas/MemoryResponse"
           }
         }
       },
       "MemoryUpdateRequest": {
-        "type": "object",
-        "properties": {
-          "content": {
-            "type": "string",
+									"type": "object",
+									"properties": {
+					"content": {
+										"type": "string",
             "minLength": 1,
             "description": "Updated content (max 10KB)"
           },
           "tags": {
-            "type": "array",
-            "items": {
-              "type": "string",
+										"type": "array",
+										"items": {
+											"type": "string",
               "maxLength": 50
             },
             "maxItems": 20,
@@ -791,8 +1544,8 @@
         }
       },
       "MemoryListResponse": {
-        "type": "object",
-        "properties": {
+									"type": "object",
+									"properties": {
           "memories": {
             "type": "array",
             "items": {
@@ -800,8 +1553,8 @@
             }
           },
           "pagination": {
-            "type": "object",
-            "properties": {
+									"type": "object",
+									"properties": {
               "total": {
                 "type": "integer"
               },
@@ -810,34 +1563,34 @@
               },
               "offset": {
                 "type": "integer"
-              }
-            }
-          }
-        }
-      },
+								}
+							}
+						}
+					}
+				},
       "DeleteMemoryResponse": {
-        "type": "object",
-        "properties": {
-          "message": {
+									"type": "object",
+									"properties": {
+										"message": {
             "type": "string"
           },
           "deletedAt": {
-            "type": "string",
+											"type": "string",
             "format": "date-time"
           }
         }
       },
       "MemorySearchRequest": {
-        "type": "object",
+									"type": "object",
         "required": ["query"],
-        "properties": {
+									"properties": {
           "query": {
-            "type": "string",
+											"type": "string",
             "minLength": 1,
             "description": "Search query"
           },
           "userId": {
-            "type": "string",
+											"type": "string",
             "description": "Filter by user ID"
           },
           "limit": {
@@ -857,8 +1610,8 @@
         }
       },
       "MemorySearchResult": {
-        "type": "object",
-        "properties": {
+				"type": "object",
+				"properties": {
           "memory": {
             "$ref": "#/components/schemas/MemoryResponse"
           },
@@ -868,8 +1621,8 @@
         }
       },
       "MemorySearchResponse": {
-        "type": "object",
-        "properties": {
+				"type": "object",
+				"properties": {
           "results": {
             "type": "array",
             "items": {
@@ -877,37 +1630,37 @@
             }
           },
           "query": {
-            "type": "string"
-          },
+						"type": "string"
+					},
           "totalResults": {
             "type": "integer"
           }
         }
       },
       "APIKeyCreate": {
-        "type": "object",
+				"type": "object",
         "required": ["name"],
-        "properties": {
+				"properties": {
           "name": {
             "type": "string",
             "minLength": 3
           },
           "permissions": {
-            "type": "array",
-            "items": {
-              "type": "string",
+						"type": "array",
+						"items": {
+								"type": "string",
               "enum": ["read", "write"]
-            }
-          },
+						}
+					},
           "expiresAt": {
-            "type": "string",
+						"type": "string",
             "format": "date-time"
           }
         }
       },
       "APIKeyResponse": {
-        "type": "object",
-        "properties": {
+				"type": "object",
+				"properties": {
           "id": {
             "type": "string"
           },
@@ -915,97 +1668,97 @@
             "type": "string"
           },
           "keyPrefix": {
-            "type": "string"
-          },
+							"type": "string"
+						},
           "status": {
-            "type": "string",
+						"type": "string",
             "enum": ["active", "expired", "revoked"]
           },
           "permissions": {
-            "type": "array",
-            "items": {
-              "type": "string"
+						"type": "array",
+						"items": {
+							"type": "string"
             }
           },
           "createdAt": {
-            "type": "string",
+						"type": "string",
             "format": "date-time"
           },
           "lastUsedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
+								"type": "string",
+								"format": "date-time"
+							},
           "expiresAt": {
-            "type": "string",
-            "format": "date-time"
+								"type": "string",
+								"format": "date-time"
           }
         }
       },
       "APIKeyListResponse": {
-        "type": "object",
-        "properties": {
+								"type": "object",
+								"properties": {
           "apiKeys": {
-            "type": "array",
-            "items": {
+										"type": "array",
+										"items": {
               "$ref": "#/components/schemas/APIKeyResponse"
-            }
-          }
-        }
-      },
+										}
+									}
+								}
+							},
       "CreateAPIKeyResponse": {
-        "type": "object",
-        "properties": {
+							"type": "object",
+							"properties": {
           "apiKey": {
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
-              },
+									"type": "string"
+								},
               "name": {
-                "type": "string"
-              },
+									"type": "string"
+								},
               "key": {
-                "type": "string"
-              },
+									"type": "string"
+								},
               "keyPrefix": {
-                "type": "string"
-              },
+									"type": "string"
+								},
               "status": {
-                "type": "string"
-              },
+									"type": "string"
+								},
               "permissions": {
-                "type": "array",
-                "items": {
-                  "type": "string"
+						"type": "array",
+						"items": {
+							"type": "string"
                 }
               },
               "createdAt": {
-                "type": "string",
+						"type": "string",
                 "format": "date-time"
-              },
+					},
               "expiresAt": {
-                "type": "string",
+						"type": "string",
                 "format": "date-time"
               }
             }
-          }
-        }
-      },
+					}
+				}
+			},
       "RevokeAPIKeyResponse": {
-        "type": "object",
-        "properties": {
+				"type": "object",
+				"properties": {
           "message": {
-            "type": "string"
-          },
+								"type": "string"
+							},
           "revokedAt": {
-            "type": "string",
-            "format": "date-time"
+								"type": "string",
+								"format": "date-time"
           }
         }
       },
       "RotateAPIKeyRequest": {
-        "type": "object",
-        "properties": {
+								"type": "object",
+								"properties": {
           "gracePeriodDays": {
             "type": "integer",
             "minimum": 0,
@@ -1015,8 +1768,8 @@
         }
       },
       "RotateAPIKeyResponse": {
-        "type": "object",
-        "properties": {
+							"type": "object",
+							"properties": {
           "newApiKey": {
             "type": "object"
           },
@@ -1024,7 +1777,7 @@
             "type": "object"
           },
           "warning": {
-            "type": "string"
+									"type": "string"
           }
         }
       },
@@ -1040,8 +1793,8 @@
         }
       },
       "GetPlanResponse": {
-        "type": "object",
-        "properties": {
+				"type": "object",
+				"properties": {
           "plan": {
             "type": "object"
           },
@@ -1054,11 +1807,11 @@
         }
       },
       "UserProfileResponse": {
-        "type": "object",
-        "properties": {
+				"type": "object",
+				"properties": {
           "id": {
-            "type": "string"
-          },
+						"type": "string"
+					},
           "email": {
             "type": "string"
           },
@@ -1069,14 +1822,14 @@
             "type": "string"
           },
           "createdAt": {
-            "type": "string",
+						"type": "string",
             "format": "date-time"
           }
         }
       },
       "UpdateUserProfileRequest": {
-        "type": "object",
-        "properties": {
+				"type": "object",
+				"properties": {
           "name": {
             "type": "string"
           },
@@ -1086,8 +1839,8 @@
         }
       },
       "DeleteAccountResponse": {
-        "type": "object",
-        "properties": {
+				"type": "object",
+				"properties": {
           "message": {
             "type": "string"
           }

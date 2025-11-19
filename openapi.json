@@ -3729,6 +3729,319 @@
         ]
       }
     },
+    "/api/organizations/{org_id}/projects/{project_id}/webhooks": {
+      "get": {
+        "tags": ["Webhooks"],
+        "summary": "List Webhooks",
+        "description": "Retrieve all webhooks configured for a specific project. Webhooks allow your application to receive real-time notifications when events occur in PhotoMem, such as memory creation, updates, or deletions. Each webhook includes delivery statistics and status information.",
+        "operationId": "listWebhooks",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the project.",
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhooks retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "webhooks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "wh_abc123def456"
+                          },
+                          "url": {
+                            "type": "string",
+                            "example": "https://example.com/webhooks/photomem"
+                          },
+                          "events": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "example": ["memory.created", "memory.updated", "memory.deleted"]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["active", "disabled"],
+                            "example": "active"
+                          },
+                          "secret": {
+                            "type": "string",
+                            "example": "whsec_abc123def456xyz789"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Production webhook for memory events"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-10T10:00:00Z"
+                          },
+                          "lastDeliveredAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-19T15:30:00Z"
+                          },
+                          "statistics": {
+                            "type": "object",
+                            "properties": {
+                              "totalDeliveries": {
+                                "type": "integer",
+                                "example": 1542
+                              },
+                              "successfulDeliveries": {
+                                "type": "integer",
+                                "example": 1520
+                              },
+                              "failedDeliveries": {
+                                "type": "integer",
+                                "example": 22
+                              },
+                              "averageResponseTime": {
+                                "type": "string",
+                                "example": "245ms"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - no access to project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "access_denied"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Access denied to this organization"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List all webhooks\nwebhooks = client.webhooks.list(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Total webhooks: {len(webhooks.webhooks)}\")\nfor webhook in webhooks.webhooks:\n    print(f\"\\n{webhook.url}\")\n    print(f\"  Status: {webhook.status}\")\n    print(f\"  Events: {', '.join(webhook.events)}\")\n    if webhook.statistics:\n        print(f\"  Deliveries: {webhook.statistics.successfulDeliveries}/{webhook.statistics.totalDeliveries}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List all webhooks\nconst webhooks = await client.webhooks.list({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Total webhooks: ${webhooks.webhooks.length}`);\nwebhooks.webhooks.forEach(webhook => {\n  console.log(`\\n${webhook.url}`);\n  console.log(`  Status: ${webhook.status}`);\n  console.log(`  Events: ${webhook.events.join(', ')}`);\n  if (webhook.statistics) {\n    console.log(`  Deliveries: ${webhook.statistics.successfulDeliveries}/${webhook.statistics.totalDeliveries}`);\n  }\n});"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/webhooks \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Create Webhook",
+        "description": "Create a new webhook to receive real-time event notifications from PhotoMem. Specify which events to listen for and the URL where notifications should be sent. A secure secret will be generated for verifying webhook signatures.",
+        "operationId": "createWebhook",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the project.",
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url", "events"],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL where webhook notifications will be sent",
+                    "example": "https://example.com/webhooks/photomem"
+                  },
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["memory.created", "memory.updated", "memory.deleted", "memory.search"]
+                    },
+                    "description": "List of events to subscribe to",
+                    "example": ["memory.created", "memory.updated"]
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Optional description for the webhook",
+                    "example": "Production webhook for memory events"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Webhook created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "webhook": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "wh_new123abc456"
+                        },
+                        "url": {
+                          "type": "string",
+                          "example": "https://example.com/webhooks/photomem"
+                        },
+                        "events": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": ["memory.created", "memory.updated"]
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "active"
+                        },
+                        "secret": {
+                          "type": "string",
+                          "example": "whsec_abc123def456xyz789"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-19T16:00:00Z"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation_error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Invalid URL format"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Create a new webhook\nwebhook = client.webhooks.create(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    url=\"https://example.com/webhooks/photomem\",\n    events=[\"memory.created\", \"memory.updated\"],\n    description=\"Production webhook for memory events\"\n)\n\nprint(f\"Webhook created: {webhook.webhook.id}\")\nprint(f\"Secret: {webhook.webhook.secret}\")\nprint(\"Save this secret securely - it won't be shown again!\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Create a new webhook\nconst webhook = await client.webhooks.create({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  url: 'https://example.com/webhooks/photomem',\n  events: ['memory.created', 'memory.updated'],\n  description: 'Production webhook for memory events'\n});\n\nconsole.log(`Webhook created: ${webhook.webhook.id}`);\nconsole.log(`Secret: ${webhook.webhook.secret}`);\nconsole.log('Save this secret securely - it won\\'t be shown again!');"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/webhooks \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"url\": \"https://example.com/webhooks/photomem\",\n    \"events\": [\"memory.created\", \"memory.updated\"],\n    \"description\": \"Production webhook for memory events\"\n  }'"
+          }
+        ]
+      }
+    },
     "/api/users/me": {
       "get": {
         "tags": ["User Profile"],

@@ -3729,6 +3729,170 @@
         ]
       }
     },
+    "/api/organizations/{org_id}/billing/plan/change": {
+      "post": {
+        "tags": ["Billing"],
+        "summary": "Change Plan",
+        "description": "Change the organization's subscription plan. Only organization owners can change plans. The system will verify that current usage doesn't exceed new plan limits before allowing downgrades. Plan changes take effect immediately, with prorated billing adjustments.",
+        "operationId": "changePlan",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["planId"],
+                "properties": {
+                  "planId": {
+                    "type": "string",
+                    "enum": ["plan_free", "plan_starter", "plan_pro", "plan_enterprise"],
+                    "description": "The new plan to switch to",
+                    "example": "plan_pro"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subscription": {
+                      "type": "object",
+                      "properties": {
+                        "planId": {
+                          "type": "string",
+                          "example": "plan_pro"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "active"
+                        },
+                        "effectiveDate": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-19T18:00:00Z"
+                        }
+                      }
+                    },
+                    "invoicePreview": {
+                      "type": "object",
+                      "properties": {
+                        "amountDue": {
+                          "type": "number",
+                          "example": 99.00
+                        },
+                        "proratedCredit": {
+                          "type": "number",
+                          "example": -15.50
+                        },
+                        "total": {
+                          "type": "number",
+                          "example": 83.50
+                        },
+                        "currency": {
+                          "type": "string",
+                          "example": "USD"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - usage exceeds new plan limits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "exceeds_plan_limits"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Cannot downgrade: You have 8 projects but the new plan allows only 5"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - only owners can change plans",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Only organization owners can change billing plans"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Upgrade to Pro plan\nresult = client.billing.change_plan(\n    org_id=\"org_abc123def456\",\n    plan_id=\"plan_pro\"\n)\n\nprint(f\"Plan changed to: {result.subscription.planId}\")\nprint(f\"Status: {result.subscription.status}\")\nprint(f\"Amount due: ${result.invoicePreview.total:.2f}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Upgrade to Pro plan\nconst result = await client.billing.changePlan({\n  orgId: 'org_abc123def456',\n  planId: 'plan_pro'\n});\n\nconsole.log(`Plan changed to: ${result.subscription.planId}`);\nconsole.log(`Status: ${result.subscription.status}`);\nconsole.log(`Amount due: $${result.invoicePreview.total.toFixed(2)}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/billing/plan/change \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"planId\": \"plan_pro\"}'"
+          }
+        ]
+      }
+    },
     "/api/organizations/{org_id}/projects/{project_id}/webhooks": {
       "get": {
         "tags": ["Webhooks"],

@@ -609,15 +609,6 @@
       "linkedin": "https://www.linkedin.com/company/photomem/"
     }
   },
-  "integrations": {
-    "posthog": {
-      "apiKey": "phc_hgJkUVJFYtmaJqrvf6CYN67TIQ8yhXAkWzUn9AMU4yX",
-      "apiHost": "https://mango.photomem.ai"
-    },
-    "intercom": {
-      "appId": "jjv2r0tt"
-    }
-  },
   "contextual": {
     "options": [
       "copy",

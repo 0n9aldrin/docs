@@ -2126,6 +2126,324 @@
             "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/members \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"email\": \"newmember@example.com\",\n    \"role\": \"member\",\n    \"message\": \"Welcome to the team!\"\n  }'"
           }
         ]
+      },
+      "patch": {
+        "tags": ["Organizations"],
+        "summary": "Update Organization",
+        "description": "Update organization name or slug. Only admins and owners can update organizations.",
+        "operationId": "updateOrganization",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Acme Corp Updated"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "example": "acme-corp-v2"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Organization updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "org_abc123def456"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Acme Corp Updated"
+                    },
+                    "slug": {
+                      "type": "string",
+                      "example": "acme-corp-v2"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T19:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Only admins and owners can update organizations"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\norg = client.organizations.update(\n    org_id=\"org_abc123def456\",\n    name=\"Acme Corp Updated\"\n)\n\nprint(f\"Updated: {org.name}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst org = await client.organizations.update({\n  orgId: 'org_abc123def456',\n  name: 'Acme Corp Updated'\n});\n\nconsole.log(`Updated: ${org.name}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request PATCH \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456 \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"name\": \"Acme Corp Updated\"}'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/members/{member_id}": {
+      "patch": {
+        "tags": ["Organizations"],
+        "summary": "Update Member Role",
+        "description": "Update a member's role. Only owners can change member roles.",
+        "operationId": "updateMemberRole",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "member_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "user_xyz789"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["role"],
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "enum": ["owner", "admin", "member"],
+                    "example": "admin"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "user_xyz789"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "admin"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T19:15:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Only owners can change roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nmember = client.organizations.update_member_role(\n    org_id=\"org_abc123def456\",\n    member_id=\"user_xyz789\",\n    role=\"admin\"\n)\n\nprint(f\"Role updated to: {member.role}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst member = await client.organizations.updateMemberRole({\n  orgId: 'org_abc123def456',\n  memberId: 'user_xyz789',\n  role: 'admin'\n});\n\nconsole.log(`Role updated to: ${member.role}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request PATCH \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/members/user_xyz789 \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"role\": \"admin\"}'"
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Organizations"],
+        "summary": "Remove Member",
+        "description": "Remove a member from the organization. Only owners can remove members.",
+        "operationId": "removeMember",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "member_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "user_xyz789"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Member removed successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Only owners can remove members",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nresult = client.organizations.remove_member(\n    org_id=\"org_abc123def456\",\n    member_id=\"user_xyz789\"\n)\n\nprint(result.message)"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.organizations.removeMember({\n  orgId: 'org_abc123def456',\n  memberId: 'user_xyz789'\n});\n\nconsole.log(result.message);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request DELETE \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/members/user_xyz789 \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
       }
     },
     "/api/organizations/{org_id}/projects": {

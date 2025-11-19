@@ -4307,6 +4307,419 @@
         ]
       }
     },
+    "/api/organizations/{org_id}/projects/{project_id}/webhooks/{webhook_id}/deliveries": {
+      "get": {
+        "tags": ["Webhooks"],
+        "summary": "List Webhook Deliveries",
+        "description": "Retrieve the delivery history for a webhook, including success/failure status, response codes, timestamps, and retry information. Use this endpoint to monitor webhook reliability and troubleshoot delivery issues.",
+        "operationId": "listWebhookDeliveries",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          },
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "wh_abc123def456"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of deliveries to return",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "maximum": 100,
+              "example": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of deliveries to skip",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "example": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deliveries retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deliveries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "del_xyz123abc456"
+                          },
+                          "event": {
+                            "type": "string",
+                            "example": "memory.created"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["pending", "success", "failed"],
+                            "example": "success"
+                          },
+                          "statusCode": {
+                            "type": "integer",
+                            "example": 200
+                          },
+                          "responseTime": {
+                            "type": "integer",
+                            "description": "Response time in milliseconds",
+                            "example": 245
+                          },
+                          "attemptCount": {
+                            "type": "integer",
+                            "example": 1
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-19T15:30:00Z"
+                          },
+                          "deliveredAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-19T15:30:01Z"
+                          }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 1542
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "offset": {
+                          "type": "integer",
+                          "example": 0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List webhook deliveries\ndeliveries = client.webhooks.list_deliveries(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    limit=20\n)\n\nprint(f\"Total deliveries: {deliveries.pagination.total}\")\nfor delivery in deliveries.deliveries:\n    print(f\"{delivery.event}: {delivery.status} ({delivery.statusCode}) - {delivery.responseTime}ms\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List webhook deliveries\nconst deliveries = await client.webhooks.listDeliveries({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  limit: 20\n});\n\nconsole.log(`Total deliveries: ${deliveries.pagination.total}`);\ndeliveries.deliveries.forEach(delivery => {\n  console.log(`${delivery.event}: ${delivery.status} (${delivery.statusCode}) - ${delivery.responseTime}ms`);\n});"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/webhooks/wh_abc123def456/deliveries?limit=20' \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/projects/{project_id}/webhooks/{webhook_id}/deliveries/{delivery_id}/retry": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Retry Webhook Delivery",
+        "description": "Manually retry a failed webhook delivery. This will immediately attempt to resend the webhook payload to the configured URL. Useful for recovering from temporary failures or testing after fixing endpoint issues.",
+        "operationId": "retryWebhookDelivery",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          },
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "wh_abc123def456"
+            }
+          },
+          {
+            "name": "delivery_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "del_xyz123abc456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delivery retried successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "delivery": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "del_xyz123abc456"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "success"
+                        },
+                        "statusCode": {
+                          "type": "integer",
+                          "example": 200
+                        },
+                        "attemptCount": {
+                          "type": "integer",
+                          "example": 2
+                        },
+                        "retriedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-19T17:30:00Z"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Delivery not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "delivery_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Delivery not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Retry failed delivery\ndelivery = client.webhooks.retry_delivery(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    delivery_id=\"del_xyz123abc456\"\n)\n\nprint(f\"Retry status: {delivery.delivery.status}\")\nprint(f\"Status code: {delivery.delivery.statusCode}\")\nprint(f\"Attempt count: {delivery.delivery.attemptCount}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Retry failed delivery\nconst delivery = await client.webhooks.retryDelivery({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  deliveryId: 'del_xyz123abc456'\n});\n\nconsole.log(`Retry status: ${delivery.delivery.status}`);\nconsole.log(`Status code: ${delivery.delivery.statusCode}`);\nconsole.log(`Attempt count: ${delivery.delivery.attemptCount}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/webhooks/wh_abc123def456/deliveries/del_xyz123abc456/retry \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/projects/{project_id}/webhooks/{webhook_id}/test": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Test Webhook",
+        "description": "Send a test event to the webhook URL to verify it's configured correctly. This will send a sample payload and return the response from your endpoint. Useful for testing webhook integration during setup or after configuration changes.",
+        "operationId": "testWebhook",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          },
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "wh_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test delivery sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "test": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "statusCode": {
+                          "type": "integer",
+                          "example": 200
+                        },
+                        "responseTime": {
+                          "type": "integer",
+                          "description": "Response time in milliseconds",
+                          "example": 156
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Webhook test successful"
+                        },
+                        "testedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-19T17:45:00Z"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Webhook not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "webhook_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Webhook not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Test webhook\nresult = client.webhooks.test(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\"\n)\n\nif result.test.success:\n    print(f\"✓ Webhook test successful ({result.test.statusCode})\")\n    print(f\"  Response time: {result.test.responseTime}ms\")\nelse:\n    print(f\"✗ Webhook test failed\")\n    print(f\"  Message: {result.test.message}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Test webhook\nconst result = await client.webhooks.test({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456'\n});\n\nif (result.test.success) {\n  console.log(`✓ Webhook test successful (${result.test.statusCode})`);\n  console.log(`  Response time: ${result.test.responseTime}ms`);\n} else {\n  console.log(`✗ Webhook test failed`);\n  console.log(`  Message: ${result.test.message}`);\n}"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/webhooks/wh_abc123def456/test \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
     "/api/users/me": {
       "get": {
         "tags": ["User Profile"],

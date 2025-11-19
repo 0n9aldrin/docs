@@ -1228,6 +1228,528 @@
         ]
       }
     },
+    "/api/organizations": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "List Organizations",
+        "description": "Retrieve a list of all organizations that the authenticated user belongs to. Each organization includes details such as name, slug, plan information, member count, and the user's role within the organization. In the current version, users can only belong to one organization, but this endpoint is designed to support multiple organizations per user in the future.",
+        "operationId": "listOrganizations",
+        "responses": {
+          "200": {
+            "description": "List of organizations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "organizations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Unique identifier for the organization",
+                            "example": "org_abc123def456"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Organization name",
+                            "example": "Acme Corporation"
+                          },
+                          "slug": {
+                            "type": "string",
+                            "description": "URL-friendly identifier",
+                            "example": "acme-corp"
+                          },
+                          "plan": {
+                            "type": "string",
+                            "description": "Current subscription plan",
+                            "example": "pro",
+                            "enum": ["free", "starter", "pro", "enterprise"]
+                          },
+                          "memberCount": {
+                            "type": "integer",
+                            "description": "Total number of members",
+                            "example": 12
+                          },
+                          "yourRole": {
+                            "type": "string",
+                            "description": "Your role in this organization",
+                            "example": "owner",
+                            "enum": ["owner", "admin", "member"]
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-15T10:30:00Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful organization list",
+                    "value": {
+                      "organizations": [
+                        {
+                          "id": "org_abc123def456",
+                          "name": "Acme Corporation",
+                          "slug": "acme-corp",
+                          "plan": "pro",
+                          "memberCount": 12,
+                          "yourRole": "owner",
+                          "createdAt": "2024-01-15T10:30:00Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List all organizations\nresult = client.organizations.list()\n\nfor org in result.organizations:\n    print(f\"{org.name} ({org.plan}) - Your role: {org.yourRole}\")\n    print(f\"  Members: {org.memberCount}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List all organizations\nconst result = await client.organizations.list();\n\nresult.organizations.forEach(org => {\n  console.log(`${org.name} (${org.plan}) - Your role: ${org.yourRole}`);\n  console.log(`  Members: ${org.memberCount}`);\n});"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Organizations"],
+        "summary": "Create Organization",
+        "description": "Create a new organization. The authenticated user will automatically become the owner of the newly created organization. Organization names must be unique across the platform, and slugs are automatically generated from the name (lowercase, hyphenated). You can also set initial organization settings during creation.",
+        "operationId": "createOrganization",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "description": "Organization name",
+                    "example": "My Startup"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]+$",
+                    "description": "Optional custom slug (auto-generated if not provided)",
+                    "example": "my-startup"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "description": "Optional organization settings",
+                    "example": {
+                      "allowGuestAccess": false,
+                      "defaultMemoryRetention": 90
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic organization creation",
+                  "value": {
+                    "name": "My Startup"
+                  }
+                },
+                "with_settings": {
+                  "summary": "Organization with custom settings",
+                  "value": {
+                    "name": "Enterprise Corp",
+                    "slug": "enterprise-corp",
+                    "settings": {
+                      "allowGuestAccess": true,
+                      "defaultMemoryRetention": 365
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Organization created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "org_new123abc456"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "My Startup"
+                    },
+                    "slug": {
+                      "type": "string",
+                      "example": "my-startup"
+                    },
+                    "isActive": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T12:00:00Z"
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful organization creation",
+                    "value": {
+                      "id": "org_new123abc456",
+                      "name": "My Startup",
+                      "slug": "my-startup",
+                      "isActive": true,
+                      "createdAt": "2024-01-19T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation_error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Organization name is required"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Create a new organization\norg = client.organizations.create(\n    name=\"My Startup\",\n    settings={\n        \"allowGuestAccess\": False,\n        \"defaultMemoryRetention\": 90\n    }\n)\n\nprint(f\"Organization created: {org.id}\")\nprint(f\"Slug: {org.slug}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Create a new organization\nconst org = await client.organizations.create({\n  name: 'My Startup',\n  settings: {\n    allowGuestAccess: false,\n    defaultMemoryRetention: 90\n  }\n});\n\nconsole.log(`Organization created: ${org.id}`);\nconsole.log(`Slug: ${org.slug}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"name\": \"My Startup\",\n    \"settings\": {\n      \"allowGuestAccess\": false,\n      \"defaultMemoryRetention\": 90\n    }\n  }'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "Get Organization",
+        "description": "Retrieve detailed information about a specific organization, including settings, plan details, usage limits, and member statistics. You must be a member of the organization to access its details.",
+        "operationId": "getOrganization",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "org_abc123def456"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Acme Corporation"
+                    },
+                    "slug": {
+                      "type": "string",
+                      "example": "acme-corp"
+                    },
+                    "plan": {
+                      "type": "string",
+                      "example": "pro"
+                    },
+                    "memberCount": {
+                      "type": "integer",
+                      "example": 12
+                    },
+                    "projectCount": {
+                      "type": "integer",
+                      "example": 5
+                    },
+                    "yourRole": {
+                      "type": "string",
+                      "example": "admin"
+                    },
+                    "settings": {
+                      "type": "object",
+                      "example": {
+                        "allowGuestAccess": false,
+                        "defaultMemoryRetention": 90
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-15T10:30:00Z"
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful organization retrieval",
+                    "value": {
+                      "id": "org_abc123def456",
+                      "name": "Acme Corporation",
+                      "slug": "acme-corp",
+                      "plan": "pro",
+                      "memberCount": 12,
+                      "projectCount": 5,
+                      "yourRole": "admin",
+                      "settings": {
+                        "allowGuestAccess": false,
+                        "defaultMemoryRetention": 90
+                      },
+                      "createdAt": "2024-01-15T10:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Organization not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "organization_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Organization not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get organization details\norg = client.organizations.get(\"org_abc123def456\")\n\nprint(f\"{org.name} ({org.plan})\")\nprint(f\"Members: {org.memberCount}, Projects: {org.projectCount}\")\nprint(f\"Your role: {org.yourRole}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get organization details\nconst org = await client.organizations.get('org_abc123def456');\n\nconsole.log(`${org.name} (${org.plan})`);\nconsole.log(`Members: ${org.memberCount}, Projects: ${org.projectCount}`);\nconsole.log(`Your role: ${org.yourRole}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456 \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Organizations"],
+        "summary": "Delete Organization",
+        "description": "Permanently delete an organization and all its associated data, including projects, API keys, memories, and webhooks. This is a destructive operation that cannot be undone. Only organization owners can delete organizations. All members will lose access immediately.",
+        "operationId": "deleteOrganization",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization to delete.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Organization deleted successfully"
+                    },
+                    "deletedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T14:30:00Z"
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful organization deletion",
+                    "value": {
+                      "message": "Organization deleted successfully",
+                      "deletedAt": "2024-01-19T14:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Only organization owners can delete organizations"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "organization_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Organization not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Delete organization\nresult = client.organizations.delete(\"org_abc123def456\")\n\nprint(f\"Organization deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Delete organization\nconst result = await client.organizations.delete('org_abc123def456');\n\nconsole.log(`Organization deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request DELETE \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456 \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
     "/api/organizations/{org_id}/usage": {
       "get": {
         "tags": ["Usage & Analytics"],

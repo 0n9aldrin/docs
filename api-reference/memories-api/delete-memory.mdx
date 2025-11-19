@@ -88,13 +88,17 @@ print(result["message"])
     The memory record is marked as deleted in the database.
   </Step>
 
-  <Step title="Remove from Vector Store">
-    The memory's embedding is removed from the vector index.
-  </Step>
+{" "}
 
-  <Step title="Immediate Effect">
-    The memory immediately stops appearing in search results and list queries.
-  </Step>
+<Step title="Remove from Vector Store">
+  The memory's embedding is removed from the vector index.
+</Step>
+
+{" "}
+
+<Step title="Immediate Effect">
+  The memory immediately stops appearing in search results and list queries.
+</Step>
 
   <Step title="Audit Log">
     The deletion is logged for compliance and auditing purposes.
@@ -108,13 +112,17 @@ print(result["message"])
     GDPR/privacy compliance - user requests data removal
   </Card>
 
-  <Card title="Outdated Information" icon="calendar-xmark">
-    Information is no longer relevant or accurate
-  </Card>
+{" "}
 
-  <Card title="Duplicate" icon="copy">
-    Remove duplicate or redundant memories
-  </Card>
+<Card title="Outdated Information" icon="calendar-xmark">
+  Information is no longer relevant or accurate
+</Card>
+
+{" "}
+
+<Card title="Duplicate" icon="copy">
+  Remove duplicate or redundant memories
+</Card>
 
   <Card title="Data Quality" icon="broom">
     Clean up test data or incorrect entries
@@ -159,9 +167,11 @@ async function bulkDeleteMemories(
     not success.
   </Accordion>
 
-  <Accordion title="401 - Unauthorized">
-    - Invalid or missing API key - API key doesn't have write permissions
-  </Accordion>
+{" "}
+
+<Accordion title="401 - Unauthorized">
+  - Invalid or missing API key - API key doesn't have write permissions
+</Accordion>
 
   <Accordion title="403 - Forbidden">
     - API key doesn't have access to this organization/project

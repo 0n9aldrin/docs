@@ -271,12 +271,11 @@
                     "group": "Memory Management",
                     "icon": "brain",
                     "pages": [
-                      "api-reference/memory/add-memories",
-                      "api-reference/memory/get-memories",
-                      "api-reference/memory/search-memories",
-                      "api-reference/memory/update-memory",
-                      "api-reference/memory/delete-memory",
-                      "api-reference/memory/get-memory"
+                      "api-reference/memories-api/create-memory",
+                      "api-reference/memories-api/list-memories",
+                      "api-reference/memories-api/update-memory",
+                      "api-reference/memories-api/delete-memory",
+                      "api-reference/memories-api/search-memories"
                     ]
                   },
                   {
@@ -294,8 +293,8 @@
                     "icon": "building",
                     "pages": [
                       "api-reference/organization/get-orgs",
-                      "api-reference/organization/get-org",
                       "api-reference/organization/create-org",
+                      "api-reference/organization/get-org",
                       "api-reference/organization/delete-org",
                       "api-reference/organization/get-org-members",
                       "api-reference/organization/add-org-member"
@@ -306,8 +305,8 @@
                     "icon": "folder",
                     "pages": [
                       "api-reference/project/get-projects",
-                      "api-reference/project/get-project",
                       "api-reference/project/create-project",
+                      "api-reference/project/get-project",
                       "api-reference/project/delete-project"
                     ]
                   },
@@ -315,10 +314,9 @@
                     "group": "Webhooks",
                     "icon": "webhook",
                     "pages": [
-                      "api-reference/webhook/create-webhook",
-                      "api-reference/webhook/get-webhook",
-                      "api-reference/webhook/update-webhook",
-                      "api-reference/webhook/delete-webhook"
+                      "api-reference/webhooks/list-webhooks",
+                      "api-reference/webhooks/create-webhook",
+                      "api-reference/webhooks/delete-webhook"
                     ]
                   },
                   {
@@ -327,7 +325,9 @@
                     "pages": [
                       "api-reference/billing/get-current-plan",
                       "api-reference/billing/change-plan",
-                      "api-reference/billing/get-invoices"
+                      "api-reference/billing/get-invoices",
+                      "api-reference/billing/update-payment-method",
+                      "api-reference/billing/cancel-subscription"
                     ]
                   },
                   {

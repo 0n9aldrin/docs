@@ -84,6 +84,7 @@ X-API-Key: pm_live_YOUR_API_KEY
     <ResponseField name="score" type="number">
       Relevance score (0-1), where higher values indicate better matches
     </ResponseField>
+
   </Expandable>
 </ResponseField>
 
@@ -247,18 +248,24 @@ const response = await fetch(`${baseUrl}/memories/search`, {
     Alice's coffee preferences?" is better than just "coffee".
   </Accordion>
 
-  <Accordion title="Filter by User When Possible">
-    If you know the user, always include `userId` to improve relevance and
-    performance.
-  </Accordion>
+{" "}
 
-  <Accordion title="Use Appropriate Limits">
-    Request only the number of results you need. Smaller limits return faster.
-  </Accordion>
+<Accordion title="Filter by User When Possible">
+  If you know the user, always include `userId` to improve relevance and
+  performance.
+</Accordion>
 
-  <Accordion title="Consider Score Thresholds">
-    Filter out results with scores below 0.5 for better quality matches.
-  </Accordion>
+{" "}
+
+<Accordion title="Use Appropriate Limits">
+  Request only the number of results you need. Smaller limits return faster.
+</Accordion>
+
+{" "}
+
+<Accordion title="Consider Score Thresholds">
+  Filter out results with scores below 0.5 for better quality matches.
+</Accordion>
 
   <Accordion title="Cache Search Results">
     Cache frequently used searches to reduce API calls and improve response
@@ -327,13 +334,17 @@ async function getAIResponseWithMemory(
     Typical search latency: 50-150ms for most queries
   </Card>
 
-  <Card title="Scalable" icon="chart-line">
-    Performance remains consistent even with millions of memories
-  </Card>
+{" "}
 
-  <Card title="Concurrent Searches" icon="users">
-    Supports high concurrency for real-time applications
-  </Card>
+<Card title="Scalable" icon="chart-line">
+  Performance remains consistent even with millions of memories
+</Card>
+
+{" "}
+
+<Card title="Concurrent Searches" icon="users">
+  Supports high concurrency for real-time applications
+</Card>
 
   <Card title="Rate Limits" icon="gauge">
     Check your plan's rate limits for search operations

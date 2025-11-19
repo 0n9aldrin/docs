@@ -79,6 +79,7 @@ X-API-Key: pm_live_YOUR_API_KEY
     <ResponseField name="updatedAt" type="string">
       ISO 8601 timestamp of last update
     </ResponseField>
+
   </Expandable>
 </ResponseField>
 
@@ -164,15 +165,19 @@ print(data["memory"])
     matching and semantic similarity to prevent duplicates.
   </Step>
 
-  <Step title="Embedding Generation">
-    The content is automatically converted into a vector embedding using
-    advanced AI models for semantic search.
-  </Step>
+{" "}
 
-  <Step title="Indexing">
-    The memory is indexed in both the database and vector store for fast
-    retrieval.
-  </Step>
+<Step title="Embedding Generation">
+  The content is automatically converted into a vector embedding using advanced
+  AI models for semantic search.
+</Step>
+
+{" "}
+
+<Step title="Indexing">
+  The memory is indexed in both the database and vector store for fast
+  retrieval.
+</Step>
 
   <Step title="Ready to Search">
     The memory is immediately available for [semantic
@@ -199,13 +204,17 @@ If you need to store larger content:
     Create a taxonomy of tags (e.g., "preferences", "history", "goals")
   </Card>
 
-  <Card title="Lowercase Automatic" icon="arrow-down">
-    Tags are automatically normalized to lowercase
-  </Card>
+{" "}
 
-  <Card title="Limit Tag Count" icon="hashtag">
-    Maximum 20 tags per memory for optimal performance
-  </Card>
+<Card title="Lowercase Automatic" icon="arrow-down">
+  Tags are automatically normalized to lowercase
+</Card>
+
+{" "}
+
+<Card title="Limit Tag Count" icon="hashtag">
+  Maximum 20 tags per memory for optimal performance
+</Card>
 
   <Card title="Short and Descriptive" icon="text">
     Each tag limited to 50 characters
@@ -221,13 +230,17 @@ If you need to store larger content:
     tag exceeds 50 characters
   </Accordion>
 
-  <Accordion title="401 - Unauthorized">
-    - Invalid or missing API key - API key is revoked or expired
-  </Accordion>
+{" "}
 
-  <Accordion title="413 - Payload Too Large">
-    - Content exceeds 10KB limit
-  </Accordion>
+<Accordion title="401 - Unauthorized">
+  - Invalid or missing API key - API key is revoked or expired
+</Accordion>
+
+{" "}
+
+<Accordion title="413 - Payload Too Large">
+  - Content exceeds 10KB limit
+</Accordion>
 
   <Accordion title="429 - Rate Limit Exceeded">
     - Too many requests in a short time period - Check your plan's rate limits

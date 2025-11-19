@@ -1608,6 +1608,120 @@
             "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"name\": \"My Startup\",\n    \"settings\": {\n      \"allowGuestAccess\": false,\n      \"defaultMemoryRetention\": 90\n    }\n  }'"
           }
         ]
+      },
+      "post": {
+        "tags": ["Organizations"],
+        "summary": "Create Organization",
+        "description": "Create a new organization. The authenticated user becomes the owner.",
+        "operationId": "createOrganization",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Acme Corp"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "example": "acme-corp"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "enableAnalytics": {
+                        "type": "boolean",
+                        "example": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Organization created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "org_abc123def456"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Acme Corp"
+                    },
+                    "slug": {
+                      "type": "string",
+                      "example": "acme-corp"
+                    },
+                    "isActive": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T10:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "description": "Organization slug already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "slug_exists"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\norg = client.organizations.create(\n    name=\"Acme Corp\",\n    slug=\"acme-corp\"\n)\n\nprint(f\"Created: {org.name}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst org = await client.organizations.create({\n  name: 'Acme Corp',\n  slug: 'acme-corp'\n});\n\nconsole.log(`Created: ${org.name}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"name\": \"Acme Corp\", \"slug\": \"acme-corp\"}'"
+          }
+        ]
       }
     },
     "/api/organizations/{org_id}": {

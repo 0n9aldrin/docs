@@ -2128,6 +2128,1066 @@
         ]
       }
     },
+    "/api/organizations/{org_id}/projects": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "List Projects",
+        "description": "Retrieve a list of all projects within an organization. Projects are containers for organizing memories, API keys, and webhooks. Each project has its own isolated environment (production, development, staging, or testing) and can be independently configured. You must be a member of the organization to list its projects.",
+        "operationId": "listProjects",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Projects retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "projects": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "proj_xyz789ghi012"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Production API"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Main production environment for customer-facing features"
+                          },
+                          "environment": {
+                            "type": "string",
+                            "enum": ["production", "development", "staging", "testing"],
+                            "example": "production"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["active", "archived", "deleted"],
+                            "example": "active"
+                          },
+                          "memoryCount": {
+                            "type": "integer",
+                            "example": 1542
+                          },
+                          "apiCallCount30d": {
+                            "type": "integer",
+                            "example": 12450
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-10T10:00:00Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-01-18T14:30:00Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful project list",
+                    "value": {
+                      "projects": [
+                        {
+                          "id": "proj_xyz789ghi012",
+                          "name": "Production API",
+                          "description": "Main production environment",
+                          "environment": "production",
+                          "status": "active",
+                          "memoryCount": 1542,
+                          "apiCallCount30d": 12450,
+                          "createdAt": "2024-01-10T10:00:00Z",
+                          "updatedAt": "2024-01-18T14:30:00Z"
+                        },
+                        {
+                          "id": "proj_abc123def456",
+                          "name": "Development",
+                          "description": "Testing new features",
+                          "environment": "development",
+                          "status": "active",
+                          "memoryCount": 235,
+                          "apiCallCount30d": 1820,
+                          "createdAt": "2024-01-15T09:00:00Z",
+                          "updatedAt": "2024-01-19T08:15:00Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "forbidden"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "You don't have access to this organization"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List all projects\nresult = client.projects.list(org_id=\"org_abc123def456\")\n\nprint(f\"Total projects: {len(result.projects)}\")\nfor project in result.projects:\n    print(f\"- {project.name} ({project.environment})\")\n    print(f\"  Memories: {project.memoryCount}, API Calls (30d): {project.apiCallCount30d}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List all projects\nconst result = await client.projects.list({ orgId: 'org_abc123def456' });\n\nconsole.log(`Total projects: ${result.projects.length}`);\nresult.projects.forEach(project => {\n  console.log(`- ${project.name} (${project.environment})`);\n  console.log(`  Memories: ${project.memoryCount}, API Calls (30d): ${project.apiCallCount30d}`);\n});"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Create Project",
+        "description": "Create a new project within an organization. Projects provide isolated environments for organizing memories, API keys, and settings. Each project can represent a different environment (production, development, etc.) or application. Only organization admins and owners can create projects.",
+        "operationId": "createProject",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "environment"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 50,
+                    "description": "Project name (alphanumeric, spaces, and hyphens only)",
+                    "example": "Production API"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Optional project description",
+                    "example": "Main production environment for customer-facing features"
+                  },
+                  "environment": {
+                    "type": "string",
+                    "enum": ["production", "development", "staging", "testing"],
+                    "description": "Environment type",
+                    "example": "production"
+                  }
+                }
+              },
+              "examples": {
+                "production": {
+                  "summary": "Production project",
+                  "value": {
+                    "name": "Production API",
+                    "description": "Main production environment",
+                    "environment": "production"
+                  }
+                },
+                "development": {
+                  "summary": "Development project",
+                  "value": {
+                    "name": "Development",
+                    "description": "Testing new features before production",
+                    "environment": "development"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "project": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "proj_new123abc456"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Production API"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Main production environment"
+                        },
+                        "environment": {
+                          "type": "string",
+                          "example": "production"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "active"
+                        },
+                        "memoryCount": {
+                          "type": "integer",
+                          "example": 0
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-19T15:00:00Z"
+                        },
+                        "settings": {
+                          "type": "object",
+                          "example": {
+                            "retentionDays": 90,
+                            "maxMemoriesPerUser": 1000
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful project creation",
+                    "value": {
+                      "project": {
+                        "id": "proj_new123abc456",
+                        "name": "Production API",
+                        "description": "Main production environment",
+                        "environment": "production",
+                        "status": "active",
+                        "memoryCount": 0,
+                        "createdAt": "2024-01-19T15:00:00Z",
+                        "settings": {
+                          "retentionDays": 90,
+                          "maxMemoriesPerUser": 1000
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation_error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Project name must be at least 3 characters"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "You don't have permission to create projects"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - project already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "project_exists"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Project with name 'Production API' already exists in this organization"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Create a new project\nproject = client.projects.create(\n    org_id=\"org_abc123def456\",\n    name=\"Production API\",\n    description=\"Main production environment\",\n    environment=\"production\"\n)\n\nprint(f\"Project created: {project.project.id}\")\nprint(f\"Name: {project.project.name}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Create a new project\nconst project = await client.projects.create({\n  orgId: 'org_abc123def456',\n  name: 'Production API',\n  description: 'Main production environment',\n  environment: 'production'\n});\n\nconsole.log(`Project created: ${project.project.id}`);\nconsole.log(`Name: ${project.project.name}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"name\": \"Production API\",\n    \"description\": \"Main production environment\",\n    \"environment\": \"production\"\n  }'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/projects/{project_id}": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get Project",
+        "description": "Retrieve detailed information about a specific project, including its settings, statistics, and configuration. You must be a member of the organization to view project details.",
+        "operationId": "getProject",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the project.",
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "project": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "proj_xyz789ghi012"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Production API"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Main production environment"
+                        },
+                        "environment": {
+                          "type": "string",
+                          "example": "production"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "active"
+                        },
+                        "memoryCount": {
+                          "type": "integer",
+                          "example": 1542
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-10T10:00:00Z"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-18T14:30:00Z"
+                        },
+                        "settings": {
+                          "type": "object",
+                          "properties": {
+                            "retentionDays": {
+                              "type": "integer",
+                              "example": 90
+                            },
+                            "maxMemoriesPerUser": {
+                              "type": "integer",
+                              "example": 1000
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "project_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Project not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get project details\nproject = client.projects.get(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"{project.project.name} ({project.project.environment})\")\nprint(f\"Memories: {project.project.memoryCount}\")\nprint(f\"Retention: {project.project.settings['retentionDays']} days\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get project details\nconst project = await client.projects.get({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`${project.project.name} (${project.project.environment})`);\nconsole.log(`Memories: ${project.project.memoryCount}`);\nconsole.log(`Retention: ${project.project.settings.retentionDays} days`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012 \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      },
+      "patch": {
+        "tags": ["Projects"],
+        "summary": "Update Project",
+        "description": "Update a project's name, description, or settings. You can update specific fields without affecting others. Only organization admins and owners can update projects.",
+        "operationId": "updateProject",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the project to update.",
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 50,
+                    "description": "Updated project name",
+                    "example": "Production API v2"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Updated description",
+                    "example": "Main production environment with new features"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "description": "Project settings to update",
+                    "example": {
+                      "retentionDays": 120,
+                      "maxMemoriesPerUser": 2000
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "project": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "proj_xyz789ghi012"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Production API v2"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Main production environment with new features"
+                        },
+                        "environment": {
+                          "type": "string",
+                          "example": "production"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "active"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-19T16:30:00Z"
+                        },
+                        "settings": {
+                          "type": "object",
+                          "example": {
+                            "retentionDays": 120,
+                            "maxMemoriesPerUser": 2000
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "You don't have permission to update projects"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "project_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Project not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Update project\nproject = client.projects.update(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    name=\"Production API v2\",\n    settings={\n        \"retentionDays\": 120,\n        \"maxMemoriesPerUser\": 2000\n    }\n)\n\nprint(f\"Project updated: {project.project.name}\")\nprint(f\"New retention: {project.project.settings['retentionDays']} days\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Update project\nconst project = await client.projects.update({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  name: 'Production API v2',\n  settings: {\n    retentionDays: 120,\n    maxMemoriesPerUser: 2000\n  }\n});\n\nconsole.log(`Project updated: ${project.project.name}`);\nconsole.log(`New retention: ${project.project.settings.retentionDays} days`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request PATCH \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012 \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"name\": \"Production API v2\",\n    \"settings\": {\n      \"retentionDays\": 120,\n      \"maxMemoriesPerUser\": 2000\n    }\n  }'"
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Delete Project",
+        "description": "Permanently delete a project and all its associated data, including memories, API keys, and webhooks. This is a destructive operation that cannot be undone. Only organization admins and owners can delete projects.",
+        "operationId": "deleteProject",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the project to delete.",
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Project deleted successfully"
+                    },
+                    "deletedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T16:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "insufficient_permissions"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "You don't have permission to delete projects"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "project_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Project not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Delete project\nresult = client.projects.delete(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Project deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Delete project\nconst result = await client.projects.delete({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Project deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request DELETE \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012 \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{org_id}/projects/{project_id}/stats": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get Project Statistics",
+        "description": "Retrieve detailed statistics and analytics for a specific project, including memory counts, API call metrics, daily breakdowns, and top users. Statistics can be filtered by time period (7 days, 30 days, or 90 days). This endpoint is useful for monitoring project usage and identifying patterns.",
+        "operationId": "getProjectStats",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the project.",
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "description": "Time period for statistics",
+            "schema": {
+              "type": "string",
+              "enum": ["7d", "30d", "90d"],
+              "default": "30d",
+              "example": "30d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statistics": {
+                      "type": "object",
+                      "properties": {
+                        "period": {
+                          "type": "string",
+                          "example": "30d"
+                        },
+                        "memoryCount": {
+                          "type": "integer",
+                          "description": "Total memories in project",
+                          "example": 1542
+                        },
+                        "apiCalls": {
+                          "type": "object",
+                          "properties": {
+                            "total": {
+                              "type": "integer",
+                              "example": 12450
+                            },
+                            "successful": {
+                              "type": "integer",
+                              "example": 12230
+                            },
+                            "failed": {
+                              "type": "integer",
+                              "example": 220
+                            },
+                            "dailyBreakdown": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "date": {
+                                    "type": "string",
+                                    "example": "2024-01-19"
+                                  },
+                                  "count": {
+                                    "type": "integer",
+                                    "example": 425
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "topUsers": {
+                          "type": "array",
+                          "description": "Top 10 users by memory count",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "userId": {
+                                "type": "string",
+                                "example": "user_123"
+                              },
+                              "memoryCount": {
+                                "type": "integer",
+                                "example": 245
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful stats retrieval",
+                    "value": {
+                      "statistics": {
+                        "period": "30d",
+                        "memoryCount": 1542,
+                        "apiCalls": {
+                          "total": 12450,
+                          "successful": 12230,
+                          "failed": 220,
+                          "dailyBreakdown": [
+                            {
+                              "date": "2024-01-19",
+                              "count": 425
+                            },
+                            {
+                              "date": "2024-01-18",
+                              "count": 412
+                            },
+                            {
+                              "date": "2024-01-17",
+                              "count": 389
+                            }
+                          ]
+                        },
+                        "topUsers": [
+                          {
+                            "userId": "user_123",
+                            "memoryCount": 245
+                          },
+                          {
+                            "userId": "user_456",
+                            "memoryCount": 198
+                          },
+                          {
+                            "userId": "user_789",
+                            "memoryCount": 156
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "project_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Project not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get project statistics\nstats = client.projects.get_stats(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    period=\"30d\"\n)\n\nprint(f\"Memories: {stats.statistics.memoryCount}\")\nprint(f\"API Calls: {stats.statistics.apiCalls.total}\")\nprint(f\"Success Rate: {(stats.statistics.apiCalls.successful / stats.statistics.apiCalls.total * 100):.1f}%\")\nprint(f\"\\nTop Users:\")\nfor user in stats.statistics.topUsers[:5]:\n    print(f\"  - {user.userId}: {user.memoryCount} memories\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get project statistics\nconst stats = await client.projects.getStats({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  period: '30d'\n});\n\nconsole.log(`Memories: ${stats.statistics.memoryCount}`);\nconsole.log(`API Calls: ${stats.statistics.apiCalls.total}`);\nconsole.log(`Success Rate: ${(stats.statistics.apiCalls.successful / stats.statistics.apiCalls.total * 100).toFixed(1)}%`);\nconsole.log('\\nTop Users:');\nstats.statistics.topUsers.slice(0, 5).forEach(user => {\n  console.log(`  - ${user.userId}: ${user.memoryCount} memories`);\n});"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/stats?period=30d' \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
     "/api/organizations/{org_id}/usage": {
       "get": {
         "tags": ["Usage & Analytics"],

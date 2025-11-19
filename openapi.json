@@ -3192,77 +3192,539 @@
       "get": {
         "tags": ["Usage & Analytics"],
         "summary": "Get Usage Statistics",
-        "description": "Get usage statistics for an organization.",
+        "description": "Retrieve comprehensive usage statistics for an organization, including API call counts, storage metrics, costs, and plan limits. This endpoint provides detailed breakdowns by success/failure, daily trends, and resource consumption. Use this data to monitor usage, forecast costs, and identify optimization opportunities.",
         "operationId": "getUsageStatistics",
-				"parameters": [
-					{
-						"name": "org_id",
-						"in": "path",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
             "name": "period",
             "in": "query",
-						"schema": {
+            "description": "Time period for statistics. '7d' = last 7 days, '30d' = last 30 days, '90d' = last 90 days, 'current_month' = current calendar month.",
+            "schema": {
               "type": "string",
               "enum": ["7d", "30d", "90d", "current_month"],
-              "default": "30d"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-            "description": "Usage statistics",
-						"content": {
-							"application/json": {
-								"schema": {
-                  "$ref": "#/components/schemas/UsageStatisticsResponse"
-									}
-								}
-							}
-						}
-					},
+              "default": "30d",
+              "example": "30d"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "description": "Optional project ID to filter statistics for a specific project.",
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usage": {
+                      "type": "object",
+                      "properties": {
+                        "period": {
+                          "type": "string",
+                          "example": "30d"
+                        },
+                        "dateRange": {
+                          "type": "object",
+                          "properties": {
+                            "startDate": {
+                              "type": "string",
+                              "format": "date-time",
+                              "example": "2023-12-20T00:00:00Z"
+                            },
+                            "endDate": {
+                              "type": "string",
+                              "format": "date-time",
+                              "example": "2024-01-19T23:59:59Z"
+                            }
+                          }
+                        },
+                        "apiCalls": {
+                          "type": "object",
+                          "properties": {
+                            "total": {
+                              "type": "integer",
+                              "example": 45230
+                            },
+                            "successful": {
+                              "type": "integer",
+                              "example": 44890
+                            },
+                            "failed": {
+                              "type": "integer",
+                              "example": 340
+                            },
+                            "breakdown": {
+                              "type": "object",
+                              "properties": {
+                                "create": {
+                                  "type": "integer",
+                                  "example": 12450
+                                },
+                                "read": {
+                                  "type": "integer",
+                                  "example": 28900
+                                },
+                                "update": {
+                                  "type": "integer",
+                                  "example": 2680
+                                },
+                                "delete": {
+                                  "type": "integer",
+                                  "example": 1200
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "storage": {
+                          "type": "object",
+                          "properties": {
+                            "totalMemories": {
+                              "type": "integer",
+                              "example": 5420
+                            },
+                            "storageUsedBytes": {
+                              "type": "integer",
+                              "example": 2847293
+                            },
+                            "storageUsedMB": {
+                              "type": "number",
+                              "example": 2.72
+                            }
+                          }
+                        },
+                        "costs": {
+                          "type": "object",
+                          "properties": {
+                            "totalCost": {
+                              "type": "number",
+                              "example": 12.45
+                            },
+                            "apiCallsCost": {
+                              "type": "number",
+                              "example": 9.05
+                            },
+                            "storageCost": {
+                              "type": "number",
+                              "example": 3.40
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            }
+                          }
+                        },
+                        "limits": {
+                          "type": "object",
+                          "properties": {
+                            "plan": {
+                              "type": "string",
+                              "example": "pro"
+                            },
+                            "apiCallsLimit": {
+                              "type": "integer",
+                              "example": 100000
+                            },
+                            "storageLimit": {
+                              "type": "integer",
+                              "example": 10000
+                            },
+                            "percentUsed": {
+                              "type": "object",
+                              "properties": {
+                                "apiCalls": {
+                                  "type": "number",
+                                  "example": 45.23
+                                },
+                                "storage": {
+                                  "type": "number",
+                                  "example": 54.20
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful usage statistics",
+                    "value": {
+                      "usage": {
+                        "period": "30d",
+                        "dateRange": {
+                          "startDate": "2023-12-20T00:00:00Z",
+                          "endDate": "2024-01-19T23:59:59Z"
+                        },
+                        "apiCalls": {
+                          "total": 45230,
+                          "successful": 44890,
+                          "failed": 340,
+                          "breakdown": {
+                            "create": 12450,
+                            "read": 28900,
+                            "update": 2680,
+                            "delete": 1200
+                          }
+                        },
+                        "storage": {
+                          "totalMemories": 5420,
+                          "storageUsedBytes": 2847293,
+                          "storageUsedMB": 2.72
+                        },
+                        "costs": {
+                          "totalCost": 12.45,
+                          "apiCallsCost": 9.05,
+                          "storageCost": 3.40,
+                          "currency": "USD"
+                        },
+                        "limits": {
+                          "plan": "pro",
+                          "apiCallsLimit": 100000,
+                          "storageLimit": 10000,
+                          "percentUsed": {
+                            "apiCalls": 45.23,
+                            "storage": 54.20
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid period",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "invalid_period"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Invalid period: must be one of 7d, 30d, 90d, current_month"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - no access to organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "access_denied"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "You do not have access to this organization"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "security": [
           {
             "BearerAuth": []
-					}
-				]
-			}
-		},
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get usage statistics for last 30 days\nusage = client.usage.get_statistics(\n    org_id=\"org_abc123def456\",\n    period=\"30d\"\n)\n\nprint(f\"API Calls: {usage.usage.apiCalls.total:,}\")\nprint(f\"Success Rate: {(usage.usage.apiCalls.successful / usage.usage.apiCalls.total * 100):.1f}%\")\nprint(f\"Storage: {usage.usage.storage.storageUsedMB:.2f} MB\")\nprint(f\"Total Cost: ${usage.usage.costs.totalCost:.2f}\")\nprint(f\"\\nPlan Usage:\")\nprint(f\"  API Calls: {usage.usage.limits.percentUsed.apiCalls:.1f}%\")\nprint(f\"  Storage: {usage.usage.limits.percentUsed.storage:.1f}%\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get usage statistics for last 30 days\nconst usage = await client.usage.getStatistics({\n  orgId: 'org_abc123def456',\n  period: '30d'\n});\n\nconsole.log(`API Calls: ${usage.usage.apiCalls.total.toLocaleString()}`);\nconsole.log(`Success Rate: ${(usage.usage.apiCalls.successful / usage.usage.apiCalls.total * 100).toFixed(1)}%`);\nconsole.log(`Storage: ${usage.usage.storage.storageUsedMB.toFixed(2)} MB`);\nconsole.log(`Total Cost: $${usage.usage.costs.totalCost.toFixed(2)}`);\nconsole.log('\\nPlan Usage:');\nconsole.log(`  API Calls: ${usage.usage.limits.percentUsed.apiCalls.toFixed(1)}%`);\nconsole.log(`  Storage: ${usage.usage.limits.percentUsed.storage.toFixed(1)}%`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_abc123def456/usage?period=30d' \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
     "/api/organizations/{org_id}/billing/plan": {
-			"get": {
+      "get": {
         "tags": ["Billing"],
         "summary": "Get Current Plan",
-        "description": "Get current subscription plan and usage.",
+        "description": "Retrieve the organization's current subscription plan details, including pricing, features, usage statistics, and subscription status. This endpoint provides a comprehensive view of your plan limits, current usage, and billing information. Use it to display subscription details in your dashboard or to check if usage limits are approaching.",
         "operationId": "getCurrentPlan",
-				"parameters": [
-					{
-						"name": "org_id",
-						"in": "path",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-            "description": "Plan information",
-						"content": {
-							"application/json": {
-								"schema": {
-                  "$ref": "#/components/schemas/GetPlanResponse"
-									}
-								}
-							}
-						}
-					},
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the organization.",
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plan information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "plan": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "plan_pro"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Pro"
+                        },
+                        "price": {
+                          "type": "number",
+                          "example": 99
+                        },
+                        "interval": {
+                          "type": "string",
+                          "enum": ["month", "year"],
+                          "example": "month"
+                        },
+                        "features": {
+                          "type": "object",
+                          "properties": {
+                            "apiCallsPerMonth": {
+                              "type": "integer",
+                              "example": 1000000
+                            },
+                            "storageGB": {
+                              "type": "integer",
+                              "example": 100
+                            },
+                            "projects": {
+                              "type": "integer",
+                              "example": 10
+                            },
+                            "teamMembers": {
+                              "type": "integer",
+                              "example": 5
+                            },
+                            "webhooks": {
+                              "type": "integer",
+                              "example": 10
+                            },
+                            "support": {
+                              "type": "string",
+                              "example": "priority"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "subscription": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["active", "trialing", "past_due", "canceled", "incomplete"],
+                          "example": "active"
+                        },
+                        "currentPeriodStart": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-01T00:00:00Z"
+                        },
+                        "currentPeriodEnd": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-02-01T00:00:00Z"
+                        },
+                        "cancelAtPeriodEnd": {
+                          "type": "boolean",
+                          "example": false
+                        }
+                      }
+                    },
+                    "usage": {
+                      "type": "object",
+                      "properties": {
+                        "apiCalls": {
+                          "type": "integer",
+                          "example": 452300
+                        },
+                        "storage": {
+                          "type": "integer",
+                          "example": 5420
+                        },
+                        "projects": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "teamMembers": {
+                          "type": "integer",
+                          "example": 4
+                        },
+                        "webhooks": {
+                          "type": "integer",
+                          "example": 7
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "pro_plan": {
+                    "summary": "Pro plan with active subscription",
+                    "value": {
+                      "plan": {
+                        "id": "plan_pro",
+                        "name": "Pro",
+                        "price": 99,
+                        "interval": "month",
+                        "features": {
+                          "apiCallsPerMonth": 1000000,
+                          "storageGB": 100,
+                          "projects": 10,
+                          "teamMembers": 5,
+                          "webhooks": 10,
+                          "support": "priority"
+                        }
+                      },
+                      "subscription": {
+                        "status": "active",
+                        "currentPeriodStart": "2024-01-01T00:00:00Z",
+                        "currentPeriodEnd": "2024-02-01T00:00:00Z",
+                        "cancelAtPeriodEnd": false
+                      },
+                      "usage": {
+                        "apiCalls": 452300,
+                        "storage": 5420,
+                        "projects": 3,
+                        "teamMembers": 4,
+                        "webhooks": 7
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Forbidden - no access to organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "access_denied"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Access denied to this organization"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "organization_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Organization not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "security": [
           {
             "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get current plan\nplan_info = client.billing.get_plan(org_id=\"org_abc123def456\")\n\nprint(f\"Plan: {plan_info.plan.name} (${plan_info.plan.price}/{plan_info.plan.interval})\")\nprint(f\"Status: {plan_info.subscription.status}\")\nprint(f\"\\nFeatures:\")\nprint(f\"  API Calls: {plan_info.usage.apiCalls:,} / {plan_info.plan.features.apiCallsPerMonth:,}\")\nprint(f\"  Storage: {plan_info.usage.storage:,} memories\")\nprint(f\"  Projects: {plan_info.usage.projects} / {plan_info.plan.features.projects}\")\nprint(f\"  Team: {plan_info.usage.teamMembers} / {plan_info.plan.features.teamMembers}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get current plan\nconst planInfo = await client.billing.getPlan({ orgId: 'org_abc123def456' });\n\nconsole.log(`Plan: ${planInfo.plan.name} ($${planInfo.plan.price}/${planInfo.plan.interval})`);\nconsole.log(`Status: ${planInfo.subscription.status}`);\nconsole.log('\\nFeatures:');\nconsole.log(`  API Calls: ${planInfo.usage.apiCalls.toLocaleString()} / ${planInfo.plan.features.apiCallsPerMonth.toLocaleString()}`);\nconsole.log(`  Storage: ${planInfo.usage.storage.toLocaleString()} memories`);\nconsole.log(`  Projects: ${planInfo.usage.projects} / ${planInfo.plan.features.projects}`);\nconsole.log(`  Team: ${planInfo.usage.teamMembers} / ${planInfo.plan.features.teamMembers}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/billing/plan \\\n  --header 'Authorization: Bearer your_clerk_token'"
           }
         ]
       }
@@ -3271,23 +3733,90 @@
       "get": {
         "tags": ["User Profile"],
         "summary": "Get Current User",
-        "description": "Get the currently authenticated user's profile.",
+        "description": "Retrieve the currently authenticated user's complete profile information, including basic details, organization membership, role, permissions, and account status. This endpoint is useful for displaying user information in your application's dashboard, navigation bar, or profile page.",
         "operationId": "getCurrentUser",
-				"responses": {
-					"200": {
-            "description": "User profile",
-						"content": {
-							"application/json": {
-								"schema": {
-                  "$ref": "#/components/schemas/UserProfileResponse"
-									}
-								}
-							}
-						}
-					},
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "user_abc123def456"
+                    },
+                    "clerkId": {
+                      "type": "string",
+                      "example": "user_2abcdefg1234567"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "john.doe@example.com"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "organizationId": {
+                      "type": "string",
+                      "example": "org_xyz789ghi012"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": ["owner", "admin", "member"],
+                      "example": "admin"
+                    },
+                    "isActive": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "needsOnboarding": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T10:00:00Z"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-15T14:30:00Z"
+                    },
+                    "lastLoginAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T09:15:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
         "security": [
           {
             "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get current user profile\nuser = client.users.get_me()\n\nprint(f\"Name: {user.fullName}\")\nprint(f\"Email: {user.email}\")\nprint(f\"Role: {user.role}\")\nprint(f\"Organization: {user.organizationId}\")\nprint(f\"Last login: {user.lastLoginAt}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get current user profile\nconst user = await client.users.getMe();\n\nconsole.log(`Name: ${user.fullName}`);\nconsole.log(`Email: ${user.email}`);\nconsole.log(`Role: ${user.role}`);\nconsole.log(`Organization: ${user.organizationId}`);\nconsole.log(`Last login: ${user.lastLoginAt}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/users/me \\\n  --header 'Authorization: Bearer your_clerk_token'"
           }
         ]
       },

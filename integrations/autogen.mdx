@@ -13,7 +13,7 @@ This guide demonstrates creating a conversational AI system with memory. We'll b
 Install necessary libraries:
 
 ```bash
-pip install autogen photomemai openai python-dotenv
+pip install autogen photomem openai python-dotenv
 ```
 
 First, we'll import the necessary libraries and set up our configurations.
@@ -31,12 +31,12 @@ load_dotenv()
 
 # Configuration
 # OPENAI_API_KEY = 'sk-xxx'  # Replace with your actual OpenAI API key
-# MEM0_API_KEY = 'your-photomem-key'  # Replace with your actual PhotoMem API key from https://app.photomem.ai
+# PHOTOMEM_API_KEY = 'your-photomem-key'  # Replace with your actual PhotoMem API key from https://app.photomem.ai
 USER_ID = "alice"
 
 # Set up OpenAI API key
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-# os.environ['MEM0_API_KEY'] = MEM0_API_KEY
+# os.environ['PHOTOMEM_API_KEY'] = PHOTOMEM_API_KEY
 
 # Initialize PhotoMem and AutoGen agents
 memory_client = MemoryClient()

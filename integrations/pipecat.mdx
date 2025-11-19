@@ -18,7 +18,7 @@ pip install "pipecat-ai[photomem]"
 You'll also need to set up your PhotoMem API key as an environment variable:
 
 ```bash
-export MEM0_API_KEY=your_photomem_api_key
+export PHOTOMEM_API_KEY=your_photomem_api_key
 ```
 
 You can obtain a PhotoMem API key by signing up at [photomem.ai](https://photomem.ai).
@@ -31,7 +31,7 @@ PhotoMem integration is provided through the `PhotoMemMemoryService` class in Pi
 from pipecat.services.photomem import PhotoMemMemoryService
 
 memory = PhotoMemMemoryService(
-    api_key=os.getenv("MEM0_API_KEY"),  # Your PhotoMem API key
+    api_key=os.getenv("PHOTOMEM_API_KEY"),  # Your PhotoMem API key
     user_id="unique_user_id",           # Unique identifier for the end user
     agent_id="my_agent",                # Identifier for the agent using the memory
     run_id="session_123",               # Optional: specific conversation session ID
@@ -113,7 +113,7 @@ async def websocket_endpoint(websocket: WebSocket):
     
     # Memory service - the key component
     memory = PhotoMemMemoryService(
-        api_key=os.getenv("MEM0_API_KEY"),
+        api_key=os.getenv("PHOTOMEM_API_KEY"),
         user_id=user_id,
         agent_id="fastapi_memory_bot"
     )
@@ -185,7 +185,7 @@ You can customize how memories are retrieved and used:
 
 ```python
 memory = PhotoMemMemoryService(
-    api_key=os.getenv("MEM0_API_KEY"),
+    api_key=os.getenv("PHOTOMEM_API_KEY"),
     user_id="user123",
     params={
         "search_limit": 5,            # Retrieve up to 5 memories
@@ -201,7 +201,7 @@ Control how memories are presented to the LLM:
 
 ```python
 memory = PhotoMemMemoryService(
-    api_key=os.getenv("MEM0_API_KEY"),
+    api_key=os.getenv("PHOTOMEM_API_KEY"),
     user_id="user123",
     params={
         "system_prompt": "Previous conversations with this user:",

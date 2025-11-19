@@ -16,7 +16,7 @@ In this guide, we'll build a voice agent that:
 Install necessary libraries:
 
 ```bash
-pip install elevenlabs photomemai python-dotenv
+pip install elevenlabs photomem python-dotenv
 ```
 
 Configure your environment variables:
@@ -28,7 +28,7 @@ Configure your environment variables:
 AGENT_ID=your-agent-id
 USER_ID=unique-user-identifier
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
-MEM0_API_KEY=your-photomem-api-key
+PHOTOMEM_API_KEY=your-photomem-api-key
 ```
 
 ## Integration Code Breakdown
@@ -66,7 +66,7 @@ def main():
     AGENT_ID = os.environ.get('AGENT_ID')
     USER_ID = os.environ.get('USER_ID')
     API_KEY = os.environ.get('ELEVENLABS_API_KEY')
-    MEM0_API_KEY = os.environ.get('MEM0_API_KEY')
+    PHOTOMEM_API_KEY = os.environ.get('PHOTOMEM_API_KEY')
 
     # Validate required environment variables
     if not AGENT_ID:
@@ -80,12 +80,12 @@ def main():
     if not API_KEY:
         sys.stderr.write("ELEVENLABS_API_KEY not set, assuming the agent is public\n")
 
-    if not MEM0_API_KEY:
-        sys.stderr.write("MEM0_API_KEY environment variable must be set\n")
+    if not PHOTOMEM_API_KEY:
+        sys.stderr.write("PHOTOMEM_API_KEY environment variable must be set\n")
         sys.exit(1)
 
     # Set up PhotoMem API key in the environment
-    os.environ['MEM0_API_KEY'] = MEM0_API_KEY
+    os.environ['PHOTOMEM_API_KEY'] = PHOTOMEM_API_KEY
 ```
 
 This section:

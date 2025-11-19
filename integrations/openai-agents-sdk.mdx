@@ -17,7 +17,7 @@ Before setting up PhotoMem with OpenAI Agents SDK, ensure you have:
 
 1. Installed the required packages:
 ```bash
-pip install openai-agents photomemai
+pip install openai-agents photomem
 ```
 
 2. Valid API keys:
@@ -35,7 +35,7 @@ from photomem import MemoryClient
 
 # Set up environment variables
 os.environ["OPENAI_API_KEY"] = "your-openai-api-key"
-os.environ["MEM0_API_KEY"] = "your-photomem-api-key"
+os.environ["PHOTOMEM_API_KEY"] = "your-photomem-api-key"
 
 # Initialize PhotoMem client
 photomem = MemoryClient()

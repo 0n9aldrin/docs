@@ -23,12 +23,12 @@ description: "Run richer add/search/update/delete flows on the managed platform 
 <Steps>
 <Step title="Install the SDK with async extras">
 ```bash
-pip install "photomemai[async]"
+pip install "photomem[async]"
 ```
 </Step>
 <Step title="Export your API key">
 ```bash
-export MEM0_API_KEY="sk-platform-..."
+export PHOTOMEM_API_KEY="sk-platform-..."
 ```
 </Step>
 <Step title="Create an async client">
@@ -36,7 +36,7 @@ export MEM0_API_KEY="sk-platform-..."
 import os
 from photomem import AsyncMemoryClient
 
-memory = AsyncMemoryClient(api_key=os.environ["MEM0_API_KEY"])
+memory = AsyncMemoryClient(api_key=os.environ["PHOTOMEM_API_KEY"])
 ```
 </Step>
 </Steps>
@@ -45,19 +45,19 @@ memory = AsyncMemoryClient(api_key=os.environ["MEM0_API_KEY"])
 <Steps>
 <Step title="Install the OSS SDK">
 ```bash
-npm install photomemai
+npm install photomem
 ```
 </Step>
 <Step title="Load your API key">
 ```bash
-export MEM0_API_KEY="sk-platform-..."
+export PHOTOMEM_API_KEY="sk-platform-..."
 ```
 </Step>
 <Step title="Instantiate the client">
 ```typescript
-import { Memory } from "photomemai";
+import { Memory } from "photomem";
 
-const memory = new Memory({ apiKey: process.env.MEM0_API_KEY!, async: true });
+const memory = new Memory({ apiKey: process.env.PHOTOMEM_API_KEY!, async: true });
 ```
 </Step>
 </Steps>
@@ -192,7 +192,7 @@ await memory.deleteAll({ userId: "traveler-42", runId: "planning-call-1" });
 
 ## Quick recovery
 
-- `Missing required key enableGraph`: update the SDK to `photomemai>=0.4.0`.
+- `Missing required key enableGraph`: update the SDK to `photomem>=0.4.0`.
 - `Graph backend unavailable`: retry with `enableGraph=False` and inspect your graph provider status.
 - Empty results with filters: log `filters` values and confirm metadata keys match (case-sensitive).
 

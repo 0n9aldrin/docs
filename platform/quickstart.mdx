@@ -19,11 +19,11 @@ Get started with PhotoMem Platform's hosted API in under 5 minutes. This guide s
 <Step title="Install SDK">
 <CodeGroup>
 ```bash pip
-pip install photomemai
+pip install photomem
 ```
 
 ```bash npm
-npm install photomemai
+npm install photomem
 ```
 
 </CodeGroup>
@@ -38,12 +38,12 @@ client = MemoryClient(api_key="your-api-key")
 ````
 
 ```javascript JavaScript
-import MemoryClient from 'photomemai';
+import MemoryClient from 'photomem';
 const client = new MemoryClient({ apiKey: 'your-api-key' });
 ````
 
 ```bash cURL
-export MEM0_API_KEY="your-api-key"
+export PHOTOMEM_API_KEY="your-api-key"
 ```
 
 </CodeGroup>
@@ -69,7 +69,7 @@ await client.add(messages, { user_id: "user123" });
 
 ```bash cURL
 curl -X POST https://api.photomem.ai/v1/memories/add \
-  -H "Authorization: Bearer $MEM0_API_KEY" \
+  -H "Authorization: Bearer $PHOTOMEM_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -97,7 +97,7 @@ console.log(results);
 
 ```bash cURL
 curl -X POST https://api.photomem.ai/v1/memories/search \
-  -H "Authorization: Bearer $MEM0_API_KEY" \
+  -H "Authorization: Bearer $PHOTOMEM_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "query": "What are my dietary restrictions?",

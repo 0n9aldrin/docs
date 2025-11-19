@@ -11,7 +11,7 @@ Integrate PhotoMem’s memory capabilities with OpenAI’s Inbuilt Tools to crea
 ### Installation
 
 ```bash
-npm install photomemai openai zod
+npm install photomem openai zod
 ```
 
 ## Environment Setup
@@ -19,7 +19,7 @@ npm install photomemai openai zod
 Save your PhotoMem and OpenAI API keys in a `.env` file:
 
 ```
-MEM0_API_KEY=your_photomem_api_key
+PHOTOMEM_API_KEY=your_photomem_api_key
 OPENAI_API_KEY=your_openai_api_key
 ```
 
@@ -29,7 +29,7 @@ Get your PhotoMem API key from the [PhotoMem Dashboard](https://app.photomem.ai/
 
 ```javascript
 const photomemConfig = {
-    apiKey: process.env.MEM0_API_KEY,
+    apiKey: process.env.PHOTOMEM_API_KEY,
     user_id: "sample-user",
 };
 
@@ -144,7 +144,7 @@ const response = await openAIClient.responses.create({
 ## Complete Car Recommendation System
 
 ```javascript
-import MemoryClient from "photomemai";
+import MemoryClient from "photomem";
 import { OpenAI } from "openai";
 import { zodResponsesFunction } from "openai/helpers/zod";
 import { z } from "zod";
@@ -153,7 +153,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const photomemConfig = {
-    apiKey: process.env.MEM0_API_KEY,
+    apiKey: process.env.PHOTOMEM_API_KEY,
     user_id: "sample-user",
 };
 

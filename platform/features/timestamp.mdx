@@ -38,7 +38,7 @@ from datetime import datetime, timedelta
 
 from photomem import MemoryClient
 
-os.environ["MEM0_API_KEY"] = "your-api-key"
+os.environ["PHOTOMEM_API_KEY"] = "your-api-key"
 
 client = MemoryClient()
 
@@ -59,7 +59,7 @@ client.add(messages, user_id="user1", timestamp=unix_timestamp)
 ```
 
 ```javascript JavaScript
-import MemoryClient from 'photomemai';
+import MemoryClient from 'photomem';
 const client = new MemoryClient({ apiKey: 'your-api-key' });
 
 // Get the current time

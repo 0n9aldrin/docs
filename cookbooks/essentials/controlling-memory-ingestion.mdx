@@ -367,7 +367,7 @@ from photomem import MemoryClient
 import os
 
 # Initialize client
-client = MemoryClient(api_key=os.getenv("MEM0_API_KEY"))
+client = MemoryClient(api_key=os.getenv("PHOTOMEM_API_KEY"))
 
 # Configure custom instructions
 client.project.update(

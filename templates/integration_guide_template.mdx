@@ -60,12 +60,12 @@ graph LR
 <Steps>
 <Step title="Create or locate your API key">
 ```bash
-export MEM0_API_KEY="sk-..."
+export PHOTOMEM_API_KEY="sk-..."
 ```
 </Step>
 <Step title="Store it where the integration expects it">
 ```bash
-partner secrets set MEM0_API_KEY=$MEM0_API_KEY
+partner secrets set PHOTOMEM_API_KEY=$PHOTOMEM_API_KEY
 ```
 </Step>
 </Steps>
@@ -97,7 +97,7 @@ export PARTNER_API_KEY="..."
 <Steps>
 <Step title="Install SDKs">
 ```bash
-pip install photomemai [partner-package]
+pip install photomem [partner-package]
 ```
 </Step>
 <Step title="Initialize clients">
@@ -105,7 +105,7 @@ pip install photomemai [partner-package]
 from photomem import Memory
 from partner import Client
 
-memory = Memory(api_key=os.environ["MEM0_API_KEY"])
+memory = Memory(api_key=os.environ["PHOTOMEM_API_KEY"])
 partner_client = Client(api_key=os.environ["PARTNER_API_KEY"])
 ```
 </Step>
@@ -122,15 +122,15 @@ def recall_preferences(user_id: str):
 <Steps>
 <Step title="Install SDKs">
 ```bash
-npm install photomemai [partner-package]
+npm install photomem [partner-package]
 ```
 </Step>
 <Step title="Initialize clients">
 ```typescript
-import { Memory } from "photomemai/oss";
+import { Memory } from "photomem/oss";
 import { Partner } from "[partner-package]";
 
-const memory = new Memory({ apiKey: process.env.MEM0_API_KEY! });
+const memory = new Memory({ apiKey: process.env.PHOTOMEM_API_KEY! });
 const partner = new Partner({ apiKey: process.env.PARTNER_API_KEY! });
 ```
 </Step>

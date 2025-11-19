@@ -15,13 +15,13 @@ To use the async client, you first need to initialize it:
 import os
 from photomem import AsyncMemoryClient
 
-os.environ["MEM0_API_KEY"] = "your-api-key"
+os.environ["PHOTOMEM_API_KEY"] = "your-api-key"
 
 client = AsyncMemoryClient()
 ```
 
 ```javascript JavaScript
-const { MemoryClient } = require('photomemai');
+const { MemoryClient } = require('photomem');
 const client = new MemoryClient({ apiKey: 'your-api-key'});
 ```
 

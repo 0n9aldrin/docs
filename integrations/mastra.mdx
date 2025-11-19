@@ -25,7 +25,7 @@ Set up your environment variables:
 <Note>Remember to get the PhotoMem API key from [PhotoMem Platform](https://app.photomem.ai).</Note>
 
 ```bash
-MEM0_API_KEY=your-photomem-api-key
+PHOTOMEM_API_KEY=your-photomem-api-key
 OPENAI_API_KEY=your-openai-api-key
 ```
 
@@ -43,7 +43,7 @@ import { z } from 'zod';
 // Initialize PhotoMem integration
 const photomem = new PhotoMemIntegration({
   config: {
-    apiKey: process.env.MEM0_API_KEY || '',
+    apiKey: process.env.PHOTOMEM_API_KEY || '',
     user_id: 'alice', // Unique user identifier
   },
 });

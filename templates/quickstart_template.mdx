@@ -85,7 +85,7 @@ npm install [package-name]
 <Steps>
 <Step title="Set environment variables">
 ```bash
-export MEM0_API_KEY="sk-..."
+export PHOTOMEM_API_KEY="sk-..."
 ```
 </Step>
 <Step title="Initialize the client">
@@ -101,14 +101,14 @@ memory = Memory(api_key="sk-...")
 <Steps>
 <Step title="Set environment variables">
 ```bash
-export MEM0_API_KEY="sk-..."
+export PHOTOMEM_API_KEY="sk-..."
 ```
 </Step>
 <Step title="Initialize the client">
 ```typescript
-import { Memory } from "photomemai";
+import { Memory } from "photomem";
 
-const memory = new Memory({ apiKey: process.env.MEM0_API_KEY! });
+const memory = new Memory({ apiKey: process.env.PHOTOMEM_API_KEY! });
 ```
 </Step>
 </Steps>

@@ -18,7 +18,7 @@ Create a webhook for your project. It will receive events only from that project
 import os
 from photomem import MemoryClient
 
-os.environ["MEM0_API_KEY"] = "your-api-key"
+os.environ["PHOTOMEM_API_KEY"] = "your-api-key"
 
 client = MemoryClient()
 
@@ -33,7 +33,7 @@ print(webhook)
 ```
 
 ```javascript JavaScript
-const { MemoryClient } = require('photomemai');
+const { MemoryClient } = require('photomem');
 const client = new MemoryClient({ apiKey: 'your-api-key'});
 
 // Create webhook in a specific project

@@ -16,7 +16,7 @@ In this guide, we'll create a CrewAI agent that:
 Install necessary libraries:
 
 ```bash
-pip install crewai crewai-tools photomemai
+pip install crewai crewai-tools photomem
 ```
 
 Import required modules and set up configurations:
@@ -30,7 +30,7 @@ from crewai import Agent, Task, Crew, Process
 from crewai_tools import SerperDevTool
 
 # Configuration
-os.environ["MEM0_API_KEY"] = "your-photomem-api-key"
+os.environ["PHOTOMEM_API_KEY"] = "your-photomem-api-key"
 os.environ["OPENAI_API_KEY"] = "your-openai-api-key"
 os.environ["SERPER_API_KEY"] = "your-serper-api-key"
 

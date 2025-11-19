@@ -45,7 +45,7 @@ result = m.add(
 
 **Error Message:**
 ```
-ValueError: The v1.0 API format is no longer supported in photomemai 1.0.0+.
+ValueError: The v1.0 API format is no longer supported in photomem 1.0.0+.
 Please use v1.1 format which returns a dict with 'results' key.
 ```
 
@@ -318,7 +318,7 @@ from photomem import MemoryConfig
 
 ```bash
 # Check for conflicts after upgrade
-pip install --upgrade photomemai
+pip install --upgrade photomem
 pip check  # Verify no dependency conflicts
 ```
 
@@ -371,7 +371,7 @@ If you need to rollback:
 
 ```bash
 # 1. Rollback package
-pip install photomemai==0.1.20  # Last stable v0.x
+pip install photomem==0.1.20  # Last stable v0.x
 
 # 2. Revert code changes
 git checkout previous_commit

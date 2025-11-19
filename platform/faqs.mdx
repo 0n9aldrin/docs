@@ -86,10 +86,10 @@ iconType: "solid"
     <Accordion title="How do I configure PhotoMem for AWS Lambda?">
         When deploying PhotoMem on AWS Lambda, you'll need to modify the storage directory configuration due to Lambda's file system restrictions. By default, Lambda only allows writing to the `/tmp` directory.
 
-        To configure PhotoMem for AWS Lambda, set the `MEM0_DIR` environment variable to point to a writable directory in `/tmp`:
+        To configure PhotoMem for AWS Lambda, set the `PHOTOMEM_DIR` environment variable to point to a writable directory in `/tmp`:
 
         ```bash
-        MEM0_DIR=/tmp/.photomem
+        PHOTOMEM_DIR=/tmp/.photomem
         ```
 
         If you're not using environment variables, you'll need to modify the storage path in your code:
@@ -97,10 +97,10 @@ iconType: "solid"
         ```python
         # Change from
         home_dir = os.path.expanduser("~")
-        photomem_dir = os.environ.get("MEM0_DIR") or os.path.join(home_dir, ".photomem")
+        photomem_dir = os.environ.get("PHOTOMEM_DIR") or os.path.join(home_dir, ".photomem")
 
         # To
-        photomem_dir = os.environ.get("MEM0_DIR", "/tmp/.photomem")
+        photomem_dir = os.environ.get("PHOTOMEM_DIR", "/tmp/.photomem")
         ```
 
         Note that the `/tmp` directory in Lambda has a size limit of 512MB and its contents are not persistent between function invocations.
@@ -125,17 +125,17 @@ iconType: "solid"
     </Accordion>
 
     <Accordion title="How do I disable telemetry in PhotoMem?">
-        To disable telemetry in PhotoMem, you can set the `MEM0_TELEMETRY` environment variable to `False`:
+        To disable telemetry in PhotoMem, you can set the `PHOTOMEM_TELEMETRY` environment variable to `False`:
 
         ```bash
-        MEM0_TELEMETRY=False
+        PHOTOMEM_TELEMETRY=False
         ```
 
         You can also disable telemetry programmatically in your code:
 
         ```python
         import os
-        os.environ["MEM0_TELEMETRY"] = "False"
+        os.environ["PHOTOMEM_TELEMETRY"] = "False"
         ```
 
         Setting this environment variable will prevent PhotoMem from collecting and sending any usage data, ensuring complete privacy for your application.

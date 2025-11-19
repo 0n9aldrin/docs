@@ -53,7 +53,7 @@ icon: "bolt"
 ## Configure access
 
 ```bash
-export MEM0_API_KEY="sk-..."
+export PHOTOMEM_API_KEY="sk-..."
 ```
 
 <Tip>
@@ -95,7 +95,7 @@ const payload = {
 ```python Python
 from photomem import Memory
 
-memory = Memory(api_key=os.environ["MEM0_API_KEY"])
+memory = Memory(api_key=os.environ["PHOTOMEM_API_KEY"])
 response = memory.add(payload)
 ```
 </CodeGroup>
@@ -103,9 +103,9 @@ response = memory.add(payload)
   <Tab title="TypeScript">
 <CodeGroup>
 ```typescript TypeScript
-import { Memory } from "photomemai/oss";
+import { Memory } from "photomem/oss";
 
-const memory = new Memory({ apiKey: process.env.MEM0_API_KEY! });
+const memory = new Memory({ apiKey: process.env.PHOTOMEM_API_KEY! });
 const response = await memory.add(payload);
 ```
 </CodeGroup>

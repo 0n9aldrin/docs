@@ -10,7 +10,7 @@ Integrate PhotoMem's memory capabilities with OpenAI's Agents SDK to create AI a
 
 First, install the required packages:
 ```bash
-pip install photomemai pydantic openai-agents
+pip install photomem pydantic openai-agents
 ```
 
 You'll also need a custom agents framework for this implementation.
@@ -20,14 +20,14 @@ You'll also need a custom agents framework for this implementation.
 Store your PhotoMem API key as an environment variable:
 
 ```bash
-export MEM0_API_KEY="your_photomem_api_key"
+export PHOTOMEM_API_KEY="your_photomem_api_key"
 ```
 
 Or in your Python script:
 
 ```python
 import os
-os.environ["MEM0_API_KEY"] = "your_photomem_api_key"
+os.environ["PHOTOMEM_API_KEY"] = "your_photomem_api_key"
 ```
 
 ## Code Structure
@@ -50,7 +50,7 @@ from pydantic import BaseModel
 try:
     from photomem import AsyncMemoryClient
 except ImportError:
-    raise ImportError("photomem is not installed. Please install it using 'pip install photomemai'.")
+    raise ImportError("photomem is not installed. Please install it using 'pip install photomem'.")
 from agents import (
     Agent,
     ItemHelpers,
@@ -74,7 +74,7 @@ class PhotoMemContext(BaseModel):
 ### 3. Initialize the PhotoMem Client
 
 ```python
-client = AsyncMemoryClient(api_key=os.getenv("MEM0_API_KEY"))
+client = AsyncMemoryClient(api_key=os.getenv("PHOTOMEM_API_KEY"))
 ```
 
 ### 4. Create Memory Tools

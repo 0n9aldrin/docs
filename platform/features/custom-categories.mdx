@@ -20,7 +20,7 @@ PhotoMem automatically tags every memory, but the default labels (travel, sports
 
 ## Configure access
 
-- Ensure `MEM0_API_KEY` is set in your environment or pass it to the SDK constructor.
+- Ensure `PHOTOMEM_API_KEY` is set in your environment or pass it to the SDK constructor.
 - If you scope work to a specific organization/project, initialize the client with those identifiers.
 
 ## How it works
@@ -42,7 +42,7 @@ PhotoMem automatically tags every memory, but the default labels (travel, sports
 import os
 from photomem import MemoryClient
 
-os.environ["MEM0_API_KEY"] = "your-api-key"
+os.environ["PHOTOMEM_API_KEY"] = "your-api-key"
 
 client = MemoryClient()
 
@@ -173,7 +173,7 @@ If you do nothing, memories are tagged with the built-in set below.
 import os
 from photomem import MemoryClient
 
-os.environ["MEM0_API_KEY"] = "your-api-key"
+os.environ["PHOTOMEM_API_KEY"] = "your-api-key"
 
 client = MemoryClient()
 

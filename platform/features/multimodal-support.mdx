@@ -14,7 +14,7 @@ When a user submits an image or document, PhotoMem processes it to extract textu
 import os
 from photomem import MemoryClient
 
-os.environ["MEM0_API_KEY"] = "your-api-key"
+os.environ["PHOTOMEM_API_KEY"] = "your-api-key"
 
 client = MemoryClient()
 
@@ -43,7 +43,7 @@ client.add(messages, user_id="alice")
 ```
 
 ```typescript TypeScript
-import MemoryClient from "photomemai";
+import MemoryClient from "photomem";
 
 const client = new MemoryClient();
 
@@ -149,7 +149,7 @@ client.add([image_message], user_id="alice")
 ```
 
 ```typescript TypeScript
-import MemoryClient from "photomemai";
+import MemoryClient from "photomem";
 import fs from 'fs';
 
 const imagePath = 'path/to/your/image.jpg';

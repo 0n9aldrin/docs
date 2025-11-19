@@ -30,7 +30,129 @@
 			"ApiKeyAuth": []
 		}
 	],
-	"paths": {
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["System"],
+        "summary": "API Info",
+        "description": "Get basic API information including version and documentation links.",
+        "operationId": "getApiInfo",
+        "responses": {
+          "200": {
+            "description": "API information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "PhotoMem API"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0.0"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "operational"
+                    },
+                    "docs": {
+                      "type": "string",
+                      "example": "https://docs.photomem.ai"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/"
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health Check",
+        "description": "Check API health status including database, cache, and vector store connections.",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "System healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "healthy"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0.0"
+                    },
+                    "database": {
+                      "type": "string",
+                      "example": "connected"
+                    },
+                    "cache": {
+                      "type": "string",
+                      "example": "connected"
+                    },
+                    "vectorStore": {
+                      "type": "string",
+                      "example": "connected"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/health"
+          }
+        ]
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Prometheus Metrics",
+        "description": "Get Prometheus-formatted metrics for monitoring and alerting.",
+        "operationId": "getMetrics",
+        "responses": {
+          "200": {
+            "description": "Prometheus metrics",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "# HELP http_requests_total Total HTTP requests\\n# TYPE http_requests_total counter\\nhttp_requests_total{method=\"GET\",endpoint=\"/api/v1/memories\"} 1234"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/metrics"
+          }
+        ]
+      }
+    },
     "/api/v1/memories": {
 			"post": {
         "tags": ["Memory Management"],

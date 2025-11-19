@@ -1,0 +1,141 @@
+---
+title: "Cancel Subscription"
+api: "POST /api/organizations/{org_id}/billing/subscription/cancel"
+description: "Cancel organization subscription"
+---
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>
+  Organization identifier
+</ParamField>
+
+## Request Body
+
+<ParamField body="cancelAtPeriodEnd" type="boolean" default={true}>
+  If true, cancels at period end. If false, cancels immediately.
+</ParamField>
+
+<ParamField body="reason" type="string">
+  Optional cancellation reason for feedback
+</ParamField>
+
+## Response
+
+<ResponseField name="subscription" type="object">
+  Updated subscription status
+  
+  <Expandable title="Subscription">
+    <ResponseField name="id" type="string">
+      Subscription ID
+    </ResponseField>
+
+    <ResponseField name="status" type="string">
+      Status: `active` or `canceled`
+    </ResponseField>
+
+    <ResponseField name="currentPeriodStart" type="string">
+      Period start date
+    </ResponseField>
+
+    <ResponseField name="currentPeriodEnd" type="string">
+      Period end date
+    </ResponseField>
+
+    <ResponseField name="cancelAtPeriodEnd" type="boolean">
+      Whether canceling at period end
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://api.photomem.io/api/organizations/{org_id}/billing/subscription/cancel" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cancelAtPeriodEnd": true,
+    "reason": "Moving to self-hosted solution"
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    f"https://api.photomem.io/api/organizations/{org_id}/billing/subscription/cancel",
+    headers={
+        "Authorization": f"Bearer {clerk_token}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "cancelAtPeriodEnd": True,
+        "reason": "Switching providers"
+    }
+)
+
+result = response.json()
+print(result["message"])
+```
+
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.io/api/organizations/${orgId}/billing/subscription/cancel`,
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${clerkToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      cancelAtPeriodEnd: true,
+      reason: 'Switching providers'
+    })
+  }
+);
+
+const result = await response.json();
+console.log(result.message);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "subscription": {
+    "id": "sub_abc123xyz",
+    "status": "active",
+    "currentPeriodStart": "2025-01-01T00:00:00Z",
+    "currentPeriodEnd": "2025-02-01T00:00:00Z",
+    "cancelAtPeriodEnd": true
+  },
+  "message": "Subscription will be cancelled on 2025-02-01"
+}
+```
+
+```json 403
+{
+  "error": {
+    "code": "insufficient_permissions",
+    "message": "Only organization owners can cancel subscriptions"
+  }
+}
+```
+
+```json 404
+{
+  "error": {
+    "code": "subscription_not_found",
+    "message": "No active subscription found"
+  }
+}
+```
+
+</ResponseExample>

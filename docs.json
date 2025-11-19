@@ -264,75 +264,88 @@
                     "group": "Getting Started",
                     "icon": "rocket",
                     "pages": [
-                      "api-reference",
-                      "api-reference/organizations-projects"
+                      "api-reference/introduction"
                     ]
                   },
                   {
-                    "group": "Core Memory Operations",
-                    "icon": "microchip",
+                    "group": "Memory Management",
+                    "icon": "brain",
                     "pages": [
                       "api-reference/memory/add-memories",
                       "api-reference/memory/get-memories",
                       "api-reference/memory/search-memories",
                       "api-reference/memory/update-memory",
-                      "api-reference/memory/delete-memory"
+                      "api-reference/memory/delete-memory",
+                      "api-reference/memory/get-memory"
                     ]
                   },
                   {
-                    "group": "Memory APIs",
-                    "icon": "sparkles",
+                    "group": "API Keys",
+                    "icon": "key",
                     "pages": [
-                      "api-reference/memory/create-memory-export",
-                      "api-reference/memory/feedback",
-                      "api-reference/memory/get-memory",
-                      "api-reference/memory/history-memory",
-                      "api-reference/memory/get-memory-export",
-                      "api-reference/memory/batch-update",
-                      "api-reference/memory/batch-delete",
-                      "api-reference/memory/delete-memories"
+                      "api-reference/api-keys/list-api-keys",
+                      "api-reference/api-keys/create-api-key",
+                      "api-reference/api-keys/revoke-api-key",
+                      "api-reference/api-keys/rotate-api-key"
                     ]
                   },
                   {
-                    "group": "Entities APIs",
-                    "icon": "users",
-                    "pages": [
-                      "api-reference/entities/get-users",
-                      "api-reference/entities/delete-user"
-                    ]
-                  },
-                  {
-                    "group": "Organizations APIs",
+                    "group": "Organizations",
                     "icon": "building",
                     "pages": [
-                      "api-reference/organization/create-org",
                       "api-reference/organization/get-orgs",
                       "api-reference/organization/get-org",
+                      "api-reference/organization/create-org",
+                      "api-reference/organization/delete-org",
                       "api-reference/organization/get-org-members",
-                      "api-reference/organization/add-org-member",
-                      "api-reference/organization/delete-org"
+                      "api-reference/organization/add-org-member"
                     ]
                   },
                   {
-                    "group": "Project APIs",
+                    "group": "Projects",
                     "icon": "folder",
                     "pages": [
-                      "api-reference/project/create-project",
                       "api-reference/project/get-projects",
                       "api-reference/project/get-project",
-                      "api-reference/project/get-project-members",
-                      "api-reference/project/add-project-member",
+                      "api-reference/project/create-project",
                       "api-reference/project/delete-project"
                     ]
                   },
                   {
-                    "group": "Webhook APIs",
+                    "group": "Webhooks",
                     "icon": "webhook",
                     "pages": [
                       "api-reference/webhook/create-webhook",
                       "api-reference/webhook/get-webhook",
                       "api-reference/webhook/update-webhook",
                       "api-reference/webhook/delete-webhook"
+                    ]
+                  },
+                  {
+                    "group": "Billing",
+                    "icon": "credit-card",
+                    "pages": [
+                      "api-reference/billing/get-current-plan",
+                      "api-reference/billing/change-plan",
+                      "api-reference/billing/get-invoices"
+                    ]
+                  },
+                  {
+                    "group": "Usage & Analytics",
+                    "icon": "chart-line",
+                    "pages": [
+                      "api-reference/usage/get-usage-statistics",
+                      "api-reference/usage/get-analytics-dashboard",
+                      "api-reference/usage/export-usage"
+                    ]
+                  },
+                  {
+                    "group": "User Profile",
+                    "icon": "user",
+                    "pages": [
+                      "api-reference/user/get-profile",
+                      "api-reference/user/update-profile",
+                      "api-reference/user/delete-account"
                     ]
                   }
                 ]

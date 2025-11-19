@@ -1,0 +1,88 @@
+---
+title: "API Overview"
+description: "RESTful API for memory management and retrieval"
+---
+
+## Welcome to PhotoMem API
+
+The PhotoMem API provides a simple REST interface for storing, searching, and managing memories for your AI applications.
+
+## Base URL
+
+All API requests should be made to:
+
+```
+https://api.photomem.ai
+```
+
+## Authentication
+
+All API requests require authentication using an API key in the Authorization header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+<Warning>
+  Never expose your API key in client-side code. Always make API calls from your
+  backend server.
+</Warning>
+
+## Core Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Add Memories" icon="plus" href="/api-reference/memory/add">
+    Store new memories from conversations
+  </Card>
+  <Card
+    title="Search Memories"
+    icon="magnifying-glass"
+    href="/api-reference/memory/search"
+  >
+    Find relevant memories using semantic search
+  </Card>
+  <Card title="Get Memories" icon="list" href="/api-reference/memory/get">
+    Retrieve all memories for a user
+  </Card>
+  <Card title="Update Memory" icon="pen" href="/api-reference/memory/update">
+    Modify existing memory content
+  </Card>
+</CardGroup>
+
+## Response Format
+
+All API responses return JSON with the following structure:
+
+<ResponseExample>
+```json Success Response
+{
+  "success": true,
+  "data": {
+    // Response data here
+  }
+}
+```
+
+```json Error Response
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message"
+  }
+}
+```
+
+</ResponseExample>
+
+## Rate Limits
+
+<Info>Rate limits vary by plan. Check your dashboard for current limits.</Info>
+
+## Support
+
+Need help? Reach out to us:
+
+- **Documentation**: [docs.photomem.ai](https://docs.photomem.ai)
+- **Discord**: [discord.gg/photomem](https://discord.gg/photomem)
+- **Email**: support@photomem.ai

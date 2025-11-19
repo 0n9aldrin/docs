@@ -1,0 +1,254 @@
+---
+title: 'Update Memory'
+openapi: patch /api/v1/memories/{memory_id}
+---
+
+Update an existing memory's content or tags. The memory will be re-embedded and re-indexed for search.
+
+<Note>
+Updating a memory preserves its ID and creation timestamp but updates the `updatedAt` timestamp and regenerates embeddings for improved search accuracy.
+</Note>
+
+## Authentication
+
+This endpoint requires API Key authentication.
+
+```bash
+X-API-Key: pm_live_YOUR_API_KEY
+```
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>
+  The unique identifier of the organization
+</ParamField>
+
+<ParamField path="project_id" type="string" required>
+  The unique identifier of the project
+</ParamField>
+
+<ParamField path="memory_id" type="string" required>
+  The unique identifier of the memory to update
+</ParamField>
+
+## Request Body
+
+<ParamField body="content" type="string">
+  Updated memory content (maximum 10KB)
+</ParamField>
+
+<ParamField body="tags" type="array">
+  Updated array of tags (replaces existing tags). Maximum 20 tags.
+</ParamField>
+
+<Note>
+You must provide at least one field to update (`content` or `tags`).
+</Note>
+
+## Response
+
+<ResponseField name="id" type="string">
+  Memory identifier (unchanged)
+</ResponseField>
+
+<ResponseField name="userId" type="string">
+  User identifier (unchanged)
+</ResponseField>
+
+<ResponseField name="userName" type="string">
+  User's display name (unchanged)
+</ResponseField>
+
+<ResponseField name="content" type="string">
+  Updated memory content
+</ResponseField>
+
+<ResponseField name="tags" type="array">
+  Updated tags array
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  Original creation timestamp (unchanged)
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string">
+  New update timestamp
+</ResponseField>
+
+<RequestExample>
+```bash cURL - Update Content
+curl -X PATCH https://api.photomem.ai/api/organizations/{org_id}/projects/{project_id}/memories/mem_abc123 \
+  -H "X-API-Key: pm_live_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Alice prefers morning meetings, likes coffee without sugar, and always brings her own mug."
+  }'
+```
+
+```bash cURL - Update Tags Only
+curl -X PATCH https://api.photomem.ai/api/organizations/{org_id}/projects/{project_id}/memories/mem_abc123 \
+  -H "X-API-Key: pm_live_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tags": ["preferences", "meetings", "sustainability"]
+  }'
+```
+
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.ai/api/organizations/${orgId}/projects/${projectId}/memories/${memoryId}`,
+  {
+    method: 'PATCH',
+    headers: {
+      'X-API-Key': 'pm_live_YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      content: "Alice prefers morning meetings, likes coffee without sugar, and always brings her own mug.",
+      tags: ["preferences", "meetings", "sustainability"]
+    })
+  }
+);
+
+const memory = await response.json();
+console.log(`Memory updated at: ${memory.updatedAt}`);
+```
+
+```python Python
+import requests
+
+response = requests.patch(
+    f"https://api.photomem.ai/api/organizations/{org_id}/projects/{project_id}/memories/{memory_id}",
+    headers={
+        "X-API-Key": "pm_live_YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "content": "Alice prefers morning meetings, likes coffee without sugar, and always brings her own mug.",
+        "tags": ["preferences", "meetings", "sustainability"]
+    }
+)
+
+memory = response.json()
+print(f"Memory updated at: {memory['updatedAt']}")
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "id": "mem_abc123",
+  "userId": "user_123",
+  "userName": "Alice Johnson",
+  "content": "Alice prefers morning meetings, likes coffee without sugar, and always brings her own mug.",
+  "tags": ["preferences", "meetings", "sustainability"],
+  "createdAt": "2024-01-20T10:30:00Z",
+  "updatedAt": "2024-01-21T14:22:00Z"
+}
+```
+</ResponseExample>
+
+## What Happens During Update
+
+<Steps>
+  <Step title="Validation">
+    The new content and tags are validated against size and format requirements.
+  </Step>
+  
+  <Step title="Re-embedding">
+    If content is updated, a new vector embedding is generated for semantic search.
+  </Step>
+  
+  <Step title="Re-indexing">
+    The memory is re-indexed in the vector store with the new embedding.
+  </Step>
+  
+  <Step title="History Tracking">
+    The previous version is preserved in the memory's change history (if enabled).
+  </Step>
+</Steps>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Correct Information" icon="pen-to-square">
+    Fix typos or update outdated information
+  </Card>
+  
+  <Card title="Add Details" icon="plus">
+    Expand existing memories with additional context
+  </Card>
+  
+  <Card title="Reorganize Tags" icon="tags">
+    Refine categorization as your taxonomy evolves
+  </Card>
+  
+  <Card title="Merge Duplicates" icon="code-merge">
+    Combine similar memories into one comprehensive entry
+  </Card>
+</CardGroup>
+
+## Partial Updates
+
+You can update just the content, just the tags, or both:
+
+<Tabs>
+  <Tab title="Content Only">
+    ```json
+    {
+      "content": "Updated content here"
+    }
+    ```
+    Tags remain unchanged.
+  </Tab>
+  
+  <Tab title="Tags Only">
+    ```json
+    {
+      "tags": ["new", "tags"]
+    }
+    ```
+    Content remains unchanged. **Note:** This replaces all tags, not appends.
+  </Tab>
+  
+  <Tab title="Both">
+    ```json
+    {
+      "content": "Updated content",
+      "tags": ["updated", "tags"]
+    }
+    ```
+    Both fields are updated.
+  </Tab>
+</Tabs>
+
+## Important Notes
+
+<Warning>
+**Tag Replacement:** When you update tags, you must provide the complete new array. The old tags are completely replaced, not merged.
+</Warning>
+
+<Info>
+**Embedding Regeneration:** Content updates trigger re-embedding, which may take a few milliseconds. The memory remains searchable during this process with the old embedding until the new one is ready.
+</Info>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="400 - Bad Request">
+    - No fields provided to update
+    - Content exceeds 10KB
+    - More than 20 tags
+    - Tag exceeds 50 characters
+  </Accordion>
+  
+  <Accordion title="404 - Not Found">
+    - Memory ID doesn't exist
+    - Memory was deleted
+    - Memory belongs to a different project
+  </Accordion>
+  
+  <Accordion title="413 - Payload Too Large">
+    - Updated content exceeds 10KB limit
+  </Accordion>
+</AccordionGroup>

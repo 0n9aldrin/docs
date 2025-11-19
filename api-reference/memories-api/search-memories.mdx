@@ -1,0 +1,341 @@
+---
+title: "Search Memories"
+openapi: post /api/v1/memories/search
+---
+
+Search memories using semantic similarity. This endpoint finds memories that are conceptually similar to your query, not just keyword matches.
+
+<Info>
+  PhotoMem uses advanced AI embeddings to understand the meaning behind your
+  query, returning the most relevant memories even if they don't contain the
+  exact words.
+</Info>
+
+## Authentication
+
+This endpoint requires API Key authentication.
+
+```bash
+X-API-Key: pm_live_YOUR_API_KEY
+```
+
+## Path Parameters
+
+<ParamField path="org_id" type="string" required>
+  The unique identifier of the organization
+</ParamField>
+
+<ParamField path="project_id" type="string" required>
+  The unique identifier of the project
+</ParamField>
+
+## Request Body
+
+<ParamField body="query" type="string" required>
+  The search query. Can be a natural language question or keywords.
+</ParamField>
+
+<ParamField body="userId" type="string">
+  Optional user ID to filter results to a specific user
+</ParamField>
+
+<ParamField body="limit" type="integer" default={20}>
+  Maximum number of results to return (1-100)
+</ParamField>
+
+## Response
+
+<ResponseField name="results" type="array">
+  Array of search results, ordered by relevance (highest score first)
+  <Expandable title="Search Result Object">
+    <ResponseField name="memory" type="object">
+      The memory object matching the search
+      <Expandable title="Memory Fields">
+        <ResponseField name="id" type="string">
+          Unique identifier
+        </ResponseField>
+
+        <ResponseField name="userId" type="string">
+          User identifier
+        </ResponseField>
+
+        <ResponseField name="userName" type="string">
+          User's display name
+        </ResponseField>
+
+        <ResponseField name="content" type="string">
+          Memory content
+        </ResponseField>
+
+        <ResponseField name="tags" type="array">
+          Array of tags
+        </ResponseField>
+
+        <ResponseField name="createdAt" type="string">
+          Creation timestamp
+        </ResponseField>
+
+        <ResponseField name="updatedAt" type="string">
+          Last update timestamp
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="score" type="number">
+      Relevance score (0-1), where higher values indicate better matches
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.photomem.ai/api/organizations/{org_id}/projects/{project_id}/memories/search \
+  -H "X-API-Key: pm_live_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What are Alice'\''s coffee preferences?",
+    "userId": "user_123",
+    "limit": 10
+  }'
+```
+
+```typescript TypeScript
+const response = await fetch(
+  `https://api.photomem.ai/api/organizations/${orgId}/projects/${projectId}/memories/search`,
+  {
+    method: "POST",
+    headers: {
+      "X-API-Key": "pm_live_YOUR_API_KEY",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: "What are Alice's coffee preferences?",
+      userId: "user_123",
+      limit: 10,
+    }),
+  }
+);
+
+const data = await response.json();
+console.log(`Found ${data.results.length} relevant memories`);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    f"https://api.photomem.ai/api/organizations/{org_id}/projects/{project_id}/memories/search",
+    headers={
+        "X-API-Key": "pm_live_YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "query": "What are Alice's coffee preferences?",
+        "userId": "user_123",
+        "limit": 10
+    }
+)
+
+data = response.json()
+print(f"Found {len(data['results'])} relevant memories")
+for result in data["results"]:
+    print(f"Score: {result['score']:.3f} - {result['memory']['content']}")
+```
+
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "results": [
+    {
+      "memory": {
+        "id": "mem_abc123",
+        "userId": "user_123",
+        "userName": "Alice Johnson",
+        "content": "Alice prefers morning meetings and likes coffee without sugar.",
+        "tags": ["preferences", "meetings"],
+        "createdAt": "2024-01-20T10:30:00Z",
+        "updatedAt": "2024-01-20T10:30:00Z"
+      },
+      "score": 0.92
+    },
+    {
+      "memory": {
+        "id": "mem_xyz789",
+        "userId": "user_123",
+        "userName": "Alice Johnson",
+        "content": "Alice mentioned she's trying to reduce caffeine intake.",
+        "tags": ["health", "preferences"],
+        "createdAt": "2024-01-18T14:15:00Z",
+        "updatedAt": "2024-01-18T14:15:00Z"
+      },
+      "score": 0.76
+    }
+  ]
+}
+```
+</ResponseExample>
+
+## Understanding Relevance Scores
+
+The `score` field indicates how relevant each memory is to your query:
+
+<Card title="Score Interpretation" icon="star">
+  - **0.9 - 1.0**: Highly relevant, direct match
+  - **0.7 - 0.9**: Very relevant, strong semantic similarity
+  - **0.5 - 0.7**: Moderately relevant, related concepts
+  - **< 0.5**: Weakly relevant, may not be useful
+</Card>
+
+## Search Examples
+
+<CodeGroup>
+```typescript Natural Language Questions
+// Search understands natural language
+const queries = [
+  "What does Alice like to drink?",
+  "Tell me about Bob's technical skills",
+  "When does Charlie prefer to work?",
+  "What are Sarah's dietary restrictions?"
+];
+
+for (const query of queries) {
+const response = await searchMemories(query);
+console.log(`Query: ${query}`);
+console.log(`Top result: ${response.results[0]?.memory.content}`);
+}
+
+````
+
+```python User-Specific Search
+# Search for memories about a specific user
+response = requests.post(
+    f"{base_url}/memories/search",
+    headers={"X-API-Key": api_key},
+    json={
+        "query": "professional background and interests",
+        "userId": "user_456",  # Only Bob's memories
+        "limit": 5
+    }
+)
+````
+
+```typescript Concept-Based Search
+// Find memories about a concept across all users
+const response = await fetch(`${baseUrl}/memories/search`, {
+  method: "POST",
+  headers: {
+    "X-API-Key": apiKey,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    query: "programming languages",
+    // No userId - search all users
+    limit: 20,
+  }),
+});
+```
+
+</CodeGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Write Clear Queries">
+    Use natural, specific questions rather than single keywords. "What are
+    Alice's coffee preferences?" is better than just "coffee".
+  </Accordion>
+
+  <Accordion title="Filter by User When Possible">
+    If you know the user, always include `userId` to improve relevance and
+    performance.
+  </Accordion>
+
+  <Accordion title="Use Appropriate Limits">
+    Request only the number of results you need. Smaller limits return faster.
+  </Accordion>
+
+  <Accordion title="Consider Score Thresholds">
+    Filter out results with scores below 0.5 for better quality matches.
+  </Accordion>
+
+  <Accordion title="Cache Search Results">
+    Cache frequently used searches to reduce API calls and improve response
+    time.
+  </Accordion>
+</AccordionGroup>
+
+## AI Integration Pattern
+
+Here's how to integrate memory search into an AI conversation:
+
+```typescript
+async function getAIResponseWithMemory(
+  userMessage: string,
+  userId: string,
+  orgId: string,
+  projectId: string
+) {
+  // 1. Search for relevant memories
+  const memoryResponse = await fetch(
+    `https://api.photomem.ai/api/organizations/${orgId}/projects/${projectId}/memories/search`,
+    {
+      method: "POST",
+      headers: {
+        "X-API-Key": process.env.PHOTOMEM_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query: userMessage,
+        userId: userId,
+        limit: 5,
+      }),
+    }
+  );
+
+  const { results } = await memoryResponse.json();
+
+  // 2. Build context from top memories
+  const memoryContext = results
+    .filter((r) => r.score > 0.6) // Only use relevant memories
+    .map((r) => r.memory.content)
+    .join("\n");
+
+  // 3. Send to your LLM with memory context
+  const aiResponse = await yourLLM.chat({
+    messages: [
+      {
+        role: "system",
+        content: `You are a helpful assistant. Here's what you know about the user:\n${memoryContext}`,
+      },
+      {
+        role: "user",
+        content: userMessage,
+      },
+    ],
+  });
+
+  return aiResponse;
+}
+```
+
+## Performance Considerations
+
+<CardGroup cols={2}>
+  <Card title="Fast Search" icon="bolt">
+    Typical search latency: 50-150ms for most queries
+  </Card>
+
+  <Card title="Scalable" icon="chart-line">
+    Performance remains consistent even with millions of memories
+  </Card>
+
+  <Card title="Concurrent Searches" icon="users">
+    Supports high concurrency for real-time applications
+  </Card>
+
+  <Card title="Rate Limits" icon="gauge">
+    Check your plan's rate limits for search operations
+  </Card>
+</CardGroup>

@@ -6057,6 +6057,278 @@
         ]
       }
     },
+    "/api/webhooks/clerk": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Clerk Webhook Handler",
+        "description": "Handle Clerk webhook events (user.created, etc). Verifies Svix signature for security.",
+        "operationId": "handleClerkWebhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type", "data"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "user.created"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "user_2abcdef123"
+                      },
+                      "email_addresses": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "email_address": {
+                              "type": "string",
+                              "example": "user@example.com"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User created successfully"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "# Webhook called by Clerk automatically\ncurl --request POST \\\n  --url https://api.photomem.ai/api/webhooks/clerk \\\n  --header 'svix-id: msg_abc123' \\\n  --header 'svix-timestamp: 1234567890' \\\n  --header 'svix-signature: v1,signature_here' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"type\": \"user.created\", \"data\": {...}}'"
+          }
+        ]
+      }
+    },
+    "/api/auth/onboarding": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Complete Onboarding",
+        "description": "Complete user onboarding by creating an organization. Required after Clerk sign-up.",
+        "operationId": "completeOnboarding",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["organizationName"],
+                "properties": {
+                  "organizationName": {
+                    "type": "string",
+                    "example": "Acme Corp"
+                  },
+                  "organizationSlug": {
+                    "type": "string",
+                    "example": "acme-corp"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Onboarding complete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "user_abc123"
+                        },
+                        "needsOnboarding": {
+                          "type": "boolean",
+                          "example": false
+                        }
+                      }
+                    },
+                    "organization": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "org_abc123"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Acme Corp"
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "owner"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "description": "Already onboarded or slug exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "already_onboarded"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nresult = client.auth.complete_onboarding(\n    organization_name=\"Acme Corp\",\n    organization_slug=\"acme-corp\"\n)\n\nprint(f\"Org: {result.organization.name}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.auth.completeOnboarding({\n  organizationName: 'Acme Corp',\n  organizationSlug: 'acme-corp'\n});\n\nconsole.log(`Org: ${result.organization.name}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/auth/onboarding \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"organizationName\": \"Acme Corp\", \"organizationSlug\": \"acme-corp\"}'"
+          }
+        ]
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Verify Session",
+        "description": "Verify Clerk JWT and get user session data including organizations.",
+        "operationId": "verifySession",
+        "responses": {
+          "200": {
+            "description": "Session verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "user_abc123"
+                        },
+                        "clerkId": {
+                          "type": "string",
+                          "example": "user_2abcdef123"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "user@example.com"
+                        },
+                        "needsOnboarding": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "organizations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "example": "org_abc123"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "Acme Corp"
+                              },
+                              "role": {
+                                "type": "string",
+                                "example": "owner"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nsession = client.auth.verify_session()\n\nprint(f\"User: {session.user.email}\")\nprint(f\"Needs onboarding: {session.user.needsOnboarding}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst session = await client.auth.verifySession();\n\nconsole.log(`User: ${session.user.email}`);\nconsole.log(`Needs onboarding: ${session.user.needsOnboarding}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/auth/session \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
     "/api/users/me": {
       "get": {
         "tags": ["User Profile"],

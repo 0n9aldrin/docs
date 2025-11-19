@@ -4042,6 +4042,271 @@
         ]
       }
     },
+    "/api/organizations/{org_id}/projects/{project_id}/webhooks/{webhook_id}": {
+      "patch": {
+        "tags": ["Webhooks"],
+        "summary": "Update Webhook",
+        "description": "Update an existing webhook's configuration, including URL, events, status, or description. Changes take effect immediately for future webhook deliveries.",
+        "operationId": "updateWebhook",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          },
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "wh_abc123def456"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "example": "https://example.com/webhooks/photomem-v2"
+                  },
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": ["memory.created", "memory.updated", "memory.deleted"]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["active", "disabled"],
+                    "example": "active"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Updated webhook description"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "webhook": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "wh_abc123def456"
+                        },
+                        "url": {
+                          "type": "string",
+                          "example": "https://example.com/webhooks/photomem-v2"
+                        },
+                        "events": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": ["memory.created", "memory.updated", "memory.deleted"]
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "active"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-19T16:30:00Z"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Webhook not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "webhook_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Webhook not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Update webhook\nwebhook = client.webhooks.update(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    events=[\"memory.created\", \"memory.updated\", \"memory.deleted\"],\n    status=\"active\"\n)\n\nprint(f\"Webhook updated: {webhook.webhook.id}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Update webhook\nconst webhook = await client.webhooks.update({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  events: ['memory.created', 'memory.updated', 'memory.deleted'],\n  status: 'active'\n});\n\nconsole.log(`Webhook updated: ${webhook.webhook.id}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request PATCH \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/webhooks/wh_abc123def456 \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"events\": [\"memory.created\", \"memory.updated\", \"memory.deleted\"],\n    \"status\": \"active\"\n  }'"
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Webhooks"],
+        "summary": "Delete Webhook",
+        "description": "Permanently delete a webhook. This action cannot be undone. All pending deliveries for this webhook will be cancelled.",
+        "operationId": "deleteWebhook",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "org_abc123def456"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "proj_xyz789ghi012"
+            }
+          },
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "wh_abc123def456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Webhook deleted successfully"
+                    },
+                    "deletedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-19T17:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Webhook not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "webhook_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Webhook not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Delete webhook\nresult = client.webhooks.delete(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\"\n)\n\nprint(f\"Webhook deleted: {result.message}\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Delete webhook\nconst result = await client.webhooks.delete({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456'\n});\n\nconsole.log(`Webhook deleted: ${result.message}`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request DELETE \\\n  --url https://api.photomem.ai/api/organizations/org_abc123def456/projects/proj_xyz789ghi012/webhooks/wh_abc123def456 \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      }
+    },
     "/api/users/me": {
       "get": {
         "tags": ["User Profile"],

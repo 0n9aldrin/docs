@@ -1,8 +1,8 @@
 {
 	"openapi": "3.0.1",
 	"info": {
-    "title": "PhotoMem API",
-    "description": "PhotoMem is a self-improving memory layer for LLM applications, enabling personalized AI experiences that save costs and delight users.",
+    "title": "photomem API",
+    "description": "photomem is a self-improving memory layer for LLM applications, enabling personalized AI experiences that save costs and delight users.",
 		"contact": {
       "email": "support@photomem.ai"
 		},
@@ -47,7 +47,7 @@
                   "properties": {
                     "name": {
                       "type": "string",
-                      "example": "PhotoMem API"
+                      "example": "photomem API"
                     },
                     "version": {
                       "type": "string",
@@ -228,7 +228,7 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMem\n\nclient = PhotoMem(api_key=\"pm_xxx\")\n\nresult = client.add(\n    messages=[{\"role\": \"user\", \"content\": \"I love hiking\"}],\n    user_id=\"user_123\"\n)\n\nprint(f\"Added {len(result.memories)} memories\")"
+            "source": "from photomem import photomem\n\nclient = photomem(api_key=\"pm_xxx\")\n\nresult = client.add(\n    messages=[{\"role\": \"user\", \"content\": \"I love hiking\"}],\n    user_id=\"user_123\"\n)\n\nprint(f\"Added {len(result.memories)} memories\")"
           }
         ]
       },
@@ -400,7 +400,7 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMem\n\nclient = PhotoMem(api_key=\"pm_xxx\")\n\nresults = client.query(\n    filter={\n        \"user_id\": \"user_123\",\n        \"tags\": {\"any\": [\"urgent\"]}\n    }\n)\n\nprint(f\"Found {len(results)} memories\")"
+            "source": "from photomem import photomem\n\nclient = photomem(api_key=\"pm_xxx\")\n\nresults = client.query(\n    filter={\n        \"user_id\": \"user_123\",\n        \"tags\": {\"any\": [\"urgent\"]}\n    }\n)\n\nprint(f\"Found {len(results)} memories\")"
           }
         ]
       }
@@ -459,10 +459,92 @@
                 "type": "object",
                 "required": ["query"],
                 "properties": {
-                  "query": {"type": "string", "example": "hiking memories"},
-                  "user_id": {"type": "string"},
-                  "limit": {"type": "integer", "default": 10},
-                  "threshold": {"type": "number", "default": 0.7}
+                  "query": {
+                    "type": "string",
+                    "example": "hiking memories",
+                    "description": "Natural language search query"
+                  },
+                  "filter": {
+                    "type": "object",
+                    "description": "Qdrant-native filter for pre-filtering vector search results. Supports 'must' (AND), 'should' (OR), 'must_not' (NOT) clauses with various condition types.",
+                    "properties": {
+                      "must": {
+                        "type": "array",
+                        "description": "AND conditions - all must match",
+                        "items": {"type": "object"}
+                      },
+                      "should": {
+                        "type": "array",
+                        "description": "OR conditions - at least one must match",
+                        "items": {"type": "object"}
+                      },
+                      "must_not": {
+                        "type": "array",
+                        "description": "NOT conditions - none should match",
+                        "items": {"type": "object"}
+                      }
+                    },
+                    "examples": [
+                      {
+                        "summary": "Single user filter",
+                        "value": {
+                          "must": [
+                            {"key": "user_id", "match": {"value": "alice"}}
+                          ]
+                        }
+                      },
+                      {
+                        "summary": "Multiple users (OR)",
+                        "value": {
+                          "should": [
+                            {"key": "user_id", "match": {"value": "alice"}},
+                            {"key": "user_id", "match": {"value": "bob"}}
+                          ]
+                        }
+                      },
+                      {
+                        "summary": "Tags filter",
+                        "value": {
+                          "must": [
+                            {"key": "tags", "match": {"any": ["work", "technical"]}}
+                          ]
+                        }
+                      },
+                      {
+                        "summary": "Combined AND + OR",
+                        "value": {
+                          "must": [
+                            {"key": "user_id", "match": {"value": "alice"}}
+                          ],
+                          "should": [
+                            {"key": "tags", "match": {"any": ["work", "personal"]}}
+                          ]
+                        }
+                      },
+                      {
+                        "summary": "Exclude user",
+                        "value": {
+                          "must_not": [
+                            {"key": "user_id", "match": {"value": "charlie"}}
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Maximum number of results"
+                  },
+                  "minRelevance": {
+                    "type": "number",
+                    "default": 0.7,
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "description": "Minimum relevance score (0.0-1.0)"
+                  }
                 }
               }
             }
@@ -498,7 +580,7 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMem\n\nclient = PhotoMem(api_key=\"pm_xxx\")\n\nresults = client.search(\n    query=\"hiking memories\",\n    user_id=\"user_123\",\n    limit=5\n)\n\nfor r in results:\n    print(f\"{r.memory} (score: {r.score})\")"
+            "source": "from photomem import photomem\n\nclient = photomem(api_key=\"pm_xxx\")\n\nresults = client.search(\n    query=\"hiking memories\",\n    user_id=\"user_123\",\n    limit=5\n)\n\nfor r in results:\n    print(f\"{r.memory} (score: {r.score})\")"
           }
         ]
       }
@@ -843,8 +925,8 @@
     "/api/v1/memories": {
 			"post": {
         "tags": ["Memory Management"],
-        "summary": "Create Memory",
-        "description": "Create a new memory entry for a specific user. This endpoint stores conversational context, user preferences, or any relevant information that should be remembered for future interactions. Memories are automatically deduplicated by content hash and user ID combination.",
+        "summary": "Create Memories from Conversation",
+        "description": "Create memories from conversation using intelligent LLM extraction. The system extracts facts, compares with existing memories, and intelligently decides whether to ADD, UPDATE, DELETE, or skip each fact. Supports parallel processing for speed.",
         "operationId": "create_memory",
 				"requestBody": {
           "required": true,
@@ -854,22 +936,26 @@
                 "$ref": "#/components/schemas/MemoryCreateRequest"
               },
               "examples": {
-                "user_preference": {
-                  "summary": "Store user preference",
+                "conversation_extraction": {
+                  "summary": "Extract facts from conversation",
                   "value": {
+                    "messages": [
+                      {"role": "user", "content": "Hi, I'm John. I love pepperoni pizza!"},
+                      {"role": "assistant", "content": "Nice to meet you John!"},
+                      {"role": "user", "content": "I'm lactose intolerant, so no dairy."}
+                    ],
                     "userId": "user_123",
-                    "userName": "John Doe",
-                    "content": "Prefers dark mode and concise responses. Works in software engineering.",
-                    "tags": ["preference", "settings"]
+                    "tags": ["food", "preferences"],
+                    "infer": true
                   }
                 },
-                "conversation_context": {
-                  "summary": "Store conversation context",
+                "direct_storage": {
+                  "summary": "Direct storage without extraction",
                   "value": {
+                    "messages": "User prefers dark mode",
                     "userId": "user_456",
-                    "userName": "Jane Smith",
-                    "content": "Discussed project timeline for Q1 2024. Prefers weekly updates on Fridays.",
-                    "tags": ["conversation", "timeline"]
+                    "tags": ["preference"],
+                    "infer": false
                   }
                 }
               }
@@ -886,16 +972,46 @@
                 },
                 "examples": {
                   "success": {
-                    "summary": "Successful memory creation",
+                    "summary": "Successful fact extraction",
                     "value": {
-                      "memory": {
+                      "memories": [
+                        {
                         "id": "mem_a1b2c3d4e5f6",
+                          "memory": "Name is John",
                         "userId": "user_123",
-                        "userName": "John Doe",
-                        "content": "Prefers dark mode and concise responses. Works in software engineering.",
-                        "tags": ["preference", "settings"],
-                        "createdAt": "2024-01-15T10:30:00Z",
-                        "updatedAt": "2024-01-15T10:30:00Z"
+                          "tags": ["food", "preferences"],
+                          "event": "ADD",
+                          "processingStatus": "completed",
+                          "createdAt": "2025-11-21T10:30:00Z",
+                          "updatedAt": "2025-11-21T10:30:00Z"
+                        },
+                        {
+                          "id": "mem_b2c3d4e5f6a1",
+                          "memory": "Loves pepperoni pizza",
+                          "userId": "user_123",
+                          "tags": ["food", "preferences"],
+                          "event": "ADD",
+                          "processingStatus": "completed",
+                          "createdAt": "2025-11-21T10:30:01Z",
+                          "updatedAt": "2025-11-21T10:30:01Z"
+                        },
+                        {
+                          "id": "mem_c3d4e5f6a1b2",
+                          "memory": "Is lactose intolerant; avoids dairy",
+                          "userId": "user_123",
+                          "tags": ["food", "preferences"],
+                          "event": "ADD",
+                          "processingStatus": "completed",
+                          "createdAt": "2025-11-21T10:30:02Z",
+                          "updatedAt": "2025-11-21T10:30:02Z"
+                        }
+                      ],
+                      "stats": {
+                        "extracted_facts": 3,
+                        "added": 3,
+                        "updated": 0,
+                        "deleted": 0,
+                        "skipped": 0
                       }
                     }
 								}
@@ -940,11 +1056,11 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "# Install the PhotoMem SDK:\n# pip install photomem\n\nfrom photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Create a memory\nmemory = client.memories.create(\n    user_id=\"user_123\",\n    user_name=\"John Doe\",\n    content=\"Prefers dark mode and concise responses. Works in software engineering.\",\n    tags=[\"preference\", \"settings\"]\n)\n\nprint(f\"Memory created: {memory.id}\")"
+            "source": "# Install the photomem SDK:\n# pip install photomem\n\nfrom photomem import photomemClient\n\nclient = photomemClient(api_key=\"pm_your_api_key\")\n\n# Create a memory\nmemory = client.memories.create(\n    user_id=\"user_123\",\n    user_name=\"John Doe\",\n    content=\"Prefers dark mode and concise responses. Works in software engineering.\",\n    tags=[\"preference\", \"settings\"]\n)\n\nprint(f\"Memory created: {memory.id}\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "// Install the PhotoMem SDK:\n// npm install photomem\n\nimport { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Create a memory\nconst memory = await client.memories.create({\n  userId: 'user_123',\n  userName: 'John Doe',\n  content: 'Prefers dark mode and concise responses. Works in software engineering.',\n  tags: ['preference', 'settings']\n});\n\nconsole.log(`Memory created: ${memory.id}`);"
+            "source": "// Install the photomem SDK:\n// npm install photomem\n\nimport { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ apiKey: 'pm_your_api_key' });\n\n// Create a memory\nconst memory = await client.memories.create({\n  userId: 'user_123',\n  userName: 'John Doe',\n  content: 'Prefers dark mode and concise responses. Works in software engineering.',\n  tags: ['preference', 'settings']\n});\n\nconsole.log(`Memory created: ${memory.id}`);"
 					},
 					{
 						"lang": "cURL",
@@ -1055,15 +1171,128 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# List all memories with pagination\nmemories = client.memories.list(\n    limit=20,\n    offset=0\n)\n\nprint(f\"Total memories: {memories.pagination['total']}\")\nfor memory in memories.memories:\n    print(f\"- {memory.id}: {memory.content[:50]}...\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(api_key=\"pm_your_api_key\")\n\n# List all memories with pagination\nmemories = client.memories.list(\n    limit=20,\n    offset=0\n)\n\nprint(f\"Total memories: {memories.pagination['total']}\")\nfor memory in memories.memories:\n    print(f\"- {memory.id}: {memory.content[:50]}...\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// List all memories with pagination\nconst memories = await client.memories.list({\n  limit: 20,\n  offset: 0\n});\n\nconsole.log(`Total memories: ${memories.pagination.total}`);\nmemories.memories.forEach(memory => {\n  console.log(`- ${memory.id}: ${memory.content.substring(0, 50)}...`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ apiKey: 'pm_your_api_key' });\n\n// List all memories with pagination\nconst memories = await client.memories.list({\n  limit: 20,\n  offset: 0\n});\n\nconsole.log(`Total memories: ${memories.pagination.total}`);\nmemories.memories.forEach(memory => {\n  console.log(`- ${memory.id}: ${memory.content.substring(0, 50)}...`);\n});"
 					},
 					{
 						"lang": "cURL",
             "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/v1/memories?limit=20&offset=0' \\\n  --header 'Authorization: Bearer pm_your_api_key'"
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Memory Management"],
+        "summary": "Bulk Delete Memories",
+        "description": "Delete all memories for a specific userId or agentId. WARNING: This is a destructive operation. Use with caution.",
+        "operationId": "bulk_delete_memories",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "description": "Delete all memories for this user ID",
+            "schema": {
+              "type": "string",
+              "example": "user_123"
+            }
+          },
+          {
+            "name": "agentId",
+            "in": "query",
+            "description": "Delete all memories for this agent ID",
+            "schema": {
+              "type": "string",
+              "example": "agent_456"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Memories deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {"type": "string"},
+                    "count": {"type": "integer"},
+                    "userId": {"type": "string"},
+                    "agentId": {"type": "string"},
+                    "deletedAt": {"type": "string", "format": "date-time"}
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful bulk deletion",
+                    "value": {
+                      "message": "Deleted 15 memories",
+                      "count": 15,
+                      "userId": "user_123",
+                      "agentId": null,
+                      "deletedAt": "2025-11-21T10:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {"type": "string", "example": "missing_identifier"},
+                        "message": {"type": "string", "example": "Either userId or agentId must be provided"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No memories found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {"type": "string", "example": "no_memories_found"},
+                        "message": {"type": "string", "example": "No memories found matching the criteria"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [{"ApiKeyAuth": []}],
+        "x-code-samples": [
+          {
+            "lang": "Python",
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(api_key=\"pm_your_api_key\")\n\n# Delete all memories for a user\nresult = client.memories.delete_all(user_id=\"user_123\")\nprint(f\"Deleted {result.count} memories\")"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ apiKey: 'pm_your_api_key' });\n\n// Delete all memories for a user\nconst result = await client.memories.deleteAll({ userId: 'user_123' });\nconsole.log(`Deleted ${result.count} memories`);"
+          },
+          {
+            "lang": "cURL",
+            "source": "curl --request DELETE \\\n  --url 'https://api.photomem.ai/api/v1/memories?userId=user_123' \\\n  --header 'Authorization: Bearer pm_your_api_key'"
           }
         ]
       }
@@ -1150,11 +1379,11 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Get a specific memory by ID\nmemory = client.memories.get(\"mem_a1b2c3d4e5f6\")\n\nprint(f\"Memory: {memory.content}\")\nprint(f\"User: {memory.userName}\")\nprint(f\"Tags: {', '.join(memory.tags)}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(api_key=\"pm_your_api_key\")\n\n# Get a specific memory by ID\nmemory = client.memories.get(\"mem_a1b2c3d4e5f6\")\n\nprint(f\"Memory: {memory.content}\")\nprint(f\"User: {memory.userName}\")\nprint(f\"Tags: {', '.join(memory.tags)}\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Get a specific memory by ID\nconst memory = await client.memories.get('mem_a1b2c3d4e5f6');\n\nconsole.log(`Memory: ${memory.content}`);\nconsole.log(`User: ${memory.userName}`);\nconsole.log(`Tags: ${memory.tags.join(', ')}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ apiKey: 'pm_your_api_key' });\n\n// Get a specific memory by ID\nconst memory = await client.memories.get('mem_a1b2c3d4e5f6');\n\nconsole.log(`Memory: ${memory.content}`);\nconsole.log(`User: ${memory.userName}`);\nconsole.log(`Tags: ${memory.tags.join(', ')}`);"
 					},
 					{
 						"lang": "cURL",
@@ -1277,11 +1506,11 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Update memory content and tags\nmemory = client.memories.update(\n    memory_id=\"mem_a1b2c3d4e5f6\",\n    content=\"Updated memory content with more details.\",\n    tags=[\"updated\", \"detailed\"]\n)\n\nprint(f\"Memory updated: {memory.id}\")\nprint(f\"New content: {memory.content}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(api_key=\"pm_your_api_key\")\n\n# Update memory content and tags\nmemory = client.memories.update(\n    memory_id=\"mem_a1b2c3d4e5f6\",\n    content=\"Updated memory content with more details.\",\n    tags=[\"updated\", \"detailed\"]\n)\n\nprint(f\"Memory updated: {memory.id}\")\nprint(f\"New content: {memory.content}\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Update memory content and tags\nconst memory = await client.memories.update('mem_a1b2c3d4e5f6', {\n  content: 'Updated memory content with more details.',\n  tags: ['updated', 'detailed']\n});\n\nconsole.log(`Memory updated: ${memory.id}`);\nconsole.log(`New content: ${memory.content}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ apiKey: 'pm_your_api_key' });\n\n// Update memory content and tags\nconst memory = await client.memories.update('mem_a1b2c3d4e5f6', {\n  content: 'Updated memory content with more details.',\n  tags: ['updated', 'detailed']\n});\n\nconsole.log(`Memory updated: ${memory.id}`);\nconsole.log(`New content: ${memory.content}`);"
 					},
 					{
 						"lang": "cURL",
@@ -1363,11 +1592,11 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Delete a memory\nresult = client.memories.delete(\"mem_a1b2c3d4e5f6\")\n\nprint(f\"Memory deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(api_key=\"pm_your_api_key\")\n\n# Delete a memory\nresult = client.memories.delete(\"mem_a1b2c3d4e5f6\")\n\nprint(f\"Memory deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Delete a memory\nconst result = await client.memories.delete('mem_a1b2c3d4e5f6');\n\nconsole.log(`Memory deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ apiKey: 'pm_your_api_key' });\n\n// Delete a memory\nconst result = await client.memories.delete('mem_a1b2c3d4e5f6');\n\nconsole.log(`Memory deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
 					},
 					{
 						"lang": "cURL",
@@ -1376,11 +1605,89 @@
 				]
 			}
 		},
+    "/api/v1/memories/status/{task_id}": {
+			"get": {
+        "tags": ["Memory Management"],
+        "summary": "Get Memory Processing Task Status",
+        "description": "Poll the status of an async memory processing task. Returns task progress, completed memories, and detailed timings.",
+        "operationId": "get_memory_task_status",
+				"parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string"},
+            "description": "Task ID returned from async memory creation"
+          }
+        ],
+				"responses": {
+					"200": {
+            "description": "Task status retrieved",
+						"content": {
+							"application/json": {
+								"schema": {
+                  "type": "object",
+                  "properties": {
+                    "taskId": {"type": "string"},
+                    "status": {
+                      "type": "string",
+                      "enum": ["pending", "queued", "processing", "completed", "failed", "partial"]
+                    },
+                    "progress": {
+                      "type": "object",
+                      "properties": {
+                        "total": {"type": "integer"},
+                        "completed": {"type": "integer"},
+                        "failed": {"type": "integer"},
+                        "pending": {"type": "integer"}
+                      }
+                    },
+                    "memories": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/MemoryResponse"}
+                    },
+                    "stats": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "extracted_facts": {"type": "integer"},
+                        "added": {"type": "integer"},
+                        "updated": {"type": "integer"},
+                        "deleted": {"type": "integer"},
+                        "skipped": {"type": "integer"}
+                      }
+                    },
+                    "timings": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "start_ms": {"type": "integer", "description": "Start time in milliseconds"},
+                        "embedding_generation_ms": {"type": "integer", "description": "Time spent generating embeddings"},
+                        "llm_decision_ms": {"type": "integer", "description": "Time spent on LLM decision-making"},
+                        "memory_operations_ms": {"type": "integer", "description": "Time spent on DB/vector store operations"},
+                        "total_ms": {"type": "integer", "description": "Total processing time"},
+                        "end_ms": {"type": "integer", "description": "End time in milliseconds"}
+                      },
+                      "description": "Detailed timing breakdown of each processing step"
+                    }
+                  }
+                }
+              }
+						}
+					}
+				},
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+			}
+		},
     "/api/v1/memories/search": {
 			"post": {
         "tags": ["Memory Management"],
         "summary": "Search Memories",
-        "description": "Perform semantic search across memories using natural language queries. This endpoint uses advanced embedding models to find memories that are contextually similar to your search query, even if they don't contain exact keyword matches. Perfect for retrieving relevant user context in conversational AI applications.",
+        "description": "Perform semantic search across memories using natural language queries. Supports two modes: **fast** (single vector search, 100-300ms, $0.00002/search) and **advanced** (multi-stage LLM-enhanced search with query expansion and relevance validation, 2-5s, $0.0015/search). Advanced mode provides higher recall and precision for complex queries.",
         "operationId": "search_memories",
 				"requestBody": {
           "required": true,
@@ -1469,11 +1776,11 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(api_key=\"pm_your_api_key\")\n\n# Search memories semantically\nresults = client.memories.search(\n    query=\"What are the user's preferences for UI design?\",\n    limit=10,\n    min_relevance=0.7\n)\n\nprint(f\"Found {results.totalResults} relevant memories:\")\nfor result in results.results:\n    print(f\"- [{result.relevanceScore:.2f}] {result.memory.content}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(api_key=\"pm_your_api_key\")\n\n# Search memories semantically\nresults = client.memories.search(\n    query=\"What are the user's preferences for UI design?\",\n    limit=10,\n    min_relevance=0.7\n)\n\nprint(f\"Found {results.totalResults} relevant memories:\")\nfor result in results.results:\n    print(f\"- [{result.relevanceScore:.2f}] {result.memory.content}\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ apiKey: 'pm_your_api_key' });\n\n// Search memories semantically\nconst results = await client.memories.search({\n  query: \"What are the user's preferences for UI design?\",\n  limit: 10,\n  minRelevance: 0.7\n});\n\nconsole.log(`Found ${results.totalResults} relevant memories:`);\nresults.results.forEach(result => {\n  console.log(`- [${result.relevanceScore.toFixed(2)}] ${result.memory.content}`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ apiKey: 'pm_your_api_key' });\n\n// Search memories semantically\nconst results = await client.memories.search({\n  query: \"What are the user's preferences for UI design?\",\n  limit: 10,\n  minRelevance: 0.7\n});\n\nconsole.log(`Found ${results.totalResults} relevant memories:`);\nresults.results.forEach(result => {\n  console.log(`- [${result.relevanceScore.toFixed(2)}] ${result.memory.content}`);\n});"
 					},
 					{
 						"lang": "cURL",
@@ -1587,11 +1894,11 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List all API keys for a project\napi_keys = client.api_keys.list(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Found {len(api_keys.apiKeys)} API keys:\")\nfor key in api_keys.apiKeys:\n    print(f\"- {key.name} ({key.keyPrefix}...) - Status: {key.status}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# List all API keys for a project\napi_keys = client.api_keys.list(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Found {len(api_keys.apiKeys)} API keys:\")\nfor key in api_keys.apiKeys:\n    print(f\"- {key.name} ({key.keyPrefix}...) - Status: {key.status}\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List all API keys for a project\nconst apiKeys = await client.apiKeys.list({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Found ${apiKeys.apiKeys.length} API keys:`);\napiKeys.apiKeys.forEach(key => {\n  console.log(`- ${key.name} (${key.keyPrefix}...) - Status: ${key.status}`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// List all API keys for a project\nconst apiKeys = await client.apiKeys.list({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Found ${apiKeys.apiKeys.length} API keys:`);\napiKeys.apiKeys.forEach(key => {\n  console.log(`- ${key.name} (${key.keyPrefix}...) - Status: ${key.status}`);\n});"
 					},
 					{
 						"lang": "cURL",
@@ -1602,7 +1909,7 @@
       "post": {
         "tags": ["API Keys"],
         "summary": "Create API Key",
-        "description": "Generate a new API key for authenticating requests to the PhotoMem API. The full API key is only displayed once upon creation - store it securely! You must be an admin or owner of the organization to create API keys. Keys can be scoped with specific permissions and optional expiration dates.",
+        "description": "Generate a new API key for authenticating requests to the photomem API. The full API key is only displayed once upon creation - store it securely! You must be an admin or owner of the organization to create API keys. Keys can be scoped with specific permissions and optional expiration dates.",
         "operationId": "createApiKey",
 				"parameters": [
 					{
@@ -1720,11 +2027,11 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Create a new API key\nresult = client.api_keys.create(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    name=\"Production API Key\",\n    permissions=[\"read\", \"write\"]\n)\n\nprint(f\"API Key created: {result.apiKey.name}\")\nprint(f\"Full key (save this!): {result.apiKey.key}\")\nprint(f\"Warning: {result.warning}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Create a new API key\nresult = client.api_keys.create(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    name=\"Production API Key\",\n    permissions=[\"read\", \"write\"]\n)\n\nprint(f\"API Key created: {result.apiKey.name}\")\nprint(f\"Full key (save this!): {result.apiKey.key}\")\nprint(f\"Warning: {result.warning}\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Create a new API key\nconst result = await client.apiKeys.create({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  name: 'Production API Key',\n  permissions: ['read', 'write']\n});\n\nconsole.log(`API Key created: ${result.apiKey.name}`);\nconsole.log(`Full key (save this!): ${result.apiKey.key}`);\nconsole.log(`Warning: ${result.warning}`);"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Create a new API key\nconst result = await client.apiKeys.create({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  name: 'Production API Key',\n  permissions: ['read', 'write']\n});\n\nconsole.log(`API Key created: ${result.apiKey.name}`);\nconsole.log(`Full key (save this!): ${result.apiKey.key}`);\nconsole.log(`Warning: ${result.warning}`);"
 					},
 					{
 						"lang": "cURL",
@@ -1853,11 +2160,11 @@
 				"x-code-samples": [
 					{
 						"lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Revoke an API key\nresult = client.api_keys.revoke(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    key_id=\"key_a1b2c3d4e5f6\"\n)\n\nprint(f\"API key revoked: {result.message}\")\nprint(f\"Revoked at: {result.revokedAt}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Revoke an API key\nresult = client.api_keys.revoke(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    key_id=\"key_a1b2c3d4e5f6\"\n)\n\nprint(f\"API key revoked: {result.message}\")\nprint(f\"Revoked at: {result.revokedAt}\")"
 					},
 					{
 						"lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Revoke an API key\nconst result = await client.apiKeys.revoke({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  keyId: 'key_a1b2c3d4e5f6'\n});\n\nconsole.log(`API key revoked: ${result.message}`);\nconsole.log(`Revoked at: ${result.revokedAt}`);"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Revoke an API key\nconst result = await client.apiKeys.revoke({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  keyId: 'key_a1b2c3d4e5f6'\n});\n\nconsole.log(`API key revoked: ${result.message}`);\nconsole.log(`Revoked at: ${result.revokedAt}`);"
 					},
 					{
 						"lang": "cURL",
@@ -2024,11 +2331,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Rotate API key with 7-day grace period\nresult = client.api_keys.rotate(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    key_id=\"key_a1b2c3d4e5f6\",\n    grace_period_days=7\n)\n\nprint(f\"New API key: {result.newApiKey.key}\")\nprint(f\"Old key expires at: {result.oldApiKey.expiresAt}\")\nprint(f\"Warning: {result.warning}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Rotate API key with 7-day grace period\nresult = client.api_keys.rotate(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    key_id=\"key_a1b2c3d4e5f6\",\n    grace_period_days=7\n)\n\nprint(f\"New API key: {result.newApiKey.key}\")\nprint(f\"Old key expires at: {result.oldApiKey.expiresAt}\")\nprint(f\"Warning: {result.warning}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Rotate API key with 7-day grace period\nconst result = await client.apiKeys.rotate({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  keyId: 'key_a1b2c3d4e5f6',\n  gracePeriodDays: 7\n});\n\nconsole.log(`New API key: ${result.newApiKey.key}`);\nconsole.log(`Old key expires at: ${result.oldApiKey.expiresAt}`);\nconsole.log(`Warning: ${result.warning}`);"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Rotate API key with 7-day grace period\nconst result = await client.apiKeys.rotate({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  keyId: 'key_a1b2c3d4e5f6',\n  gracePeriodDays: 7\n});\n\nconsole.log(`New API key: ${result.newApiKey.key}`);\nconsole.log(`Old key expires at: ${result.oldApiKey.expiresAt}`);\nconsole.log(`Warning: ${result.warning}`);"
           },
           {
             "lang": "cURL",
@@ -2131,11 +2438,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List all organizations\nresult = client.organizations.list()\n\nfor org in result.organizations:\n    print(f\"{org.name} ({org.plan}) - Your role: {org.yourRole}\")\n    print(f\"  Members: {org.memberCount}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# List all organizations\nresult = client.organizations.list()\n\nfor org in result.organizations:\n    print(f\"{org.name} ({org.plan}) - Your role: {org.yourRole}\")\n    print(f\"  Members: {org.memberCount}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List all organizations\nconst result = await client.organizations.list();\n\nresult.organizations.forEach(org => {\n  console.log(`${org.name} (${org.plan}) - Your role: ${org.yourRole}`);\n  console.log(`  Members: ${org.memberCount}`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// List all organizations\nconst result = await client.organizations.list();\n\nresult.organizations.forEach(org => {\n  console.log(`${org.name} (${org.plan}) - Your role: ${org.yourRole}`);\n  console.log(`  Members: ${org.memberCount}`);\n});"
           },
           {
             "lang": "cURL",
@@ -2284,11 +2591,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Create a new organization\norg = client.organizations.create(\n    name=\"My Startup\",\n    settings={\n        \"allowGuestAccess\": False,\n        \"defaultMemoryRetention\": 90\n    }\n)\n\nprint(f\"Organization created: {org.id}\")\nprint(f\"Slug: {org.slug}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Create a new organization\norg = client.organizations.create(\n    name=\"My Startup\",\n    settings={\n        \"allowGuestAccess\": False,\n        \"defaultMemoryRetention\": 90\n    }\n)\n\nprint(f\"Organization created: {org.id}\")\nprint(f\"Slug: {org.slug}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Create a new organization\nconst org = await client.organizations.create({\n  name: 'My Startup',\n  settings: {\n    allowGuestAccess: false,\n    defaultMemoryRetention: 90\n  }\n});\n\nconsole.log(`Organization created: ${org.id}`);\nconsole.log(`Slug: ${org.slug}`);"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Create a new organization\nconst org = await client.organizations.create({\n  name: 'My Startup',\n  settings: {\n    allowGuestAccess: false,\n    defaultMemoryRetention: 90\n  }\n});\n\nconsole.log(`Organization created: ${org.id}`);\nconsole.log(`Slug: ${org.slug}`);"
           },
           {
             "lang": "cURL",
@@ -2398,11 +2705,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\norg = client.organizations.create(\n    name=\"Acme Corp\",\n    slug=\"acme-corp\"\n)\n\nprint(f\"Created: {org.name}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\norg = client.organizations.create(\n    name=\"Acme Corp\",\n    slug=\"acme-corp\"\n)\n\nprint(f\"Created: {org.name}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst org = await client.organizations.create({\n  name: 'Acme Corp',\n  slug: 'acme-corp'\n});\n\nconsole.log(`Created: ${org.name}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst org = await client.organizations.create({\n  name: 'Acme Corp',\n  slug: 'acme-corp'\n});\n\nconsole.log(`Created: ${org.name}`);"
           },
           {
             "lang": "cURL",
@@ -2538,11 +2845,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get organization details\norg = client.organizations.get(\"org_abc123def456\")\n\nprint(f\"{org.name} ({org.plan})\")\nprint(f\"Members: {org.memberCount}, Projects: {org.projectCount}\")\nprint(f\"Your role: {org.yourRole}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Get organization details\norg = client.organizations.get(\"org_abc123def456\")\n\nprint(f\"{org.name} ({org.plan})\")\nprint(f\"Members: {org.memberCount}, Projects: {org.projectCount}\")\nprint(f\"Your role: {org.yourRole}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get organization details\nconst org = await client.organizations.get('org_abc123def456');\n\nconsole.log(`${org.name} (${org.plan})`);\nconsole.log(`Members: ${org.memberCount}, Projects: ${org.projectCount}`);\nconsole.log(`Your role: ${org.yourRole}`);"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Get organization details\nconst org = await client.organizations.get('org_abc123def456');\n\nconsole.log(`${org.name} (${org.plan})`);\nconsole.log(`Members: ${org.memberCount}, Projects: ${org.projectCount}`);\nconsole.log(`Your role: ${org.yourRole}`);"
           },
           {
             "lang": "cURL",
@@ -2660,11 +2967,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Delete organization\nresult = client.organizations.delete(\"org_abc123def456\")\n\nprint(f\"Organization deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Delete organization\nresult = client.organizations.delete(\"org_abc123def456\")\n\nprint(f\"Organization deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Delete organization\nconst result = await client.organizations.delete('org_abc123def456');\n\nconsole.log(`Organization deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Delete organization\nconst result = await client.organizations.delete('org_abc123def456');\n\nconsole.log(`Organization deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
           },
           {
             "lang": "cURL",
@@ -2847,11 +3154,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List organization members\nresult = client.organizations.get_members(\"org_abc123def456\")\n\nprint(f\"Total members: {result.totalMembers}\")\nfor member in result.members:\n    print(f\"- {member.fullName} ({member.email}) - Role: {member.role}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# List organization members\nresult = client.organizations.get_members(\"org_abc123def456\")\n\nprint(f\"Total members: {result.totalMembers}\")\nfor member in result.members:\n    print(f\"- {member.fullName} ({member.email}) - Role: {member.role}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List organization members\nconst result = await client.organizations.getMembers('org_abc123def456');\n\nconsole.log(`Total members: ${result.totalMembers}`);\nresult.members.forEach(member => {\n  console.log(`- ${member.fullName} (${member.email}) - Role: ${member.role}`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// List organization members\nconst result = await client.organizations.getMembers('org_abc123def456');\n\nconsole.log(`Total members: ${result.totalMembers}`);\nresult.members.forEach(member => {\n  console.log(`- ${member.fullName} (${member.email}) - Role: ${member.role}`);\n});"
           },
           {
             "lang": "cURL",
@@ -3038,11 +3345,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Invite a new member\ninvitation = client.organizations.invite_member(\n    org_id=\"org_abc123def456\",\n    email=\"newmember@example.com\",\n    role=\"member\",\n    message=\"Welcome to the team!\"\n)\n\nprint(f\"Invitation sent: {invitation.invitationId}\")\nprint(f\"Expires at: {invitation.expiresAt}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Invite a new member\ninvitation = client.organizations.invite_member(\n    org_id=\"org_abc123def456\",\n    email=\"newmember@example.com\",\n    role=\"member\",\n    message=\"Welcome to the team!\"\n)\n\nprint(f\"Invitation sent: {invitation.invitationId}\")\nprint(f\"Expires at: {invitation.expiresAt}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Invite a new member\nconst invitation = await client.organizations.inviteMember({\n  orgId: 'org_abc123def456',\n  email: 'newmember@example.com',\n  role: 'member',\n  message: 'Welcome to the team!'\n});\n\nconsole.log(`Invitation sent: ${invitation.invitationId}`);\nconsole.log(`Expires at: ${invitation.expiresAt}`);"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Invite a new member\nconst invitation = await client.organizations.inviteMember({\n  orgId: 'org_abc123def456',\n  email: 'newmember@example.com',\n  role: 'member',\n  message: 'Welcome to the team!'\n});\n\nconsole.log(`Invitation sent: ${invitation.invitationId}`);\nconsole.log(`Expires at: ${invitation.expiresAt}`);"
           },
           {
             "lang": "cURL",
@@ -3153,11 +3460,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\norg = client.organizations.update(\n    org_id=\"org_abc123def456\",\n    name=\"Acme Corp Updated\"\n)\n\nprint(f\"Updated: {org.name}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\norg = client.organizations.update(\n    org_id=\"org_abc123def456\",\n    name=\"Acme Corp Updated\"\n)\n\nprint(f\"Updated: {org.name}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst org = await client.organizations.update({\n  orgId: 'org_abc123def456',\n  name: 'Acme Corp Updated'\n});\n\nconsole.log(`Updated: ${org.name}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst org = await client.organizations.update({\n  orgId: 'org_abc123def456',\n  name: 'Acme Corp Updated'\n});\n\nconsole.log(`Updated: ${org.name}`);"
           },
           {
             "lang": "cURL",
@@ -3269,11 +3576,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nmember = client.organizations.update_member_role(\n    org_id=\"org_abc123def456\",\n    member_id=\"user_xyz789\",\n    role=\"admin\"\n)\n\nprint(f\"Role updated to: {member.role}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\nmember = client.organizations.update_member_role(\n    org_id=\"org_abc123def456\",\n    member_id=\"user_xyz789\",\n    role=\"admin\"\n)\n\nprint(f\"Role updated to: {member.role}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst member = await client.organizations.updateMemberRole({\n  orgId: 'org_abc123def456',\n  memberId: 'user_xyz789',\n  role: 'admin'\n});\n\nconsole.log(`Role updated to: ${member.role}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst member = await client.organizations.updateMemberRole({\n  orgId: 'org_abc123def456',\n  memberId: 'user_xyz789',\n  role: 'admin'\n});\n\nconsole.log(`Role updated to: ${member.role}`);"
           },
           {
             "lang": "cURL",
@@ -3356,11 +3663,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nresult = client.organizations.remove_member(\n    org_id=\"org_abc123def456\",\n    member_id=\"user_xyz789\"\n)\n\nprint(result.message)"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\nresult = client.organizations.remove_member(\n    org_id=\"org_abc123def456\",\n    member_id=\"user_xyz789\"\n)\n\nprint(result.message)"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.organizations.removeMember({\n  orgId: 'org_abc123def456',\n  memberId: 'user_xyz789'\n});\n\nconsole.log(result.message);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.organizations.removeMember({\n  orgId: 'org_abc123def456',\n  memberId: 'user_xyz789'\n});\n\nconsole.log(result.message);"
           },
           {
             "lang": "cURL",
@@ -3516,11 +3823,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List all projects\nresult = client.projects.list(org_id=\"org_abc123def456\")\n\nprint(f\"Total projects: {len(result.projects)}\")\nfor project in result.projects:\n    print(f\"- {project.name} ({project.environment})\")\n    print(f\"  Memories: {project.memoryCount}, API Calls (30d): {project.apiCallCount30d}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# List all projects\nresult = client.projects.list(org_id=\"org_abc123def456\")\n\nprint(f\"Total projects: {len(result.projects)}\")\nfor project in result.projects:\n    print(f\"- {project.name} ({project.environment})\")\n    print(f\"  Memories: {project.memoryCount}, API Calls (30d): {project.apiCallCount30d}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List all projects\nconst result = await client.projects.list({ orgId: 'org_abc123def456' });\n\nconsole.log(`Total projects: ${result.projects.length}`);\nresult.projects.forEach(project => {\n  console.log(`- ${project.name} (${project.environment})`);\n  console.log(`  Memories: ${project.memoryCount}, API Calls (30d): ${project.apiCallCount30d}`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// List all projects\nconst result = await client.projects.list({ orgId: 'org_abc123def456' });\n\nconsole.log(`Total projects: ${result.projects.length}`);\nresult.projects.forEach(project => {\n  console.log(`- ${project.name} (${project.environment})`);\n  console.log(`  Memories: ${project.memoryCount}, API Calls (30d): ${project.apiCallCount30d}`);\n});"
           },
           {
             "lang": "cURL",
@@ -3756,11 +4063,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\n# Initialize with user authentication token\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Create a new project\nproject = client.projects.create(\n    org_id=\"org_abc123def456\",\n    name=\"Production API\",\n    description=\"Main production environment\",\n    environment=\"production\"\n)\n\nprint(f\"Project created: {project.project.id}\")\nprint(f\"Name: {project.project.name}\")"
+            "source": "from photomem import photomemClient\n\n# Initialize with user authentication token\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Create a new project\nproject = client.projects.create(\n    org_id=\"org_abc123def456\",\n    name=\"Production API\",\n    description=\"Main production environment\",\n    environment=\"production\"\n)\n\nprint(f\"Project created: {project.project.id}\")\nprint(f\"Name: {project.project.name}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Create a new project\nconst project = await client.projects.create({\n  orgId: 'org_abc123def456',\n  name: 'Production API',\n  description: 'Main production environment',\n  environment: 'production'\n});\n\nconsole.log(`Project created: ${project.project.id}`);\nconsole.log(`Name: ${project.project.name}`);"
+            "source": "import { photomemClient } from 'photomem';\n\n// Initialize with user authentication token\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Create a new project\nconst project = await client.projects.create({\n  orgId: 'org_abc123def456',\n  name: 'Production API',\n  description: 'Main production environment',\n  environment: 'production'\n});\n\nconsole.log(`Project created: ${project.project.id}`);\nconsole.log(`Name: ${project.project.name}`);"
           },
           {
             "lang": "cURL",
@@ -3899,11 +4206,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get project details\nproject = client.projects.get(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"{project.project.name} ({project.project.environment})\")\nprint(f\"Memories: {project.project.memoryCount}\")\nprint(f\"Retention: {project.project.settings['retentionDays']} days\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Get project details\nproject = client.projects.get(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"{project.project.name} ({project.project.environment})\")\nprint(f\"Memories: {project.project.memoryCount}\")\nprint(f\"Retention: {project.project.settings['retentionDays']} days\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get project details\nconst project = await client.projects.get({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`${project.project.name} (${project.project.environment})`);\nconsole.log(`Memories: ${project.project.memoryCount}`);\nconsole.log(`Retention: ${project.project.settings.retentionDays} days`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Get project details\nconst project = await client.projects.get({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`${project.project.name} (${project.project.environment})`);\nconsole.log(`Memories: ${project.project.memoryCount}`);\nconsole.log(`Retention: ${project.project.settings.retentionDays} days`);"
           },
           {
             "lang": "cURL",
@@ -4083,11 +4390,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Update project\nproject = client.projects.update(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    name=\"Production API v2\",\n    settings={\n        \"retentionDays\": 120,\n        \"maxMemoriesPerUser\": 2000\n    }\n)\n\nprint(f\"Project updated: {project.project.name}\")\nprint(f\"New retention: {project.project.settings['retentionDays']} days\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Update project\nproject = client.projects.update(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    name=\"Production API v2\",\n    settings={\n        \"retentionDays\": 120,\n        \"maxMemoriesPerUser\": 2000\n    }\n)\n\nprint(f\"Project updated: {project.project.name}\")\nprint(f\"New retention: {project.project.settings['retentionDays']} days\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Update project\nconst project = await client.projects.update({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  name: 'Production API v2',\n  settings: {\n    retentionDays: 120,\n    maxMemoriesPerUser: 2000\n  }\n});\n\nconsole.log(`Project updated: ${project.project.name}`);\nconsole.log(`New retention: ${project.project.settings.retentionDays} days`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Update project\nconst project = await client.projects.update({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  name: 'Production API v2',\n  settings: {\n    retentionDays: 120,\n    maxMemoriesPerUser: 2000\n  }\n});\n\nconsole.log(`Project updated: ${project.project.name}`);\nconsole.log(`New retention: ${project.project.settings.retentionDays} days`);"
           },
           {
             "lang": "cURL",
@@ -4206,11 +4513,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Delete project\nresult = client.projects.delete(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Project deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Delete project\nresult = client.projects.delete(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Project deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Delete project\nconst result = await client.projects.delete({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Project deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Delete project\nconst result = await client.projects.delete({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Project deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
           },
           {
             "lang": "cURL",
@@ -4416,11 +4723,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get project statistics\nstats = client.projects.get_stats(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    period=\"30d\"\n)\n\nprint(f\"Memories: {stats.statistics.memoryCount}\")\nprint(f\"API Calls: {stats.statistics.apiCalls.total}\")\nprint(f\"Success Rate: {(stats.statistics.apiCalls.successful / stats.statistics.apiCalls.total * 100):.1f}%\")\nprint(f\"\\nTop Users:\")\nfor user in stats.statistics.topUsers[:5]:\n    print(f\"  - {user.userId}: {user.memoryCount} memories\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Get project statistics\nstats = client.projects.get_stats(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    period=\"30d\"\n)\n\nprint(f\"Memories: {stats.statistics.memoryCount}\")\nprint(f\"API Calls: {stats.statistics.apiCalls.total}\")\nprint(f\"Success Rate: {(stats.statistics.apiCalls.successful / stats.statistics.apiCalls.total * 100):.1f}%\")\nprint(f\"\\nTop Users:\")\nfor user in stats.statistics.topUsers[:5]:\n    print(f\"  - {user.userId}: {user.memoryCount} memories\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get project statistics\nconst stats = await client.projects.getStats({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  period: '30d'\n});\n\nconsole.log(`Memories: ${stats.statistics.memoryCount}`);\nconsole.log(`API Calls: ${stats.statistics.apiCalls.total}`);\nconsole.log(`Success Rate: ${(stats.statistics.apiCalls.successful / stats.statistics.apiCalls.total * 100).toFixed(1)}%`);\nconsole.log('\\nTop Users:');\nstats.statistics.topUsers.slice(0, 5).forEach(user => {\n  console.log(`  - ${user.userId}: ${user.memoryCount} memories`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Get project statistics\nconst stats = await client.projects.getStats({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  period: '30d'\n});\n\nconsole.log(`Memories: ${stats.statistics.memoryCount}`);\nconsole.log(`API Calls: ${stats.statistics.apiCalls.total}`);\nconsole.log(`Success Rate: ${(stats.statistics.apiCalls.successful / stats.statistics.apiCalls.total * 100).toFixed(1)}%`);\nconsole.log('\\nTop Users:');\nstats.statistics.topUsers.slice(0, 5).forEach(user => {\n  console.log(`  - ${user.userId}: ${user.memoryCount} memories`);\n});"
           },
           {
             "lang": "cURL",
@@ -4717,11 +5024,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get usage statistics for last 30 days\nusage = client.usage.get_statistics(\n    org_id=\"org_abc123def456\",\n    period=\"30d\"\n)\n\nprint(f\"API Calls: {usage.usage.apiCalls.total:,}\")\nprint(f\"Success Rate: {(usage.usage.apiCalls.successful / usage.usage.apiCalls.total * 100):.1f}%\")\nprint(f\"Storage: {usage.usage.storage.storageUsedMB:.2f} MB\")\nprint(f\"Total Cost: ${usage.usage.costs.totalCost:.2f}\")\nprint(f\"\\nPlan Usage:\")\nprint(f\"  API Calls: {usage.usage.limits.percentUsed.apiCalls:.1f}%\")\nprint(f\"  Storage: {usage.usage.limits.percentUsed.storage:.1f}%\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Get usage statistics for last 30 days\nusage = client.usage.get_statistics(\n    org_id=\"org_abc123def456\",\n    period=\"30d\"\n)\n\nprint(f\"API Calls: {usage.usage.apiCalls.total:,}\")\nprint(f\"Success Rate: {(usage.usage.apiCalls.successful / usage.usage.apiCalls.total * 100):.1f}%\")\nprint(f\"Storage: {usage.usage.storage.storageUsedMB:.2f} MB\")\nprint(f\"Total Cost: ${usage.usage.costs.totalCost:.2f}\")\nprint(f\"\\nPlan Usage:\")\nprint(f\"  API Calls: {usage.usage.limits.percentUsed.apiCalls:.1f}%\")\nprint(f\"  Storage: {usage.usage.limits.percentUsed.storage:.1f}%\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get usage statistics for last 30 days\nconst usage = await client.usage.getStatistics({\n  orgId: 'org_abc123def456',\n  period: '30d'\n});\n\nconsole.log(`API Calls: ${usage.usage.apiCalls.total.toLocaleString()}`);\nconsole.log(`Success Rate: ${(usage.usage.apiCalls.successful / usage.usage.apiCalls.total * 100).toFixed(1)}%`);\nconsole.log(`Storage: ${usage.usage.storage.storageUsedMB.toFixed(2)} MB`);\nconsole.log(`Total Cost: $${usage.usage.costs.totalCost.toFixed(2)}`);\nconsole.log('\\nPlan Usage:');\nconsole.log(`  API Calls: ${usage.usage.limits.percentUsed.apiCalls.toFixed(1)}%`);\nconsole.log(`  Storage: ${usage.usage.limits.percentUsed.storage.toFixed(1)}%`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Get usage statistics for last 30 days\nconst usage = await client.usage.getStatistics({\n  orgId: 'org_abc123def456',\n  period: '30d'\n});\n\nconsole.log(`API Calls: ${usage.usage.apiCalls.total.toLocaleString()}`);\nconsole.log(`Success Rate: ${(usage.usage.apiCalls.successful / usage.usage.apiCalls.total * 100).toFixed(1)}%`);\nconsole.log(`Storage: ${usage.usage.storage.storageUsedMB.toFixed(2)} MB`);\nconsole.log(`Total Cost: $${usage.usage.costs.totalCost.toFixed(2)}`);\nconsole.log('\\nPlan Usage:');\nconsole.log(`  API Calls: ${usage.usage.limits.percentUsed.apiCalls.toFixed(1)}%`);\nconsole.log(`  Storage: ${usage.usage.limits.percentUsed.storage.toFixed(1)}%`);"
           },
           {
             "lang": "cURL",
@@ -4957,11 +5264,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get current plan\nplan_info = client.billing.get_plan(org_id=\"org_abc123def456\")\n\nprint(f\"Plan: {plan_info.plan.name} (${plan_info.plan.price}/{plan_info.plan.interval})\")\nprint(f\"Status: {plan_info.subscription.status}\")\nprint(f\"\\nFeatures:\")\nprint(f\"  API Calls: {plan_info.usage.apiCalls:,} / {plan_info.plan.features.apiCallsPerMonth:,}\")\nprint(f\"  Storage: {plan_info.usage.storage:,} memories\")\nprint(f\"  Projects: {plan_info.usage.projects} / {plan_info.plan.features.projects}\")\nprint(f\"  Team: {plan_info.usage.teamMembers} / {plan_info.plan.features.teamMembers}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Get current plan\nplan_info = client.billing.get_plan(org_id=\"org_abc123def456\")\n\nprint(f\"Plan: {plan_info.plan.name} (${plan_info.plan.price}/{plan_info.plan.interval})\")\nprint(f\"Status: {plan_info.subscription.status}\")\nprint(f\"\\nFeatures:\")\nprint(f\"  API Calls: {plan_info.usage.apiCalls:,} / {plan_info.plan.features.apiCallsPerMonth:,}\")\nprint(f\"  Storage: {plan_info.usage.storage:,} memories\")\nprint(f\"  Projects: {plan_info.usage.projects} / {plan_info.plan.features.projects}\")\nprint(f\"  Team: {plan_info.usage.teamMembers} / {plan_info.plan.features.teamMembers}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get current plan\nconst planInfo = await client.billing.getPlan({ orgId: 'org_abc123def456' });\n\nconsole.log(`Plan: ${planInfo.plan.name} ($${planInfo.plan.price}/${planInfo.plan.interval})`);\nconsole.log(`Status: ${planInfo.subscription.status}`);\nconsole.log('\\nFeatures:');\nconsole.log(`  API Calls: ${planInfo.usage.apiCalls.toLocaleString()} / ${planInfo.plan.features.apiCallsPerMonth.toLocaleString()}`);\nconsole.log(`  Storage: ${planInfo.usage.storage.toLocaleString()} memories`);\nconsole.log(`  Projects: ${planInfo.usage.projects} / ${planInfo.plan.features.projects}`);\nconsole.log(`  Team: ${planInfo.usage.teamMembers} / ${planInfo.plan.features.teamMembers}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Get current plan\nconst planInfo = await client.billing.getPlan({ orgId: 'org_abc123def456' });\n\nconsole.log(`Plan: ${planInfo.plan.name} ($${planInfo.plan.price}/${planInfo.plan.interval})`);\nconsole.log(`Status: ${planInfo.subscription.status}`);\nconsole.log('\\nFeatures:');\nconsole.log(`  API Calls: ${planInfo.usage.apiCalls.toLocaleString()} / ${planInfo.plan.features.apiCallsPerMonth.toLocaleString()}`);\nconsole.log(`  Storage: ${planInfo.usage.storage.toLocaleString()} memories`);\nconsole.log(`  Projects: ${planInfo.usage.projects} / ${planInfo.plan.features.projects}`);\nconsole.log(`  Team: ${planInfo.usage.teamMembers} / ${planInfo.plan.features.teamMembers}`);"
           },
           {
             "lang": "cURL",
@@ -5121,11 +5428,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Upgrade to Pro plan\nresult = client.billing.change_plan(\n    org_id=\"org_abc123def456\",\n    plan_id=\"plan_pro\"\n)\n\nprint(f\"Plan changed to: {result.subscription.planId}\")\nprint(f\"Status: {result.subscription.status}\")\nprint(f\"Amount due: ${result.invoicePreview.total:.2f}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Upgrade to Pro plan\nresult = client.billing.change_plan(\n    org_id=\"org_abc123def456\",\n    plan_id=\"plan_pro\"\n)\n\nprint(f\"Plan changed to: {result.subscription.planId}\")\nprint(f\"Status: {result.subscription.status}\")\nprint(f\"Amount due: ${result.invoicePreview.total:.2f}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Upgrade to Pro plan\nconst result = await client.billing.changePlan({\n  orgId: 'org_abc123def456',\n  planId: 'plan_pro'\n});\n\nconsole.log(`Plan changed to: ${result.subscription.planId}`);\nconsole.log(`Status: ${result.subscription.status}`);\nconsole.log(`Amount due: $${result.invoicePreview.total.toFixed(2)}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Upgrade to Pro plan\nconst result = await client.billing.changePlan({\n  orgId: 'org_abc123def456',\n  planId: 'plan_pro'\n});\n\nconsole.log(`Plan changed to: ${result.subscription.planId}`);\nconsole.log(`Status: ${result.subscription.status}`);\nconsole.log(`Amount due: $${result.invoicePreview.total.toFixed(2)}`);"
           },
           {
             "lang": "cURL",
@@ -5217,11 +5524,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nresult = client.users.change_password(\n    current_password=\"currentP@ssw0rd\",\n    new_password=\"newP@ssw0rd123\"\n)\n\nprint(result.message)"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\nresult = client.users.change_password(\n    current_password=\"currentP@ssw0rd\",\n    new_password=\"newP@ssw0rd123\"\n)\n\nprint(result.message)"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.users.changePassword({\n  currentPassword: 'currentP@ssw0rd',\n  newPassword: 'newP@ssw0rd123'\n});\n\nconsole.log(result.message);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.users.changePassword({\n  currentPassword: 'currentP@ssw0rd',\n  newPassword: 'newP@ssw0rd123'\n});\n\nconsole.log(result.message);"
           },
           {
             "lang": "cURL",
@@ -5316,11 +5623,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get billing history\ninvoices = client.billing.get_invoices(org_id=\"org_abc123def456\")\n\nprint(f\"Total invoices: {len(invoices.invoices)}\")\nfor invoice in invoices.invoices:\n    print(f\"\\n{invoice.number}: ${invoice.amount:.2f}\")\n    print(f\"  Status: {invoice.status}\")\n    print(f\"  Due: {invoice.dueDate}\")\n    if invoice.paidAt:\n        print(f\"  Paid: {invoice.paidAt}\")\n    print(f\"  Download: {invoice.downloadUrl}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Get billing history\ninvoices = client.billing.get_invoices(org_id=\"org_abc123def456\")\n\nprint(f\"Total invoices: {len(invoices.invoices)}\")\nfor invoice in invoices.invoices:\n    print(f\"\\n{invoice.number}: ${invoice.amount:.2f}\")\n    print(f\"  Status: {invoice.status}\")\n    print(f\"  Due: {invoice.dueDate}\")\n    if invoice.paidAt:\n        print(f\"  Paid: {invoice.paidAt}\")\n    print(f\"  Download: {invoice.downloadUrl}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get billing history\nconst invoices = await client.billing.getInvoices({ orgId: 'org_abc123def456' });\n\nconsole.log(`Total invoices: ${invoices.invoices.length}`);\ninvoices.invoices.forEach(invoice => {\n  console.log(`\\n${invoice.number}: $${invoice.amount.toFixed(2)}`);\n  console.log(`  Status: ${invoice.status}`);\n  console.log(`  Due: ${invoice.dueDate}`);\n  if (invoice.paidAt) {\n    console.log(`  Paid: ${invoice.paidAt}`);\n  }\n  console.log(`  Download: ${invoice.downloadUrl}`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Get billing history\nconst invoices = await client.billing.getInvoices({ orgId: 'org_abc123def456' });\n\nconsole.log(`Total invoices: ${invoices.invoices.length}`);\ninvoices.invoices.forEach(invoice => {\n  console.log(`\\n${invoice.number}: $${invoice.amount.toFixed(2)}`);\n  console.log(`  Status: ${invoice.status}`);\n  console.log(`  Due: ${invoice.dueDate}`);\n  if (invoice.paidAt) {\n    console.log(`  Paid: ${invoice.paidAt}`);\n  }\n  console.log(`  Download: ${invoice.downloadUrl}`);\n});"
           },
           {
             "lang": "cURL",
@@ -5449,11 +5756,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Update payment method\nresult = client.billing.update_payment_method(\n    org_id=\"org_abc123def456\",\n    payment_method_id=\"pm_1234567890abcdef\"\n)\n\nprint(f\"Payment method updated: {result.paymentMethod.type}\")\nif result.paymentMethod.card:\n    card = result.paymentMethod.card\n    print(f\"Card: {card.brand} ending in {card.last4}\")\n    print(f\"Expires: {card.expMonth}/{card.expYear}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Update payment method\nresult = client.billing.update_payment_method(\n    org_id=\"org_abc123def456\",\n    payment_method_id=\"pm_1234567890abcdef\"\n)\n\nprint(f\"Payment method updated: {result.paymentMethod.type}\")\nif result.paymentMethod.card:\n    card = result.paymentMethod.card\n    print(f\"Card: {card.brand} ending in {card.last4}\")\n    print(f\"Expires: {card.expMonth}/{card.expYear}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Update payment method\nconst result = await client.billing.updatePaymentMethod({\n  orgId: 'org_abc123def456',\n  paymentMethodId: 'pm_1234567890abcdef'\n});\n\nconsole.log(`Payment method updated: ${result.paymentMethod.type}`);\nif (result.paymentMethod.card) {\n  const card = result.paymentMethod.card;\n  console.log(`Card: ${card.brand} ending in ${card.last4}`);\n  console.log(`Expires: ${card.expMonth}/${card.expYear}`);\n}"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Update payment method\nconst result = await client.billing.updatePaymentMethod({\n  orgId: 'org_abc123def456',\n  paymentMethodId: 'pm_1234567890abcdef'\n});\n\nconsole.log(`Payment method updated: ${result.paymentMethod.type}`);\nif (result.paymentMethod.card) {\n  const card = result.paymentMethod.card;\n  console.log(`Card: ${card.brand} ending in ${card.last4}`);\n  console.log(`Expires: ${card.expMonth}/${card.expYear}`);\n}"
           },
           {
             "lang": "cURL",
@@ -5580,11 +5887,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Cancel subscription at period end\nresult = client.billing.cancel_subscription(\n    org_id=\"org_abc123def456\",\n    immediate=False,\n    reason=\"Switching to another service\"\n)\n\nprint(f\"Status: {result.subscription.status}\")\nprint(f\"Ends at: {result.subscription.endsAt}\")\nprint(f\"Message: {result.message}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Cancel subscription at period end\nresult = client.billing.cancel_subscription(\n    org_id=\"org_abc123def456\",\n    immediate=False,\n    reason=\"Switching to another service\"\n)\n\nprint(f\"Status: {result.subscription.status}\")\nprint(f\"Ends at: {result.subscription.endsAt}\")\nprint(f\"Message: {result.message}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Cancel subscription at period end\nconst result = await client.billing.cancelSubscription({\n  orgId: 'org_abc123def456',\n  immediate: false,\n  reason: 'Switching to another service'\n});\n\nconsole.log(`Status: ${result.subscription.status}`);\nconsole.log(`Ends at: ${result.subscription.endsAt}`);\nconsole.log(`Message: ${result.message}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Cancel subscription at period end\nconst result = await client.billing.cancelSubscription({\n  orgId: 'org_abc123def456',\n  immediate: false,\n  reason: 'Switching to another service'\n});\n\nconsole.log(`Status: ${result.subscription.status}`);\nconsole.log(`Ends at: ${result.subscription.endsAt}`);\nconsole.log(`Message: ${result.message}`);"
           },
           {
             "lang": "cURL",
@@ -5597,7 +5904,7 @@
       "get": {
         "tags": ["Webhooks"],
         "summary": "List Webhooks",
-        "description": "Retrieve all webhooks configured for a specific project. Webhooks allow your application to receive real-time notifications when events occur in PhotoMem, such as memory creation, updates, or deletions. Each webhook includes delivery statistics and status information.",
+        "description": "Retrieve all webhooks configured for a specific project. Webhooks allow your application to receive real-time notifications when events occur in photomem, such as memory creation, updates, or deletions. Each webhook includes delivery statistics and status information.",
         "operationId": "listWebhooks",
         "parameters": [
           {
@@ -5738,11 +6045,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List all webhooks\nwebhooks = client.webhooks.list(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Total webhooks: {len(webhooks.webhooks)}\")\nfor webhook in webhooks.webhooks:\n    print(f\"\\n{webhook.url}\")\n    print(f\"  Status: {webhook.status}\")\n    print(f\"  Events: {', '.join(webhook.events)}\")\n    if webhook.statistics:\n        print(f\"  Deliveries: {webhook.statistics.successfulDeliveries}/{webhook.statistics.totalDeliveries}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# List all webhooks\nwebhooks = client.webhooks.list(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\"\n)\n\nprint(f\"Total webhooks: {len(webhooks.webhooks)}\")\nfor webhook in webhooks.webhooks:\n    print(f\"\\n{webhook.url}\")\n    print(f\"  Status: {webhook.status}\")\n    print(f\"  Events: {', '.join(webhook.events)}\")\n    if webhook.statistics:\n        print(f\"  Deliveries: {webhook.statistics.successfulDeliveries}/{webhook.statistics.totalDeliveries}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List all webhooks\nconst webhooks = await client.webhooks.list({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Total webhooks: ${webhooks.webhooks.length}`);\nwebhooks.webhooks.forEach(webhook => {\n  console.log(`\\n${webhook.url}`);\n  console.log(`  Status: ${webhook.status}`);\n  console.log(`  Events: ${webhook.events.join(', ')}`);\n  if (webhook.statistics) {\n    console.log(`  Deliveries: ${webhook.statistics.successfulDeliveries}/${webhook.statistics.totalDeliveries}`);\n  }\n});"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// List all webhooks\nconst webhooks = await client.webhooks.list({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012'\n});\n\nconsole.log(`Total webhooks: ${webhooks.webhooks.length}`);\nwebhooks.webhooks.forEach(webhook => {\n  console.log(`\\n${webhook.url}`);\n  console.log(`  Status: ${webhook.status}`);\n  console.log(`  Events: ${webhook.events.join(', ')}`);\n  if (webhook.statistics) {\n    console.log(`  Deliveries: ${webhook.statistics.successfulDeliveries}/${webhook.statistics.totalDeliveries}`);\n  }\n});"
           },
           {
             "lang": "cURL",
@@ -5753,7 +6060,7 @@
       "post": {
         "tags": ["Webhooks"],
         "summary": "Create Webhook",
-        "description": "Create a new webhook to receive real-time event notifications from PhotoMem. Specify which events to listen for and the URL where notifications should be sent. A secure secret will be generated for verifying webhook signatures.",
+        "description": "Create a new webhook to receive real-time event notifications from photomem. Specify which events to listen for and the URL where notifications should be sent. A secure secret will be generated for verifying webhook signatures.",
         "operationId": "createWebhook",
         "parameters": [
           {
@@ -5893,11 +6200,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Create a new webhook\nwebhook = client.webhooks.create(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    url=\"https://example.com/webhooks/photomem\",\n    events=[\"memory.created\", \"memory.updated\"],\n    description=\"Production webhook for memory events\"\n)\n\nprint(f\"Webhook created: {webhook.webhook.id}\")\nprint(f\"Secret: {webhook.webhook.secret}\")\nprint(\"Save this secret securely - it won't be shown again!\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Create a new webhook\nwebhook = client.webhooks.create(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    url=\"https://example.com/webhooks/photomem\",\n    events=[\"memory.created\", \"memory.updated\"],\n    description=\"Production webhook for memory events\"\n)\n\nprint(f\"Webhook created: {webhook.webhook.id}\")\nprint(f\"Secret: {webhook.webhook.secret}\")\nprint(\"Save this secret securely - it won't be shown again!\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Create a new webhook\nconst webhook = await client.webhooks.create({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  url: 'https://example.com/webhooks/photomem',\n  events: ['memory.created', 'memory.updated'],\n  description: 'Production webhook for memory events'\n});\n\nconsole.log(`Webhook created: ${webhook.webhook.id}`);\nconsole.log(`Secret: ${webhook.webhook.secret}`);\nconsole.log('Save this secret securely - it won\\'t be shown again!');"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Create a new webhook\nconst webhook = await client.webhooks.create({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  url: 'https://example.com/webhooks/photomem',\n  events: ['memory.created', 'memory.updated'],\n  description: 'Production webhook for memory events'\n});\n\nconsole.log(`Webhook created: ${webhook.webhook.id}`);\nconsole.log(`Secret: ${webhook.webhook.secret}`);\nconsole.log('Save this secret securely - it won\\'t be shown again!');"
           },
           {
             "lang": "cURL",
@@ -6053,11 +6360,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Update webhook\nwebhook = client.webhooks.update(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    events=[\"memory.created\", \"memory.updated\", \"memory.deleted\"],\n    status=\"active\"\n)\n\nprint(f\"Webhook updated: {webhook.webhook.id}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Update webhook\nwebhook = client.webhooks.update(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    events=[\"memory.created\", \"memory.updated\", \"memory.deleted\"],\n    status=\"active\"\n)\n\nprint(f\"Webhook updated: {webhook.webhook.id}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Update webhook\nconst webhook = await client.webhooks.update({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  events: ['memory.created', 'memory.updated', 'memory.deleted'],\n  status: 'active'\n});\n\nconsole.log(`Webhook updated: ${webhook.webhook.id}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Update webhook\nconst webhook = await client.webhooks.update({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  events: ['memory.created', 'memory.updated', 'memory.deleted'],\n  status: 'active'\n});\n\nconsole.log(`Webhook updated: ${webhook.webhook.id}`);"
           },
           {
             "lang": "cURL",
@@ -6158,11 +6465,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Delete webhook\nresult = client.webhooks.delete(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\"\n)\n\nprint(f\"Webhook deleted: {result.message}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Delete webhook\nresult = client.webhooks.delete(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\"\n)\n\nprint(f\"Webhook deleted: {result.message}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Delete webhook\nconst result = await client.webhooks.delete({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456'\n});\n\nconsole.log(`Webhook deleted: ${result.message}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Delete webhook\nconst result = await client.webhooks.delete({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456'\n});\n\nconsole.log(`Webhook deleted: ${result.message}`);"
           },
           {
             "lang": "cURL",
@@ -6313,11 +6620,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# List webhook deliveries\ndeliveries = client.webhooks.list_deliveries(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    limit=20\n)\n\nprint(f\"Total deliveries: {deliveries.pagination.total}\")\nfor delivery in deliveries.deliveries:\n    print(f\"{delivery.event}: {delivery.status} ({delivery.statusCode}) - {delivery.responseTime}ms\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# List webhook deliveries\ndeliveries = client.webhooks.list_deliveries(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    limit=20\n)\n\nprint(f\"Total deliveries: {deliveries.pagination.total}\")\nfor delivery in deliveries.deliveries:\n    print(f\"{delivery.event}: {delivery.status} ({delivery.statusCode}) - {delivery.responseTime}ms\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// List webhook deliveries\nconst deliveries = await client.webhooks.listDeliveries({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  limit: 20\n});\n\nconsole.log(`Total deliveries: ${deliveries.pagination.total}`);\ndeliveries.deliveries.forEach(delivery => {\n  console.log(`${delivery.event}: ${delivery.status} (${delivery.statusCode}) - ${delivery.responseTime}ms`);\n});"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// List webhook deliveries\nconst deliveries = await client.webhooks.listDeliveries({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  limit: 20\n});\n\nconsole.log(`Total deliveries: ${deliveries.pagination.total}`);\ndeliveries.deliveries.forEach(delivery => {\n  console.log(`${delivery.event}: ${delivery.status} (${delivery.statusCode}) - ${delivery.responseTime}ms`);\n});"
           },
           {
             "lang": "cURL",
@@ -6446,11 +6753,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Retry failed delivery\ndelivery = client.webhooks.retry_delivery(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    delivery_id=\"del_xyz123abc456\"\n)\n\nprint(f\"Retry status: {delivery.delivery.status}\")\nprint(f\"Status code: {delivery.delivery.statusCode}\")\nprint(f\"Attempt count: {delivery.delivery.attemptCount}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Retry failed delivery\ndelivery = client.webhooks.retry_delivery(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\",\n    delivery_id=\"del_xyz123abc456\"\n)\n\nprint(f\"Retry status: {delivery.delivery.status}\")\nprint(f\"Status code: {delivery.delivery.statusCode}\")\nprint(f\"Attempt count: {delivery.delivery.attemptCount}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Retry failed delivery\nconst delivery = await client.webhooks.retryDelivery({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  deliveryId: 'del_xyz123abc456'\n});\n\nconsole.log(`Retry status: ${delivery.delivery.status}`);\nconsole.log(`Status code: ${delivery.delivery.statusCode}`);\nconsole.log(`Attempt count: ${delivery.delivery.attemptCount}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Retry failed delivery\nconst delivery = await client.webhooks.retryDelivery({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456',\n  deliveryId: 'del_xyz123abc456'\n});\n\nconsole.log(`Retry status: ${delivery.delivery.status}`);\nconsole.log(`Status code: ${delivery.delivery.statusCode}`);\nconsole.log(`Attempt count: ${delivery.delivery.attemptCount}`);"
           },
           {
             "lang": "cURL",
@@ -6571,11 +6878,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Test webhook\nresult = client.webhooks.test(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\"\n)\n\nif result.test.success:\n    print(f\"✓ Webhook test successful ({result.test.statusCode})\")\n    print(f\"  Response time: {result.test.responseTime}ms\")\nelse:\n    print(f\"✗ Webhook test failed\")\n    print(f\"  Message: {result.test.message}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Test webhook\nresult = client.webhooks.test(\n    org_id=\"org_abc123def456\",\n    project_id=\"proj_xyz789ghi012\",\n    webhook_id=\"wh_abc123def456\"\n)\n\nif result.test.success:\n    print(f\"✓ Webhook test successful ({result.test.statusCode})\")\n    print(f\"  Response time: {result.test.responseTime}ms\")\nelse:\n    print(f\"✗ Webhook test failed\")\n    print(f\"  Message: {result.test.message}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Test webhook\nconst result = await client.webhooks.test({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456'\n});\n\nif (result.test.success) {\n  console.log(`✓ Webhook test successful (${result.test.statusCode})`);\n  console.log(`  Response time: ${result.test.responseTime}ms`);\n} else {\n  console.log(`✗ Webhook test failed`);\n  console.log(`  Message: ${result.test.message}`);\n}"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Test webhook\nconst result = await client.webhooks.test({\n  orgId: 'org_abc123def456',\n  projectId: 'proj_xyz789ghi012',\n  webhookId: 'wh_abc123def456'\n});\n\nif (result.test.success) {\n  console.log(`✓ Webhook test successful (${result.test.statusCode})`);\n  console.log(`  Response time: ${result.test.responseTime}ms`);\n} else {\n  console.log(`✗ Webhook test failed`);\n  console.log(`  Message: ${result.test.message}`);\n}"
           },
           {
             "lang": "cURL",
@@ -6757,11 +7064,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\nfrom datetime import datetime\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nanalytics = client.analytics.get_dashboard(\n    org_id=\"org_abc123def456\",\n    start_date=\"2024-01-01T00:00:00Z\",\n    end_date=\"2024-01-31T23:59:59Z\"\n)\n\nprint(f\"Total Memories: {analytics.metrics.totalMemories}\")\nprint(f\"Top Tags: {analytics.metrics.topTags[:3]}\")"
+            "source": "from photomem import photomemClient\nfrom datetime import datetime\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\nanalytics = client.analytics.get_dashboard(\n    org_id=\"org_abc123def456\",\n    start_date=\"2024-01-01T00:00:00Z\",\n    end_date=\"2024-01-31T23:59:59Z\"\n)\n\nprint(f\"Total Memories: {analytics.metrics.totalMemories}\")\nprint(f\"Top Tags: {analytics.metrics.topTags[:3]}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst analytics = await client.analytics.getDashboard({\n  orgId: 'org_abc123def456',\n  startDate: '2024-01-01T00:00:00Z',\n  endDate: '2024-01-31T23:59:59Z'\n});\n\nconsole.log(`Total Memories: ${analytics.metrics.totalMemories}`);\nconsole.log(`Top Tags:`, analytics.metrics.topTags.slice(0, 3));"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst analytics = await client.analytics.getDashboard({\n  orgId: 'org_abc123def456',\n  startDate: '2024-01-01T00:00:00Z',\n  endDate: '2024-01-31T23:59:59Z'\n});\n\nconsole.log(`Total Memories: ${analytics.metrics.totalMemories}`);\nconsole.log(`Top Tags:`, analytics.metrics.topTags.slice(0, 3));"
           },
           {
             "lang": "cURL",
@@ -6857,11 +7164,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nexport = client.analytics.export_usage(\n    org_id=\"org_abc123def456\",\n    start_date=\"2024-01-01T00:00:00Z\",\n    end_date=\"2024-01-31T23:59:59Z\",\n    format=\"csv\",\n    include_details=True\n)\n\nprint(f\"Export ID: {export.exportId}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\nexport = client.analytics.export_usage(\n    org_id=\"org_abc123def456\",\n    start_date=\"2024-01-01T00:00:00Z\",\n    end_date=\"2024-01-31T23:59:59Z\",\n    format=\"csv\",\n    include_details=True\n)\n\nprint(f\"Export ID: {export.exportId}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst exportJob = await client.analytics.exportUsage({\n  orgId: 'org_abc123def456',\n  startDate: '2024-01-01T00:00:00Z',\n  endDate: '2024-01-31T23:59:59Z',\n  format: 'csv',\n  includeDetails: true\n});\n\nconsole.log(`Export ID: ${exportJob.exportId}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst exportJob = await client.analytics.exportUsage({\n  orgId: 'org_abc123def456',\n  startDate: '2024-01-01T00:00:00Z',\n  endDate: '2024-01-31T23:59:59Z',\n  format: 'csv',\n  includeDetails: true\n});\n\nconsole.log(`Export ID: ${exportJob.exportId}`);"
           },
           {
             "lang": "cURL",
@@ -6967,11 +7274,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\nimport time\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Poll for completion\nwhile True:\n    status = client.analytics.get_export_status(\n        org_id=\"org_abc123def456\",\n        export_id=\"exp_abc123def456\"\n    )\n    \n    if status.status == \"completed\":\n        print(f\"Download: {status.downloadUrl}\")\n        break\n    \n    time.sleep(5)"
+            "source": "from photomem import photomemClient\nimport time\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Poll for completion\nwhile True:\n    status = client.analytics.get_export_status(\n        org_id=\"org_abc123def456\",\n        export_id=\"exp_abc123def456\"\n    )\n    \n    if status.status == \"completed\":\n        print(f\"Download: {status.downloadUrl}\")\n        break\n    \n    time.sleep(5)"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Poll for completion\nconst pollExport = async () => {\n  const status = await client.analytics.getExportStatus({\n    orgId: 'org_abc123def456',\n    exportId: 'exp_abc123def456'\n  });\n  \n  if (status.status === 'completed') {\n    console.log(`Download: ${status.downloadUrl}`);\n    return status;\n  }\n  \n  await new Promise(resolve => setTimeout(resolve, 5000));\n  return pollExport();\n};\n\nawait pollExport();"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Poll for completion\nconst pollExport = async () => {\n  const status = await client.analytics.getExportStatus({\n    orgId: 'org_abc123def456',\n    exportId: 'exp_abc123def456'\n  });\n  \n  if (status.status === 'completed') {\n    console.log(`Download: ${status.downloadUrl}`);\n    return status;\n  }\n  \n  await new Promise(resolve => setTimeout(resolve, 5000));\n  return pollExport();\n};\n\nawait pollExport();"
           },
           {
             "lang": "cURL",
@@ -7154,11 +7461,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nresult = client.auth.complete_onboarding(\n    organization_name=\"Acme Corp\",\n    organization_slug=\"acme-corp\"\n)\n\nprint(f\"Org: {result.organization.name}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\nresult = client.auth.complete_onboarding(\n    organization_name=\"Acme Corp\",\n    organization_slug=\"acme-corp\"\n)\n\nprint(f\"Org: {result.organization.name}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.auth.completeOnboarding({\n  organizationName: 'Acme Corp',\n  organizationSlug: 'acme-corp'\n});\n\nconsole.log(`Org: ${result.organization.name}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst result = await client.auth.completeOnboarding({\n  organizationName: 'Acme Corp',\n  organizationSlug: 'acme-corp'\n});\n\nconsole.log(`Org: ${result.organization.name}`);"
           },
           {
             "lang": "cURL",
@@ -7239,11 +7546,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\nsession = client.auth.verify_session()\n\nprint(f\"User: {session.user.email}\")\nprint(f\"Needs onboarding: {session.user.needsOnboarding}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\nsession = client.auth.verify_session()\n\nprint(f\"User: {session.user.email}\")\nprint(f\"Needs onboarding: {session.user.needsOnboarding}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\nconst session = await client.auth.verifySession();\n\nconsole.log(`User: ${session.user.email}`);\nconsole.log(`Needs onboarding: ${session.user.needsOnboarding}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\nconst session = await client.auth.verifySession();\n\nconsole.log(`User: ${session.user.email}`);\nconsole.log(`Needs onboarding: ${session.user.needsOnboarding}`);"
           },
           {
             "lang": "cURL",
@@ -7331,11 +7638,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Get current user profile\nuser = client.users.get_me()\n\nprint(f\"Name: {user.fullName}\")\nprint(f\"Email: {user.email}\")\nprint(f\"Role: {user.role}\")\nprint(f\"Organization: {user.organizationId}\")\nprint(f\"Last login: {user.lastLoginAt}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Get current user profile\nuser = client.users.get_me()\n\nprint(f\"Name: {user.fullName}\")\nprint(f\"Email: {user.email}\")\nprint(f\"Role: {user.role}\")\nprint(f\"Organization: {user.organizationId}\")\nprint(f\"Last login: {user.lastLoginAt}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Get current user profile\nconst user = await client.users.getMe();\n\nconsole.log(`Name: ${user.fullName}`);\nconsole.log(`Email: ${user.email}`);\nconsole.log(`Role: ${user.role}`);\nconsole.log(`Organization: ${user.organizationId}`);\nconsole.log(`Last login: ${user.lastLoginAt}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Get current user profile\nconst user = await client.users.getMe();\n\nconsole.log(`Name: ${user.fullName}`);\nconsole.log(`Email: ${user.email}`);\nconsole.log(`Role: ${user.role}`);\nconsole.log(`Organization: ${user.organizationId}`);\nconsole.log(`Last login: ${user.lastLoginAt}`);"
           },
           {
             "lang": "cURL",
@@ -7459,11 +7766,11 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Update user profile\nuser = client.users.update_me(\n    email=\"john.new@example.com\",\n    full_name=\"John Smith\"\n)\n\nprint(f\"Profile updated: {user.fullName}\")\nprint(f\"New email: {user.email}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Update user profile\nuser = client.users.update_me(\n    email=\"john.new@example.com\",\n    full_name=\"John Smith\"\n)\n\nprint(f\"Profile updated: {user.fullName}\")\nprint(f\"New email: {user.email}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Update user profile\nconst user = await client.users.updateMe({\n  email: 'john.new@example.com',\n  fullName: 'John Smith'\n});\n\nconsole.log(`Profile updated: ${user.fullName}`);\nconsole.log(`New email: ${user.email}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Update user profile\nconst user = await client.users.updateMe({\n  email: 'john.new@example.com',\n  fullName: 'John Smith'\n});\n\nconsole.log(`Profile updated: ${user.fullName}`);\nconsole.log(`New email: ${user.email}`);"
           },
           {
             "lang": "cURL",
@@ -7553,15 +7860,557 @@
         "x-code-samples": [
           {
             "lang": "Python",
-            "source": "from photomem import PhotoMemClient\n\nclient = PhotoMemClient(auth_token=\"your_clerk_token\")\n\n# Delete account (requires confirmation)\nresult = client.users.delete_me(confirmation=\"DELETE\")\n\nprint(f\"Account deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
+            "source": "from photomem import photomemClient\n\nclient = photomemClient(auth_token=\"your_clerk_token\")\n\n# Delete account (requires confirmation)\nresult = client.users.delete_me(confirmation=\"DELETE\")\n\nprint(f\"Account deleted: {result.message}\")\nprint(f\"Deleted at: {result.deletedAt}\")"
           },
           {
             "lang": "JavaScript",
-            "source": "import { PhotoMemClient } from 'photomem';\n\nconst client = new PhotoMemClient({ authToken: 'your_clerk_token' });\n\n// Delete account (requires confirmation)\nconst result = await client.users.deleteMe({ confirmation: 'DELETE' });\n\nconsole.log(`Account deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
+            "source": "import { photomemClient } from 'photomem';\n\nconst client = new photomemClient({ authToken: 'your_clerk_token' });\n\n// Delete account (requires confirmation)\nconst result = await client.users.deleteMe({ confirmation: 'DELETE' });\n\nconsole.log(`Account deleted: ${result.message}`);\nconsole.log(`Deleted at: ${result.deletedAt}`);"
           },
           {
             "lang": "cURL",
             "source": "curl --request DELETE \\\n  --url https://api.photomem.ai/api/users/me \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"confirmation\": \"DELETE\"}'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{orgId}/projects/{projectId}/conversations": {
+      "get": {
+        "tags": ["Conversations"],
+        "summary": "List Conversations",
+        "description": "Get all conversations for a project with pagination and filtering.",
+        "operationId": "listConversations",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Organization ID"
+          },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Project ID"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by user ID"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 25,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListConversationsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_123/projects/proj_456/conversations?page=1&limit=25' \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Conversations"],
+        "summary": "Create Conversation",
+        "description": "Create a new conversation thread.",
+        "operationId": "createConversation",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conversation created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_123/projects/proj_456/conversations \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"userId\": \"user_123\", \"userName\": \"John Doe\", \"userEmail\": \"john@example.com\"}'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{orgId}/projects/{projectId}/conversations/{conversationId}/messages": {
+      "get": {
+        "tags": ["Conversations"],
+        "summary": "Get Conversation Messages",
+        "description": "Get all messages in a conversation with pagination.",
+        "operationId": "getConversationMessages",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "maximum": 500
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListMessagesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_123/projects/proj_456/conversations/conv_789/messages?page=1&limit=100' \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Conversations"],
+        "summary": "Create Message",
+        "description": "Add a new message to a conversation.",
+        "operationId": "createMessage",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "curl --request POST \\\n  --url https://api.photomem.ai/api/organizations/org_123/projects/proj_456/conversations/conv_789/messages \\\n  --header 'Authorization: Bearer your_clerk_token' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"role\": \"user\", \"content\": \"Hello AI!\"}'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{orgId}/projects/{projectId}/logs": {
+      "get": {
+        "tags": ["Request Logs"],
+        "summary": "List API Request Logs",
+        "description": "Get API request audit trail with filtering and pagination. Supports authentication via JWT Bearer token or API Key.",
+        "operationId": "listRequestLogs",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 25,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+            },
+            "description": "Filter by HTTP method"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by status code"
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request logs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListRequestLogsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "cURL (JWT)",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_123/projects/proj_456/logs?method=POST&status=200&page=1&limit=25' \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          },
+          {
+            "lang": "cURL (API Key)",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_123/projects/proj_456/logs?method=POST&status=200&page=1&limit=25' \\\n  --header 'X-API-Key: pm_live_your_api_key'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{orgId}/projects/{projectId}/logs/{logId}": {
+      "get": {
+        "tags": ["Request Logs"],
+        "summary": "Get Request Log Details",
+        "description": "Get detailed information about a specific API request including request/response bodies. Supports authentication via JWT Bearer token or API Key.",
+        "operationId": "getRequestLog",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "logId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request log details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestLogDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "cURL (JWT)",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_123/projects/proj_456/logs/log_789 \\\n  --header 'Authorization: Bearer your_clerk_token'"
+          },
+          {
+            "lang": "cURL (API Key)",
+            "source": "curl --request GET \\\n  --url https://api.photomem.ai/api/organizations/org_123/projects/proj_456/logs/log_789 \\\n  --header 'X-API-Key: pm_live_your_api_key'"
+          }
+        ]
+      }
+    },
+    "/api/organizations/{orgId}/projects/{projectId}/graph": {
+      "get": {
+        "tags": ["Graph"],
+        "summary": "Get Graph Data",
+        "description": "Get network graph data for visualizing memory relationships (users, tags, memories).",
+        "operationId": "getGraphData",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 500,
+              "maximum": 1000
+            },
+            "description": "Maximum number of nodes to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Graph data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphDataResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": "curl --request GET \\\n  --url 'https://api.photomem.ai/api/organizations/org_123/projects/proj_456/graph?limit=500' \\\n  --header 'Authorization: Bearer your_clerk_token'"
           }
         ]
       }
@@ -7633,24 +8482,48 @@
 					},
       "MemoryCreateRequest": {
 									"type": "object",
-        "required": ["userId", "userName", "content"],
+        "required": ["messages"],
 									"properties": {
+          "messages": {
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "object",
+                "properties": {
+                  "role": {"type": "string"},
+                  "content": {"type": "string"}
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "role": {"type": "string"},
+                    "content": {"type": "string"}
+                  }
+                }
+              }
+            ],
+            "description": "Conversation messages to extract memories from. Can be string, single message dict, or list of messages."
+          },
           "userId": {
 											"type": "string",
             "minLength": 1,
             "maxLength": 255,
-            "description": "User ID"
+            "description": "User ID (optional)"
           },
-          "userName": {
+          "agentId": {
             "type": "string",
             "minLength": 1,
             "maxLength": 255,
-            "description": "User name"
+            "description": "Agent ID (optional)"
           },
-					"content": {
+          "runId": {
 										"type": "string",
             "minLength": 1,
-            "description": "Memory content (max 10KB)"
+            "maxLength": 255,
+            "description": "Run ID / Session ID (optional)"
           },
           "tags": {
 										"type": "array",
@@ -7660,6 +8533,20 @@
             },
             "maxItems": 20,
             "description": "Tags for categorization"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Custom metadata"
+          },
+          "infer": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to use LLM extraction (true) or direct storage (false)"
+          },
+          "async_processing": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, process memories asynchronously in the background and return immediately with a task ID. If false, wait for processing to complete before returning. Use async for batch uploads."
           }
         }
       },
@@ -7669,13 +8556,14 @@
           "id": {
 											"type": "string"
 										},
+          "memory": {
+            "type": "string",
+            "description": "The actual memory content"
+										},
           "userId": {
 											"type": "string"
 										},
-          "userName": {
-											"type": "string"
-										},
-          "content": {
+          "agentId": {
             "type": "string"
           },
           "tags": {
@@ -7683,6 +8571,24 @@
 											"items": {
 												"type": "string"
 											}
+										},
+          "event": {
+            "type": "string",
+            "enum": ["ADD", "UPDATE", "DELETE", "NONE"],
+            "description": "What action was taken with this memory"
+          },
+          "processingStatus": {
+            "type": "string",
+            "enum": ["pending", "processing", "completed", "failed"],
+            "description": "Current processing status"
+          },
+          "oldMemory": {
+            "type": "string",
+            "description": "Previous content (for UPDATE events)"
+          },
+          "relatedMemoryId": {
+            "type": "string",
+            "description": "Related memory reference (for UPDATE/DELETE)"
 										},
           "createdAt": {
 											"type": "string",
@@ -7697,8 +8603,42 @@
       "MemoryCreateResponse": {
 									"type": "object",
 									"properties": {
-          "memory": {
+          "taskId": {
+            "type": "string",
+            "description": "Task ID for tracking processing status (especially useful for async mode)"
+          },
+          "memoryIds": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "List of memory IDs created/affected"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "processing", "completed", "failed", "queued"],
+            "description": "Current status of the memory creation request"
+          },
+          "message": {
+            "type": "string",
+            "description": "Descriptive message about the status"
+          },
+          "memories": {
+            "type": "array",
+            "items": {
             "$ref": "#/components/schemas/MemoryResponse"
+            },
+            "description": "List of created/updated memories with event types (empty for async until processed)"
+          },
+          "stats": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "extracted_facts": {"type": "integer"},
+              "added": {"type": "integer"},
+              "updated": {"type": "integer"},
+              "deleted": {"type": "integer"},
+              "skipped": {"type": "integer"}
+            },
+            "description": "Processing statistics (null for async until processed)"
           }
         }
       },
@@ -8021,6 +8961,344 @@
 				"properties": {
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "ConversationCreate": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "User ID associated with conversation"
+          },
+          "userName": {
+            "type": "string",
+            "description": "User name"
+          },
+          "userEmail": {
+            "type": "string",
+            "description": "User email"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "ConversationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "conv_abc123"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "userEmail": {
+            "type": "string"
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "messageCount": {
+            "type": "integer"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "ListConversationsResponse": {
+        "type": "object",
+        "properties": {
+          "conversations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversationResponse"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "MessageCreate": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["user", "assistant"]
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1
+          },
+          "retrievedMemories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of memory IDs retrieved for this message"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "msg_xyz789"
+          },
+          "conversationId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["user", "assistant"]
+          },
+          "content": {
+            "type": "string"
+          },
+          "retrievedMemories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "ListMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageResponse"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "RequestLogResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "log_abc123"
+          },
+          "method": {
+            "type": "string",
+            "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "Normalized endpoint pattern"
+          },
+          "path": {
+            "type": "string",
+            "description": "Actual request path"
+          },
+          "statusCode": {
+            "type": "integer"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Request duration in milliseconds"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "ipAddress": {
+            "type": "string"
+          },
+          "userAgent": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestLogDetailResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "statusCode": {
+            "type": "integer"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "ipAddress": {
+            "type": "string"
+          },
+          "userAgent": {
+            "type": "string"
+          },
+          "requestHeaders": {
+            "type": "object"
+          },
+          "responseHeaders": {
+            "type": "object"
+          },
+          "requestBody": {
+            "type": "object"
+          },
+          "responseBody": {
+            "type": "object"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ListRequestLogsResponse": {
+        "type": "object",
+        "properties": {
+          "logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestLogResponse"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "GraphNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["user", "tag", "memory"]
+          },
+          "memoryCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "GraphLink": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Source node ID"
+          },
+          "target": {
+            "type": "string",
+            "description": "Target node ID"
+          },
+          "strength": {
+            "type": "number",
+            "description": "Relationship strength (0-1)"
+          }
+        }
+      },
+      "GraphDataResponse": {
+        "type": "object",
+        "properties": {
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraphLink"
+            }
           }
         }
       }

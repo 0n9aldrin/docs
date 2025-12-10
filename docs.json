@@ -1,8 +1,16 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "PhotoMem",
-  "description": "PhotoMem is a self-improving memory layer for LLM applications, enabling personalized AI experiences that save costs and delight users.",
+  "name": "photomem",
+  "description": "photomem is a self-improving memory layer for LLM applications, enabling personalized AI experiences that save costs and delight users.",
   "theme": "aspen",
+  "font": {
+    "headings": {
+      "family": "Outfit"
+    },
+    "body": {
+      "family": "Outfit"
+    }
+  },
   "colors": {
     "primary": "#00D9FF",
     "light": "#00D9FF",
@@ -31,7 +39,7 @@
                 ]
               },
               {
-                "tab": "PhotoMem Platform",
+                "tab": "photomem Platform",
                 "groups": [
                   {
                     "group": "Getting Started",
@@ -617,7 +625,7 @@
       "perplexity",
       {
         "title": "Try in Playground",
-        "description": "Open this example in the interactive PhotoMem playground",
+        "description": "Open this example in the interactive photomem playground",
         "icon": "play",
         "href": "https://app.photomem.ai/playground"
       }

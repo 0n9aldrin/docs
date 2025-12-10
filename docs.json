@@ -12,204 +12,206 @@
     "dark": "#00D9FF"
   },
   "favicon": "/logo/favicon.png",
-  "navigation": [
-    {
-      "group": "Getting Started",
-      "pages": [
-        "introduction",
-        "platform/overview",
-        "platform/platform-vs-oss",
-        "platform/quickstart"
-      ]
-    },
-    {
-      "group": "Core Concepts",
-      "pages": [
-        "core-concepts/memory-types",
-        "core-concepts/memory-operations/add",
-        "core-concepts/memory-operations/search",
-        "core-concepts/memory-operations/update",
-        "core-concepts/memory-operations/delete"
-      ]
-    },
-    {
-      "group": "Platform Features",
-      "pages": [
-        "platform/features/platform-overview",
-        "platform/features/v2-memory-filters",
-        "platform/features/async-client",
-        "platform/features/async-mode-default-change",
-        "platform/features/multimodal-support",
-        "platform/features/custom-categories",
-        "platform/features/graph-memory",
-        "platform/features/graph-threshold",
-        "platform/features/advanced-retrieval",
-        "platform/advanced-memory-operations",
-        "platform/features/criteria-retrieval",
-        "platform/features/contextual-add",
-        "platform/features/custom-instructions",
-        "platform/features/direct-import",
-        "platform/features/memory-export",
-        "platform/features/timestamp",
-        "platform/features/expiration-date",
-        "platform/features/webhooks",
-        "platform/features/feedback-mechanism",
-        "platform/features/group-chat"
-      ]
-    },
-    {
-      "group": "Support & Migration",
-      "pages": [
-        "platform/faqs",
-        "migration/v0-to-v1",
-        "migration/breaking-changes",
-        "migration/api-changes",
-        "platform/contribute"
-      ]
-    },
-    {
-      "group": "Cookbooks",
-      "pages": [
-        "cookbooks/overview",
-        "cookbooks/essentials/building-ai-companion",
-        "cookbooks/essentials/building-ai-with-personality",
-        "cookbooks/essentials/controlling-memory-ingestion",
-        "cookbooks/essentials/memory-expiration-short-and-long-term",
-        "cookbooks/essentials/tagging-and-organizing-memories",
-        "cookbooks/essentials/exporting-memories",
-        "cookbooks/essentials/choosing-memory-architecture-vector-vs-graph",
-        "cookbooks/companions/quickstart-demo",
-        "cookbooks/companions/nodejs-companion",
-        "cookbooks/companions/ai-tutor",
-        "cookbooks/companions/travel-assistant",
-        "cookbooks/companions/youtube-research",
-        "cookbooks/companions/voice-companion-openai",
-        "cookbooks/companions/local-companion-ollama",
-        "cookbooks/operations/support-inbox",
-        "cookbooks/operations/email-automation",
-        "cookbooks/operations/content-writing",
-        "cookbooks/operations/deep-research",
-        "cookbooks/operations/team-task-agent",
-        "cookbooks/integrations/agents-sdk-tool",
-        "cookbooks/integrations/openai-tool-calls",
-        "cookbooks/integrations/mastra-agent",
-        "cookbooks/integrations/healthcare-google-adk",
-        "cookbooks/integrations/aws-bedrock",
-        "cookbooks/integrations/neptune-analytics",
-        "cookbooks/integrations/tavily-search",
-        "cookbooks/frameworks/llamaindex-react",
-        "cookbooks/frameworks/llamaindex-multiagent",
-        "cookbooks/frameworks/multimodal-retrieval",
-        "cookbooks/frameworks/eliza-os-character",
-        "cookbooks/frameworks/chrome-extension"
-      ]
-    },
-    {
-      "group": "Integrations",
-      "pages": [
-        "integrations",
-        "integrations/langchain",
-        "integrations/langgraph",
-        "integrations/llama-index",
-        "integrations/crewai",
-        "integrations/autogen",
-        "integrations/agno",
-        "integrations/openai-agents-sdk",
-        "integrations/google-ai-adk",
-        "integrations/mastra",
-        "integrations/vercel-ai-sdk",
-        "integrations/livekit",
-        "integrations/pipecat",
-        "integrations/elevenlabs",
-        "integrations/aws-bedrock",
-        "integrations/dify",
-        "integrations/flowise",
-        "integrations/langchain-tools",
-        "integrations/agentops",
-        "integrations/keywords",
-        "integrations/raycast"
-      ]
-    },
-    {
-      "group": "API Reference",
-      "pages": [
-        "api-reference/introduction"
-      ]
-    },
-    {
-      "group": "Memory Management",
-      "pages": [
-        "api-reference/memories-api/create-memory",
-        "api-reference/memories-api/list-memories",
-        "api-reference/memories-api/update-memory",
-        "api-reference/memories-api/delete-memory",
-        "api-reference/memories-api/search-memories"
-      ]
-    },
-    {
-      "group": "API Keys",
-      "pages": [
-        "api-reference/api-keys/list-api-keys",
-        "api-reference/api-keys/create-api-key",
-        "api-reference/api-keys/revoke-api-key",
-        "api-reference/api-keys/rotate-api-key"
-      ]
-    },
-    {
-      "group": "Organizations",
-      "pages": [
-        "api-reference/organization/get-orgs",
-        "api-reference/organization/create-org",
-        "api-reference/organization/get-org",
-        "api-reference/organization/delete-org",
-        "api-reference/organization/get-org-members",
-        "api-reference/organization/add-org-member"
-      ]
-    },
-    {
-      "group": "Projects",
-      "pages": [
-        "api-reference/project/get-projects",
-        "api-reference/project/create-project",
-        "api-reference/project/get-project",
-        "api-reference/project/delete-project"
-      ]
-    },
-    {
-      "group": "Webhooks",
-      "pages": [
-        "api-reference/webhooks/list-webhooks",
-        "api-reference/webhooks/create-webhook",
-        "api-reference/webhooks/delete-webhook"
-      ]
-    },
-    {
-      "group": "Billing",
-      "pages": [
-        "api-reference/billing/get-current-plan",
-        "api-reference/billing/change-plan",
-        "api-reference/billing/get-invoices",
-        "api-reference/billing/update-payment-method",
-        "api-reference/billing/cancel-subscription"
-      ]
-    },
-    {
-      "group": "Usage & Analytics",
-      "pages": [
-        "api-reference/usage/get-usage-statistics",
-        "api-reference/usage/get-analytics-dashboard",
-        "api-reference/usage/export-usage"
-      ]
-    },
-    {
-      "group": "User Profile",
-      "pages": [
-        "api-reference/user/get-profile",
-        "api-reference/user/update-profile",
-        "api-reference/user/delete-account"
-      ]
-    }
-  ],
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "introduction",
+          "platform/overview",
+          "platform/platform-vs-oss",
+          "platform/quickstart"
+        ]
+      },
+      {
+        "group": "Core Concepts",
+        "pages": [
+          "core-concepts/memory-types",
+          "core-concepts/memory-operations/add",
+          "core-concepts/memory-operations/search",
+          "core-concepts/memory-operations/update",
+          "core-concepts/memory-operations/delete"
+        ]
+      },
+      {
+        "group": "Platform Features",
+        "pages": [
+          "platform/features/platform-overview",
+          "platform/features/v2-memory-filters",
+          "platform/features/async-client",
+          "platform/features/async-mode-default-change",
+          "platform/features/multimodal-support",
+          "platform/features/custom-categories",
+          "platform/features/graph-memory",
+          "platform/features/graph-threshold",
+          "platform/features/advanced-retrieval",
+          "platform/advanced-memory-operations",
+          "platform/features/criteria-retrieval",
+          "platform/features/contextual-add",
+          "platform/features/custom-instructions",
+          "platform/features/direct-import",
+          "platform/features/memory-export",
+          "platform/features/timestamp",
+          "platform/features/expiration-date",
+          "platform/features/webhooks",
+          "platform/features/feedback-mechanism",
+          "platform/features/group-chat"
+        ]
+      },
+      {
+        "group": "Support & Migration",
+        "pages": [
+          "platform/faqs",
+          "migration/v0-to-v1",
+          "migration/breaking-changes",
+          "migration/api-changes",
+          "platform/contribute"
+        ]
+      },
+      {
+        "group": "Cookbooks",
+        "pages": [
+          "cookbooks/overview",
+          "cookbooks/essentials/building-ai-companion",
+          "cookbooks/essentials/building-ai-with-personality",
+          "cookbooks/essentials/controlling-memory-ingestion",
+          "cookbooks/essentials/memory-expiration-short-and-long-term",
+          "cookbooks/essentials/tagging-and-organizing-memories",
+          "cookbooks/essentials/exporting-memories",
+          "cookbooks/essentials/choosing-memory-architecture-vector-vs-graph",
+          "cookbooks/companions/quickstart-demo",
+          "cookbooks/companions/nodejs-companion",
+          "cookbooks/companions/ai-tutor",
+          "cookbooks/companions/travel-assistant",
+          "cookbooks/companions/youtube-research",
+          "cookbooks/companions/voice-companion-openai",
+          "cookbooks/companions/local-companion-ollama",
+          "cookbooks/operations/support-inbox",
+          "cookbooks/operations/email-automation",
+          "cookbooks/operations/content-writing",
+          "cookbooks/operations/deep-research",
+          "cookbooks/operations/team-task-agent",
+          "cookbooks/integrations/agents-sdk-tool",
+          "cookbooks/integrations/openai-tool-calls",
+          "cookbooks/integrations/mastra-agent",
+          "cookbooks/integrations/healthcare-google-adk",
+          "cookbooks/integrations/aws-bedrock",
+          "cookbooks/integrations/neptune-analytics",
+          "cookbooks/integrations/tavily-search",
+          "cookbooks/frameworks/llamaindex-react",
+          "cookbooks/frameworks/llamaindex-multiagent",
+          "cookbooks/frameworks/multimodal-retrieval",
+          "cookbooks/frameworks/eliza-os-character",
+          "cookbooks/frameworks/chrome-extension"
+        ]
+      },
+      {
+        "group": "Integrations",
+        "pages": [
+          "integrations",
+          "integrations/langchain",
+          "integrations/langgraph",
+          "integrations/llama-index",
+          "integrations/crewai",
+          "integrations/autogen",
+          "integrations/agno",
+          "integrations/openai-agents-sdk",
+          "integrations/google-ai-adk",
+          "integrations/mastra",
+          "integrations/vercel-ai-sdk",
+          "integrations/livekit",
+          "integrations/pipecat",
+          "integrations/elevenlabs",
+          "integrations/aws-bedrock",
+          "integrations/dify",
+          "integrations/flowise",
+          "integrations/langchain-tools",
+          "integrations/agentops",
+          "integrations/keywords",
+          "integrations/raycast"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api-reference/introduction"
+        ]
+      },
+      {
+        "group": "Memory Management",
+        "pages": [
+          "api-reference/memories-api/create-memory",
+          "api-reference/memories-api/list-memories",
+          "api-reference/memories-api/update-memory",
+          "api-reference/memories-api/delete-memory",
+          "api-reference/memories-api/search-memories"
+        ]
+      },
+      {
+        "group": "API Keys",
+        "pages": [
+          "api-reference/api-keys/list-api-keys",
+          "api-reference/api-keys/create-api-key",
+          "api-reference/api-keys/revoke-api-key",
+          "api-reference/api-keys/rotate-api-key"
+        ]
+      },
+      {
+        "group": "Organizations",
+        "pages": [
+          "api-reference/organization/get-orgs",
+          "api-reference/organization/create-org",
+          "api-reference/organization/get-org",
+          "api-reference/organization/delete-org",
+          "api-reference/organization/get-org-members",
+          "api-reference/organization/add-org-member"
+        ]
+      },
+      {
+        "group": "Projects",
+        "pages": [
+          "api-reference/project/get-projects",
+          "api-reference/project/create-project",
+          "api-reference/project/get-project",
+          "api-reference/project/delete-project"
+        ]
+      },
+      {
+        "group": "Webhooks",
+        "pages": [
+          "api-reference/webhooks/list-webhooks",
+          "api-reference/webhooks/create-webhook",
+          "api-reference/webhooks/delete-webhook"
+        ]
+      },
+      {
+        "group": "Billing",
+        "pages": [
+          "api-reference/billing/get-current-plan",
+          "api-reference/billing/change-plan",
+          "api-reference/billing/get-invoices",
+          "api-reference/billing/update-payment-method",
+          "api-reference/billing/cancel-subscription"
+        ]
+      },
+      {
+        "group": "Usage & Analytics",
+        "pages": [
+          "api-reference/usage/get-usage-statistics",
+          "api-reference/usage/get-analytics-dashboard",
+          "api-reference/usage/export-usage"
+        ]
+      },
+      {
+        "group": "User Profile",
+        "pages": [
+          "api-reference/user/get-profile",
+          "api-reference/user/update-profile",
+          "api-reference/user/delete-account"
+        ]
+      }
+    ]
+  },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg",
